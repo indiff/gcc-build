@@ -32,7 +32,7 @@ jobs:
         id: get
         run: |
           curl -sLo ver "https://gcc.gnu.org/git/?p=gcc.git;a=blob_plain;f=gcc/BASE-VER"
-          export version=$(cat BASE-VER)
+          export version=$(cat ver)
           echo "GCC_BUILD_VERSION=${version}" >> "$GITHUB_OUTPUT"
           export build_prefix="${{ github.event.inputs.buildPrefix }}"
           if [ "${{ github.event.inputs.buildPrefix }}" == "" ]; then build_prefix="/opt/gcc"; fi
