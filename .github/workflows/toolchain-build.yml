@@ -22,7 +22,7 @@ jobs:
     - name: Set build date
       id: get-date
       run: |
-        sudo ln -sf /usr/share/zoneinfo/Asia/Kolkata /etc/localtime
+        sudo ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
         echo ::set-output name=date::$(/bin/date -u "+%Y%m%d")
     - name: Setup
       run: |
@@ -59,7 +59,7 @@ jobs:
     - name: Set build date
       id: get-date
       run: |
-        sudo ln -sf /usr/share/zoneinfo/Asia/Kolkata /etc/localtime
+        sudo ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
         echo ::set-output name=date::$(/bin/date -u "+%Y%m%d")
     - name: Setup
       run: |
