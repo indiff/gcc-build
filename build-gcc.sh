@@ -82,6 +82,7 @@ build_gcc() {
   cd build-gcc
   env CFLAGS="$OPT_FLAGS" CXXFLAGS="$OPT_FLAGS" \
     ../gcc/configure --target="$TARGET" \
+    --with-bugurl=https://github.com/indiff/gcc-build \
     --disable-decimal-float \
     --disable-docs \
     --disable-gcov \
@@ -92,8 +93,14 @@ build_gcc() {
     --disable-libstdcxx-pch \
     --disable-nls \
     --disable-shared \
+    --enable-bootstrap \
+    --enable-multilib \
+    --enable-gnu-unique-object \
+    --enable-plugin  \
+    --enable-gnu-indirect-functio \
+    --enable-initfini-array \
     --enable-default-ssp \
-    --enable-languages=c,c++,fortran \
+    --enable-languages=c,c++,fortran,lto \
     --enable-threads=posix \
     --prefix="$PREFIX" \
     --with-gnu-as \
