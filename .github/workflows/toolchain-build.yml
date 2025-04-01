@@ -90,7 +90,7 @@ jobs:
 
     - uses: actions/upload-artifact@main
       with:
-       name: arm-tarball
+       name: x86-tarball
        path: |
          *.xz
 
