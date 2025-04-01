@@ -304,7 +304,7 @@ jobs:
           timedatectl status
           sudo mkdir -p ${{ needs.before_build.outputs.GCC_BUILD_PREFIX }}
           sudo chown -R 777 ${{ needs.before_build.outputs.GCC_BUILD_PREFIX }}
-          docker run --cpus="$(nproc --all)" -u root --rm -v ${{ github.workspace }}:/workspace -v ${{ needs.before_build.outputs.GCC_BUILD_PREFIX }}:${{ needs.before_build.outputs.GCC_BUILD_PREFIX }} -w /workspace centos:7 /bin/bash -c "/workspace/build.sh"
+          docker run --cpus="$(nproc --all)" -u root --rm -v ${{ github.workspace }}:/workspace -v ${{ needs.before_build.outputs.GCC_BUILD_PREFIX }}:${{ needs.before_build.outputs.GCC_BUILD_PREFIX }} -w /workspace centos:7 /bin/bash -c "/workspace/build.sh -a x86"
           export build_timestamp="$(date +'%Y%m%d_%H%M')"
           export glib_version="$(cat glibc_version.txt)"
           export size_kb=$(du -k opt_nginx.zip | cut -f1)
