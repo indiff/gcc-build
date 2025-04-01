@@ -28,7 +28,7 @@ jobs:
     - name: Setup
       run: |
         sudo apt-get update
-        sudo apt-get install -y systemd language-pack-zh-hans language-pack-zh-hans-base locales
+        sudo apt-get install -y systemd language-pack-zh-hans language-pack-zh-hans-base locales tree
         sudo locale-gen zh_CN.UTF-8; /usr/bin/localectl set-locale LANG=zh_CN.UTF-8 || true ; 
         /usr/bin/timedatectl set-timezone Asia/Shanghai || true; 
         /usr/bin/timedatectl set-ntp true || true;
@@ -47,11 +47,12 @@ jobs:
         cd ../ && cat lld-arm64-version >> gcc-version
     - name: Create tarball
       run: |
-        tar -cvf eva-gcc-x86-$(/bin/date -u '+%d%m%Y').xz gcc-x86/*
+        tree .
+        tar -cvf eva-gcc-arm64-$(/bin/date -u '+%d%m%Y').xz gcc-arm64/*
 
     - uses: actions/upload-artifact@main
       with:
-       name: x86-tarball
+       name: aarch64-tarball
        path: |
          *.xz
          gcc-version
@@ -69,7 +70,7 @@ jobs:
     - name: Setup
       run: |
         sudo apt-get update
-        sudo apt-get install -y systemd language-pack-zh-hans language-pack-zh-hans-base locales
+        sudo apt-get install -y systemd language-pack-zh-hans language-pack-zh-hans-base locales tree
         sudo locale-gen zh_CN.UTF-8; /usr/bin/localectl set-locale LANG=zh_CN.UTF-8 || true ; 
         /usr/bin/timedatectl set-timezone Asia/Shanghai || true; 
         /usr/bin/timedatectl set-ntp true || true;
@@ -84,6 +85,7 @@ jobs:
         bash "$script_dir/strip-binaries.sh"
     - name: Create tarball
       run: |
+        tree .
         tar -cvf eva-gcc-x86-$(/bin/date -u '+%d%m%Y').xz gcc-x86/*
 
     - uses: actions/upload-artifact@main
