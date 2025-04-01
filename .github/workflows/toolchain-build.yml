@@ -71,13 +71,15 @@ jobs:
     - name: Create tarball
       run: |
         tree .
-        tar -cvf eva-gcc-arm64-$(/bin/date -u '+%d%m%Y').xz gcc-arm64/*
+        # tar -cvf eva-gcc-arm64-$(/bin/date -u '+%d%m%Y').xz gcc-arm64/*
+        cd gcc-arm64
+        zip -r -q -9 ../eva-gcc-arm64-$(/bin/date -u '+%d%m%Y').zip .
 
     - uses: actions/upload-artifact@main
       with:
        name: aarch64-tarball
        path: |
-         *.xz
+         *.zip
          gcc-version
 
   build-x86-tc:
@@ -108,14 +110,18 @@ jobs:
         bash "$script_dir/strip-binaries.sh"
     - name: Create tarball
       run: |
-        tree .
-        tar -cvf eva-gcc-x86-$(/bin/date -u '+%d%m%Y').xz gcc-x86/*
+        tree gcc-x86
+        #tar -cvf eva-gcc-x86-$(/bin/date -u '+%d%m%Y').xz gcc-x86/*
+        cd gcc-x86
+        zip -r -q -9 ../eva-gcc-x86-$(/bin/date -u '+%d%m%Y').zip .
+        
 
     - uses: actions/upload-artifact@main
       with:
        name: x86-tarball
        path: |
-         *.xz
+         *.zip
+
   build-in-centos7:
     runs-on: ubuntu-latest
     needs: before_build
@@ -157,7 +163,8 @@ jobs:
           ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
           echo 'Asia/Shanghai' > /etc/timezone
           yum update -y
-          yum install -y gcc gcc-c++ gmp-devel mpfr-devel libmpc-devel texinfo wget bzip2
+          yum install -y flex bison ncurses-dev texinfo gcc gperf patch libtool automake g++ libncurses5-dev gawk subversion expat libexpat1-dev binutils-dev bc libcap-dev autoconf libgmp-dev build-essential pkg-config libmpc-dev libmpfr-dev autopoint gettext txt2man liblzma-dev libssl-dev libz-dev mercurial wget tar cmake zstd ninja-build lz4 liblz4-tool liblz4-dev lzma libc6-dev-i386
+          yum install -y gcc gcc-c++ gmp-devel mpfr-devel libmpc-devel texinfo wget bzip2 bison
           yum install -y pcre-devel zlib-devel make git wget sed perl-IPC-Cmd GeoIP GeoIP-devel zip systemd autoconf automake libtool
           yum install -y perl-Test-Simple perl-FindBin perl-IPC-Cmd perl-Text-Template perl-File-Compare perl-File-Copy perl-Data-Dumper
 
@@ -298,7 +305,7 @@ jobs:
       #     name: build.sh
       #     path: build.sh     
 
-      - name: Build Nginx in Docker
+      - name: Build GCC in Docker
         run: |
           sudo timedatectl set-timezone Asia/Shanghai
           timedatectl status
@@ -310,16 +317,16 @@ jobs:
           export size_kb=$(du -k opt_nginx.zip | cut -f1)
           tree ${{ needs.before_build.outputs.GCC_BUILD_PREFIX }}
 
-      - name: Upload Nginx package
+      - name: Upload GCC package
         uses: actions/upload-artifact@v4
         with:
           name: nginx-centos7-${{ needs.before_build.outputs.NGINX_BUILD_VERSION }}
           path: |
-            ${{ github.workspace }}/**/*.zip
+            ${{ github.workspace }}/*.zip
        
 
   publish-release:
-      needs: [build-arm64-tc,build-x86-tc]
+      needs: [build-arm64-tc,build-x86-tc,build-in-centos7]
       runs-on: ubuntu-latest
 
       steps:
@@ -333,7 +340,7 @@ jobs:
           run: echo "TAG_NAME='$(date -u +%d%m%Y)'" >> $GITHUB_ENV
         - name: Create Release
           run: |
-            gh release create ${{ env.TAG_NAME }} -F aarch64-tarball/gcc-version */*.xz */*.zip
+            gh release create ${{ env.TAG_NAME }} -F aarch64-tarball/gcc-version */*.zip
 
   send-day:
     needs: [publish-release]
