@@ -7,6 +7,12 @@ on:
     - cron: '0 0 * * 0,4'
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
+    inputs:
+      buildPrefix:
+        description: 'GCC build prefix'
+        type: string
+        default: "/opt/gcc"
+        required: false
 env:
       # GITHUB_EMAIL: ${{ secrets.EMAIL }}
       # GITHUB_TOKEN: ${{ secrets.API_TOKEN_GITHUB }}
@@ -15,6 +21,23 @@ env:
       CHAT_ID: ${{ secrets.CHAT_ID }}
 
 jobs:
+  before_build:
+    runs-on: [ ubuntu-latest ]
+    outputs:
+      GCC_BUILD_VERSION: ${{ steps.get.outputs.GCC_BUILD_VERSION }}
+      GCC_BUILD_PREFIX: ${{ steps.get.outputs.GCC_BUILD_PREFIX }}
+    # https://docs.github.com/zh/actions/writing-workflows/choosing-what-your-workflow-does/passing-information-between-jobs#%E7%A4%BA%E4%BE%8B%E5%AE%9A%E4%B9%89%E4%BD%9C%E4%B8%9A%E7%9A%84%E8%BE%93%E5%87%BA  
+    steps:
+      - name: Get buildPrefix
+        id: get
+        run: |
+          curl -sLo ver "https://gcc.gnu.org/git/?p=gcc.git;a=blob_plain;f=gcc/BASE-VER"
+          export version=$(cat BASE-VER)
+          echo "GCC_BUILD_VERSION=${version}" >> "$GITHUB_OUTPUT"
+          export build_prefix="${{ github.event.inputs.buildPrefix }}"
+          if [ "${{ github.event.inputs.buildPrefix }}" == "" ]; then build_prefix="/opt/gcc"; fi
+          echo "GCC_BUILD_PREFIX=${build_prefix}" >> "$GITHUB_OUTPUT"
+
   build-arm64-tc:
     runs-on: ubuntu-latest
 
@@ -93,6 +116,207 @@ jobs:
        name: x86-tarball
        path: |
          *.xz
+  build-in-centos7:
+    runs-on: ubuntu-latest
+    needs: before_build
+
+    steps:
+      - name: Checkout v4
+        uses: actions/checkout@v4
+
+      - name: Create build script
+        run: |
+          set -xe
+          cat << 'EOF' > build.sh
+          #!/bin/bash
+          set -xe
+          echo 'LANG=zh_CN.UTF-8' >> /etc/environment
+          echo 'LANGUAGE=zh_CN.UTF-8' >> /etc/environment
+          echo 'LC_ALL=zh_CN.UTF-8' >> /etc/environment
+          echo 'LC_CTYPE=zh_CN.UTF-8' >> /etc/environment
+          curl -o /etc/yum.repos.d/CentOS-Base.repo https://mirrors.aliyun.com/repo/Centos-7.repo
+          curl -o /etc/yum.repos.d/epel.repo https://mirrors.aliyun.com/repo/epel-7.repo
+          yum clean all
+          yum makecache
+          yum install -y epel-release
+          ls -lh /etc/yum.repos.d/
+
+          echo "[buildlogs-cdn-centos-x86_64]" > /etc/yum.repos.d/centos7-devtoolset-12.repo
+          echo "name=devtoolset-12" >> /etc/yum.repos.d/centos7-devtoolset-12.repo
+          echo "baseurl=https://buildlogs.cdn.centos.org/c7-devtoolset-12.x86_64" >> /etc/yum.repos.d/centos7-devtoolset-12.repo
+          echo "gpgcheck=0" >> /etc/yum.repos.d/centos7-devtoolset-12.repo
+          echo "enabled=1" >> /etc/yum.repos.d/centos7-devtoolset-12.repo
+          yum -y update
+          yum -y install devtoolset-12 --nogpgcheck
+          scl enable devtoolset-12 bash
+          source /opt/rh/devtoolset-12/enable
+          gcc -v
+          make -v
+
+          yum -y install tzdata
+          ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
+          echo 'Asia/Shanghai' > /etc/timezone
+          yum update -y
+          yum install -y gcc gcc-c++ gmp-devel mpfr-devel libmpc-devel texinfo wget bzip2
+          yum install -y pcre-devel zlib-devel make git wget sed perl-IPC-Cmd GeoIP GeoIP-devel zip systemd autoconf automake libtool
+          yum install -y perl-Test-Simple perl-FindBin perl-IPC-Cmd perl-Text-Template perl-File-Compare perl-File-Copy perl-Data-Dumper
+
+
+          # TODO: Add more dynamic option handling
+          while getopts a: flag; do
+            case "${flag}" in
+              a) arch=${OPTARG} ;;
+              *) echo "Invalid argument passed" && exit 1 ;;
+            esac
+          done
+
+          # TODO: Better target handling
+          case "${arch}" in
+            "arm") TARGET="arm-eabi" ;;
+            "arm64") TARGET="aarch64-elf" ;;
+            "arm64gnu") TARGET="aarch64-linux-gnu" ;;
+            "x86") TARGET="x86_64-elf" ;;
+          esac
+          # Declare the number of jobs to run simultaneously
+          JOBS=$(nproc --all)
+
+          export WORK_DIR="$PWD"
+          export PREFIX="$WORK_DIR/gcc-${arch}"
+          export PATH="$PREFIX/bin:/usr/bin/core_perl:$PATH"
+          export OPT_FLAGS="-flto -flto-compression-level=10 -O3 -pipe -ffunction-sections -fdata-sections"
+          rm -rf "$WORK_DIR"/{binutils,build-binutils,build-gcc,gcc}
+
+          echo "Downloading Pre-requisites"
+          echo "Cloning binutils"
+          git clone git://sourceware.org/git/binutils-gdb.git -b master binutils --depth=1
+          sed -i '/^development=/s/true/false/' binutils/bfd/development.sh
+          echo "Cloned binutils!"
+          echo "Cloning GCC"
+          git clone git://gcc.gnu.org/git/gcc.git -b master gcc --depth=1
+          cd "${WORK_DIR}"
+          echo "Downloaded prerequisites!"
+
+          cd "${WORK_DIR}"
+          echo "Building Binutils"
+          mkdir build-binutils
+          cd build-binutils
+          env CFLAGS="$OPT_FLAGS" CXXFLAGS="$OPT_FLAGS" \
+            ../binutils/configure --target="$TARGET" \
+            --disable-docs \
+            --disable-gdb \
+            --disable-nls \
+            --disable-werror \
+            --enable-gold \
+            --prefix="$PREFIX" \
+            --with-pkgversion="Eva Binutils" \
+            --with-sysroot
+          make -j"$JOBS"
+          make install -j"$JOBS"
+          cd ../
+          echo "Built Binutils, proceeding to next step...."
+
+          cd "${WORK_DIR}"
+          echo "Building GCC"
+          cd gcc
+          ./contrib/download_prerequisites
+          echo "Bleeding Edge" > gcc/DEV-PHASE
+          cd ../
+          mkdir build-gcc
+          cd build-gcc
+          env CFLAGS="$OPT_FLAGS" CXXFLAGS="$OPT_FLAGS" \
+            ../gcc/configure --target="$TARGET" \
+            --with-bugurl=https://github.com/indiff/gcc-build \
+            --disable-decimal-float \
+            --disable-docs \
+            --disable-gcov \
+            --disable-libffi \
+            --disable-libgomp \
+            --disable-libmudflap \
+            --disable-libquadmath \
+            --disable-libstdcxx-pch \
+            --disable-nls \
+            --disable-shared \
+            --enable-bootstrap \
+            --enable-multilib \
+            --enable-gnu-unique-object \
+            --enable-plugin  \
+            --enable-gnu-indirect-functio \
+            --enable-initfini-array \
+            --enable-default-ssp \
+            --enable-languages=c,c++,fortran,lto \
+            --enable-threads=posix \
+            --prefix="$PREFIX" \
+            --with-gnu-as \
+            --with-gnu-ld \
+            --with-headers="/usr/include" \
+            --with-linker-hash-style=gnu \
+            --with-newlib \
+            --with-pkgversion="Eva GCC" \
+            --with-sysroot
+
+          make all-gcc -j"$JOBS"
+          make all-target-libgcc -j"$JOBS"
+          make install-gcc -j"$JOBS"
+          make install-target-libgcc -j"$JOBS"
+          echo "Built GCC!"
+
+          cd "${WORK_DIR}"
+          CUR_DIR=$(pwd)
+          X86S=$(which strip)
+          A64S=$(which aarch64-linux-gnu-strip)
+          A32S=$(which arm-linux-gnu-strip)
+
+          find "$CUR_DIR" -type f -exec file {} \; >.file-idx
+
+          grep "x86" .file-idx |
+            grep "not strip" | grep -v "relocatable" |
+            tr ':' ' ' | awk '{print $1}' |
+            while read -r file; do $X86S "$file"; done
+
+          grep "ARM" .file-idx | grep "aarch64" |
+            grep "not strip" | grep -v "relocatable" |
+            tr ':' ' ' | awk '{print $1}' |
+            while read -r file; do $A64S "$file"; done
+
+          grep "ARM" .file-idx | grep "32.bit" |
+            grep "not strip" | grep -v "relocatable" |
+            tr ':' ' ' | awk '{print $1}' |
+            while read -r file; do $A32S "$file"; done
+
+          rm ".file-idx"
+
+          cd gcc-x86
+          zip -r -q -9 /workspace/centos7-eva-gcc-x86-$(/bin/date -u '+%d%m%Y').zip .
+          # get glibc Version
+          echo $(cut -d- -f2 <<<$(rpm -q glibc)) >> /workspace/glibc_version.txt
+          EOF
+          chmod +x build.sh
+          
+      # - name: Upload build.sh
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: build.sh
+      #     path: build.sh     
+
+      - name: Build Nginx in Docker
+        run: |
+          sudo timedatectl set-timezone Asia/Shanghai
+          timedatectl status
+          sudo mkdir -p ${{ needs.before_build.outputs.GCC_BUILD_PREFIX }}
+          sudo chown -R 777 ${{ needs.before_build.outputs.GCC_BUILD_PREFIX }}
+          docker run --cpus="$(nproc --all)" -u root --rm -v ${{ github.workspace }}:/workspace -v ${{ needs.before_build.outputs.GCC_BUILD_PREFIX }}:${{ needs.before_build.outputs.GCC_BUILD_PREFIX }} -w /workspace centos:7 /bin/bash -c "/workspace/build.sh"
+          export build_timestamp="$(date +'%Y%m%d_%H%M')"
+          export glib_version="$(cat glibc_version.txt)"
+          export size_kb=$(du -k opt_nginx.zip | cut -f1)
+          tree ${{ needs.before_build.outputs.GCC_BUILD_PREFIX }}
+
+      - name: Upload Nginx package
+        uses: actions/upload-artifact@v4
+        with:
+          name: nginx-centos7-${{ needs.before_build.outputs.NGINX_BUILD_VERSION }}
+          path: |
+            ${{ github.workspace }}/**/*.zip
+       
 
   publish-release:
       needs: [build-arm64-tc,build-x86-tc]
@@ -109,7 +333,7 @@ jobs:
           run: echo "TAG_NAME='$(date -u +%d%m%Y)'" >> $GITHUB_ENV
         - name: Create Release
           run: |
-            gh release create ${{ env.TAG_NAME }} -F aarch64-tarball/gcc-version */*.xz
+            gh release create ${{ env.TAG_NAME }} -F aarch64-tarball/gcc-version */*.xz */*.zip
 
   send-day:
     needs: [publish-release]
