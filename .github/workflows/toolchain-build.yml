@@ -14,11 +14,11 @@ on:
         default: "/opt/gcc"
         required: false
 env:
-      # GITHUB_EMAIL: ${{ secrets.EMAIL }}
-      # GITHUB_TOKEN: ${{ secrets.API_TOKEN_GITHUB }}
-      # GITHUB_USER: ${{ secrets.USERNAME }}
-      BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-      CHAT_ID: ${{ secrets.CHAT_ID }}
+  # GITHUB_EMAIL: ${{ secrets.EMAIL }}
+  # GITHUB_TOKEN: ${{ secrets.API_TOKEN_GITHUB }}
+  # GITHUB_USER: ${{ secrets.USERNAME }}
+  BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+  CHAT_ID: ${{ secrets.CHAT_ID }}
 
 jobs:
   before_build:
@@ -270,7 +270,7 @@ jobs:
           cd "${WORK_DIR}"
           echo "Downloaded prerequisites!"
 
-          curl -s -X POST "https://api.telegram.org/bot${env.BOT_TOKEN}/sendMessage" -d chat_id="${env.CHAT_ID}" -d "disable_web_page_preview=true" -d "parse_mode=html" -d text="<b>Starting centos7 GCC Build</b>"
+          curl -s -X POST "https://api.telegram.org/bot${{ env.BOT_TOKEN }}/sendMessage" -d chat_id="${{ env.CHAT_ID }}" -d "disable_web_page_preview=true" -d "parse_mode=html" -d text="<b>Starting centos7 GCC Build</b>"
           cd "${WORK_DIR}"
           echo "Building Binutils"
           mkdir build-binutils
@@ -364,7 +364,7 @@ jobs:
           cd "${WORK_DIR}"
           git clone https://github.com/llvm/llvm-project.git -b main "${WORK_DIR}/llvm-project" --depth=1
 
-          curl -s -X POST "https://api.telegram.org/bot${env.BOT_TOKEN}/sendMessage" -d chat_id="${env.CHAT_ID}" -d "disable_web_page_preview=true" -d "parse_mode=html" -d text="<b>Starting centos7 LLD Build</b>"
+          curl -s -X POST "https://api.telegram.org/bot${{ env.BOT_TOKEN }}/sendMessage" -d chat_id="${{ env.CHAT_ID }}" -d "disable_web_page_preview=true" -d "parse_mode=html" -d text="<b>Starting centos7 LLD Build</b>"
           cd "${WORK_DIR}"
           echo ">"
           echo "> Building LLD"
@@ -535,6 +535,14 @@ jobs:
           yum install -y https://dl.fedoraproject.org/pub/archive/epel/6/x86_64/Packages/e/epel-release-6-8.noarch.rpm
           ls -lh /etc/yum.repos.d/
 
+          yum -y install tzdata
+          ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
+          echo 'Asia/Shanghai' > /etc/timezone
+          yum update -y
+          yum install -y flex bison ncurses-dev texinfo gcc gperf patch libtool automake g++ libncurses5-dev gawk subversion expat libexpat1-dev binutils-dev bc libcap-dev autoconf libgmp-dev build-essential pkg-config libmpc-dev libmpfr-dev autopoint gettext txt2man liblzma-dev libssl-dev libz-dev mercurial wget tar cmake zstd ninja-build lz4 liblz4-tool liblz4-dev lzma libc6-dev-i386 ncurses-devel expat-devel binutils-devel gmp-devel make pkgconfig mpfr-devel gettext-devel zlib-devel lz4-devel xz xz-devel glibc-devel.i686 which clang lld bzip2 glibc glibc-devel
+          yum install -y pcre-devel zlib-devel make git wget sed perl-IPC-Cmd GeoIP GeoIP-devel zip systemd autoconf automake libtool
+          yum install -y perl-Test-Simple perl-FindBin perl-IPC-Cmd perl-Text-Template perl-File-Compare perl-File-Copy perl-Data-Dumper
+
           echo "[centos-sclo-rh]" > /etc/yum.repos.d/centos6-devtoolset.repo
           echo "name=CentOS-6 - SCLo rh" >> /etc/yum.repos.d/centos6-devtoolset.repo
           echo "baseurl=https://vault.centos.org/6.10/sclo/x86_64/rh" >> /etc/yum.repos.d/centos6-devtoolset.repo
@@ -545,15 +553,6 @@ jobs:
           source /opt/rh/devtoolset-9/enable
           gcc -v
           make -v
-
-          yum -y install tzdata
-          ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
-          echo 'Asia/Shanghai' > /etc/timezone
-          yum update -y
-          yum install -y flex bison ncurses-dev texinfo gcc gperf patch libtool automake g++ libncurses5-dev gawk subversion expat libexpat1-dev binutils-dev bc libcap-dev autoconf libgmp-dev build-essential pkg-config libmpc-dev libmpfr-dev autopoint gettext txt2man liblzma-dev libssl-dev libz-dev mercurial wget tar cmake zstd ninja-build lz4 liblz4-tool liblz4-dev lzma libc6-dev-i386 ncurses-devel expat-devel binutils-devel gmp-devel make pkgconfig mpfr-devel gettext-devel zlib-devel lz4-devel xz xz-devel glibc-devel.i686 which clang lld bzip2 glibc glibc-devel
-          yum install -y pcre-devel zlib-devel make git wget sed perl-IPC-Cmd GeoIP GeoIP-devel zip systemd autoconf automake libtool
-          yum install -y perl-Test-Simple perl-FindBin perl-IPC-Cmd perl-Text-Template perl-File-Compare perl-File-Copy perl-Data-Dumper
-
 
           # TODO: Add more dynamic option handling
           while getopts a: flag; do
@@ -590,7 +589,7 @@ jobs:
           echo "Downloaded prerequisites!"
           
           
-          curl -s -X POST "https://api.telegram.org/bot${BOT_TOKEN}/sendMessage" -d chat_id="${CHAT_ID}" -d "disable_web_page_preview=true" -d "parse_mode=html" -d text="<b>Starting centos6 GCC Build</b>"
+          curl -s -X POST "https://api.telegram.org/bot${{ env.BOT_TOKEN }}/sendMessage" -d chat_id="${{ env.CHAT_ID }}" -d "disable_web_page_preview=true" -d "parse_mode=html" -d text="<b>Starting centos6 GCC Build</b>"
           cd "${WORK_DIR}"
           echo "Building Binutils"
           mkdir build-binutils
@@ -686,7 +685,7 @@ jobs:
           git clone https://github.com/llvm/llvm-project.git -b main "${WORK_DIR}/llvm-project" --depth=1
 
 
-          curl -s -X POST "https://api.telegram.org/bot${BOT_TOKEN}/sendMessage" -d chat_id="${CHAT_ID}" -d "disable_web_page_preview=true" -d "parse_mode=html" -d text="<b>Starting centos7 LLD Build</b>"
+          curl -s -X POST "https://api.telegram.org/bot${{ env.BOT_TOKEN }}/sendMessage" -d chat_id="${{ env.CHAT_ID }}" -d "disable_web_page_preview=true" -d "parse_mode=html" -d text="<b>Starting centos6 LLD Build</b>"
           cd "${WORK_DIR}"
           echo ">"
           echo "> Building LLD"
@@ -819,5 +818,5 @@ jobs:
     steps:
       - name: Send telegram messages
         run: |
-          curl -s -X POST "https://api.telegram.org/bot${env.BOT_TOKEN}/sendMessage" -d chat_id="${env.CHAT_ID}" -d "disable_web_page_preview=true" -d "parse_mode=html" -d text="It's $(date +%A) my dudes!"
-          curl -s -X POST "https://api.telegram.org/bot${BOT_TOKEN}/sendMessage" -d chat_id="${CHAT_ID}" -d "disable_web_page_preview=true" -d "parse_mode=html" -d text="The year is $(date +'%j' | awk '{printf "%.2f\n", $0 / 365.25 * 100}')% complete. Time is flying."
+          curl -s -X POST "https://api.telegram.org/bot${{ env.BOT_TOKEN }}/sendMessage" -d chat_id="${{ env.CHAT_ID }}" -d "disable_web_page_preview=true" -d "parse_mode=html" -d text="It's $(date +%A) my dudes!"
+          curl -s -X POST "https://api.telegram.org/bot${{ env.BOT_TOKEN }}/sendMessage" -d chat_id="${{ env.CHAT_ID }}" -d "disable_web_page_preview=true" -d "parse_mode=html" -d text="The year is $(date +'%j' | awk '{printf "%.2f\n", $0 / 365.25 * 100}')% complete. Time is flying."
