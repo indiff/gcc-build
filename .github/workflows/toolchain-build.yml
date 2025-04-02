@@ -143,14 +143,13 @@ jobs:
           curl -o /etc/yum.repos.d/CentOS-Base.repo https://mirrors.aliyun.com/repo/Centos-7.repo
           curl -o /etc/yum.repos.d/epel.repo https://mirrors.aliyun.com/repo/epel-7.repo
 
-          # 定义镜像列表
+          # 定义镜像列表  "http://mirrors.aliyun.com/centos-vault/7.9.2009"
           MIRRORS=(
               "http://mirror.rackspace.com/centos-vault/7.9.2009/"
               "https://mirror.nsc.liu.se/centos-store/7.9.2009/"
               "https://linuxsoft.cern.ch/centos-vault/7.9.2009/"
               "https://archive.kernel.org/centos-vault/7.9.2009/"
               "https://vault.centos.org/7.9.2009/"
-              "http://mirrors.aliyun.com/centos-vault/7.9.2009"
           )
 
           # 初始化变量
