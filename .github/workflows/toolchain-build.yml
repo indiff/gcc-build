@@ -140,22 +140,71 @@ jobs:
           echo 'LANGUAGE=zh_CN.UTF-8' >> /etc/environment
           echo 'LC_ALL=zh_CN.UTF-8' >> /etc/environment
           echo 'LC_CTYPE=zh_CN.UTF-8' >> /etc/environment
-          curl -o /etc/yum.repos.d/CentOS-Base.repo https://mirrors.aliyun.com/repo/Centos-7.repo
-          curl -o /etc/yum.repos.d/epel.repo https://mirrors.aliyun.com/repo/epel-7.repo
+          # curl -o /etc/yum.repos.d/CentOS-Base.repo https://mirrors.aliyun.com/repo/Centos-7.repo
+          # curl -o /etc/yum.repos.d/epel.repo https://mirrors.aliyun.com/repo/epel-7.repo
+
+          # 定义镜像列表
+          MIRRORS=(
+              "http://mirror.rackspace.com/centos-vault/7.9.2009/"
+              "https://mirror.nsc.liu.se/centos-store/7.9.2009/"
+              "https://us-east.mirror.aws.centos.org/7/"
+              "https://linuxsoft.cern.ch/centos-vault/7.9.2009/"
+              "https://archive.kernel.org/centos-vault/7.9.2009/"
+              "https://vault.centos.org/7.9.2009/"
+              "http://mirrors.aliyun.com/centos-vault/7.9.2009"
+          )
+
+          # 初始化变量
+          FASTEST_MIRROR=""
+          FASTEST_TIME=99999
+
+          echo "Testing mirror response times..."
+
+          # 测试每个镜像的响应时间
+          for MIRROR in "${MIRRORS[@]}"; do
+              echo -n "Testing $MIRROR ... "
+              # 使用 curl 测试响应时间
+              TIME=$(curl -o /dev/null -s -w "%{time_total}\n" "$MIRROR")
+              echo "$TIME seconds"
+
+              # 比较响应时间，记录最快的镜像
+              if (( $(echo "$TIME < $FASTEST_TIME" | bc -l) )); then
+                  FASTEST_TIME=$TIME
+                  FASTEST_MIRROR=$MIRROR
+              fi
+          done
+
+          # 输出最快的镜像
+          echo "-----------------------------------"
+          echo "Fastest mirror: $FASTEST_MIRROR"
+          echo "Response time: $FASTEST_TIME seconds"
+
+          echo "[CentOS-Base]" > /etc/yum.repos.d/CentOS-Base.repo
+          echo "name=CentOS-Base" >> /etc/yum.repos.d/CentOS-Base.repo
+          echo "baseurl=$FASTEST_MIRROR" >> /etc/yum.repos.d/CentOS-Base.repo
+          echo "gpgcheck=0" >> /etc/yum.repos.d/CentOS-Base.repo
+
           yum clean all
           yum makecache
           yum install -y epel-release
           ls -lh /etc/yum.repos.d/
 
-          echo "[buildlogs-cdn-centos-x86_64]" > /etc/yum.repos.d/centos7-devtoolset-12.repo
-          echo "name=devtoolset-12" >> /etc/yum.repos.d/centos7-devtoolset-12.repo
-          echo "baseurl=https://buildlogs.cdn.centos.org/c7-devtoolset-12.x86_64" >> /etc/yum.repos.d/centos7-devtoolset-12.repo
-          echo "gpgcheck=0" >> /etc/yum.repos.d/centos7-devtoolset-12.repo
-          echo "enabled=1" >> /etc/yum.repos.d/centos7-devtoolset-12.repo
-          yum -y update
-          yum -y install devtoolset-12 --nogpgcheck
-          scl enable devtoolset-12 bash
-          source /opt/rh/devtoolset-12/enable
+          # echo "[buildlogs-cdn-centos-x86_64]" > /etc/yum.repos.d/centos7-devtoolset-12.repo
+          # echo "name=devtoolset-12" >> /etc/yum.repos.d/centos7-devtoolset-12.repo
+          # echo "baseurl=https://buildlogs.cdn.centos.org/c7-devtoolset-12.x86_64" >> /etc/yum.repos.d/centos7-devtoolset-12.repo
+          # echo "gpgcheck=0" >> /etc/yum.repos.d/centos7-devtoolset-12.repo
+          # echo "enabled=1" >> /etc/yum.repos.d/centos7-devtoolset-12.repo
+          # yum -y update
+          # yum -y install devtoolset-12 --nogpgcheck
+          # scl enable devtoolset-12 bash
+          # source /opt/rh/devtoolset-12/enable
+          # gcc -v
+          # make -v
+
+
+          yum -y install devtoolset-10 --nogpgcheck
+          scl enable devtoolset-10 bash
+          source /opt/rh/devtoolset-10/enable
           gcc -v
           make -v
 
@@ -163,8 +212,7 @@ jobs:
           ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
           echo 'Asia/Shanghai' > /etc/timezone
           yum update -y
-          yum install -y flex bison ncurses-dev texinfo gcc gperf patch libtool automake g++ libncurses5-dev gawk subversion expat libexpat1-dev binutils-dev bc libcap-dev autoconf libgmp-dev build-essential pkg-config libmpc-dev libmpfr-dev autopoint gettext txt2man liblzma-dev libssl-dev libz-dev mercurial wget tar cmake zstd ninja-build lz4 liblz4-tool liblz4-dev lzma libc6-dev-i386 ncurses-devel gcc-c++ ncurses-devel gawk subversion expat-devel binutils-devel libcap-devel autoconf gmp-devel make pkgconfig mpfr-devel libmpc-devel gettext lzma gettext-devel libssl-devel zlib-devel mercurial wget tar cmake zstd ninja-build lz4 lz4-devel xz xz-devel glibc-devel.i686
-          yum install -y gcc gcc-c++ gmp-devel mpfr-devel libmpc-devel texinfo wget bzip2 bison glibc glibc-devel
+          yum install -y flex bison ncurses-dev texinfo gcc gperf patch libtool automake g++ libncurses5-dev gawk subversion expat libexpat1-dev binutils-dev bc libcap-dev autoconf libgmp-dev build-essential pkg-config libmpc-dev libmpfr-dev autopoint gettext txt2man liblzma-dev libssl-dev libz-dev mercurial wget tar cmake zstd ninja-build lz4 liblz4-tool liblz4-dev lzma libc6-dev-i386 ncurses-devel expat-devel binutils-devel gmp-devel make pkgconfig mpfr-devel gettext-devel zlib-devel lz4-devel xz xz-devel glibc-devel.i686 which clang lld bzip2 glibc glibc-devel
           yum install -y pcre-devel zlib-devel make git wget sed perl-IPC-Cmd GeoIP GeoIP-devel zip systemd autoconf automake libtool
           yum install -y perl-Test-Simple perl-FindBin perl-IPC-Cmd perl-Text-Template perl-File-Compare perl-File-Copy perl-Data-Dumper
 
