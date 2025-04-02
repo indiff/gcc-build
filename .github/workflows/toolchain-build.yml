@@ -180,23 +180,23 @@ jobs:
 
           echo "[base]" > /etc/yum.repos.d/CentOS-Base.repo
           echo "name=CentOS-Base" >> /etc/yum.repos.d/CentOS-Base.repo
-          echo "baseurl=${FASTEST_MIRROR}os/$releasever/$basearch/" >> /etc/yum.repos.d/CentOS-Base.repo
+          echo "baseurl=${FASTEST_MIRROR}os/x86_64/$basearch/" >> /etc/yum.repos.d/CentOS-Base.repo
           echo "gpgcheck=0" >> /etc/yum.repos.d/CentOS-Base.repo
           echo "[update]"  >> /etc/yum.repos.d/CentOS-Base.repo
           echo "name=CentOS-update" >> /etc/yum.repos.d/CentOS-Base.repo
-          echo "baseurl=${FASTEST_MIRROR}update/$releasever/$basearch/" >> /etc/yum.repos.d/CentOS-Base.repo
+          echo "baseurl=${FASTEST_MIRROR}update/x86_64/$basearch/" >> /etc/yum.repos.d/CentOS-Base.repo
           echo "gpgcheck=0" >> /etc/yum.repos.d/CentOS-Base.repo
           echo "[extras]"  >> /etc/yum.repos.d/CentOS-Base.repo
           echo "name=CentOS-extras" >> /etc/yum.repos.d/CentOS-Base.repo
-          echo "baseurl=${FASTEST_MIRROR}extras/$releasever/$basearch/" >> /etc/yum.repos.d/CentOS-Base.repo
+          echo "baseurl=${FASTEST_MIRROR}extras/x86_64/$basearch/" >> /etc/yum.repos.d/CentOS-Base.repo
           echo "gpgcheck=0" >> /etc/yum.repos.d/CentOS-Base.repo
           echo "[centosplus]"  >> /etc/yum.repos.d/CentOS-Base.repo
           echo "name=CentOS-centosplus" >> /etc/yum.repos.d/CentOS-Base.repo
-          echo "baseurl=${FASTEST_MIRROR}centosplus/$releasever/$basearch/" >> /etc/yum.repos.d/CentOS-Base.repo
+          echo "baseurl=${FASTEST_MIRROR}centosplus/x86_64/$basearch/" >> /etc/yum.repos.d/CentOS-Base.repo
           echo "gpgcheck=0" >> /etc/yum.repos.d/CentOS-Base.repo
           echo "[contrib]"  >> /etc/yum.repos.d/CentOS-Base.repo
           echo "name=CentOS-contrib" >> /etc/yum.repos.d/CentOS-Base.repo
-          echo "baseurl=${FASTEST_MIRROR}contrib/$releasever/$basearch/" >> /etc/yum.repos.d/CentOS-Base.repo
+          echo "baseurl=${FASTEST_MIRROR}contrib/x86_64/$basearch/" >> /etc/yum.repos.d/CentOS-Base.repo
           echo "gpgcheck=0" >> /etc/yum.repos.d/CentOS-Base.repo
 
           yum clean all
