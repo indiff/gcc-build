@@ -147,7 +147,6 @@ jobs:
           MIRRORS=(
               "http://mirror.rackspace.com/centos-vault/7.9.2009/"
               "https://mirror.nsc.liu.se/centos-store/7.9.2009/"
-              "https://us-east.mirror.aws.centos.org/7/"
               "https://linuxsoft.cern.ch/centos-vault/7.9.2009/"
               "https://archive.kernel.org/centos-vault/7.9.2009/"
               "https://vault.centos.org/7.9.2009/"
