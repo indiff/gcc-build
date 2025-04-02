@@ -144,61 +144,60 @@ jobs:
           curl -o /etc/yum.repos.d/epel.repo https://mirrors.aliyun.com/repo/epel-7.repo
 
           # 定义镜像列表
-          # MIRRORS=(
-          #     "http://mirror.rackspace.com/centos-vault/7.9.2009/"
-          #     "https://mirror.nsc.liu.se/centos-store/7.9.2009/"
-          #     "https://linuxsoft.cern.ch/centos-vault/7.9.2009/"
-          #     "https://archive.kernel.org/centos-vault/7.9.2009/"
-          #     "https://vault.centos.org/7.9.2009/"
-          #     "http://mirrors.aliyun.com/centos-vault/7.9.2009"
-          # )
+          MIRRORS=(
+              "http://mirror.rackspace.com/centos-vault/7.9.2009/"
+              "https://mirror.nsc.liu.se/centos-store/7.9.2009/"
+              "https://linuxsoft.cern.ch/centos-vault/7.9.2009/"
+              "https://archive.kernel.org/centos-vault/7.9.2009/"
+              "https://vault.centos.org/7.9.2009/"
+              "http://mirrors.aliyun.com/centos-vault/7.9.2009"
+          )
 
-          # # 初始化变量
-          # FASTEST_MIRROR=""
-          # FASTEST_TIME=99999
+          # 初始化变量
+          FASTEST_MIRROR=""
+          FASTEST_TIME=99999
 
-          # echo "Testing mirror response times..."
+          echo "Testing mirror response times..."
 
-          # # 测试每个镜像的响应时间
-          # for MIRROR in "${MIRRORS[@]}"; do
-          #     echo -n "Testing $MIRROR ... "
-          #     # 使用 curl 测试响应时间
-          #     TIME=$(curl -o /dev/null -s -w "%{time_total}\n" "$MIRROR")
-          #     echo "$TIME seconds"
+          # 测试每个镜像的响应时间
+          for MIRROR in "${MIRRORS[@]}"; do
+              echo -n "Testing $MIRROR ... "
+              # 使用 curl 测试响应时间
+              TIME=$(curl -o /dev/null -s -w "%{time_total}\n" "$MIRROR")
+              echo "$TIME seconds"
 
-          #     # 比较响应时间，记录最快的镜像
-          #     if (( $(echo "$TIME < $FASTEST_TIME" | bc -l) )); then
-          #         FASTEST_TIME=$TIME
-          #         FASTEST_MIRROR=$MIRROR
-          #     fi
-          # done
+              # 比较响应时间，记录最快的镜像
+              if (( $(echo "$TIME < $FASTEST_TIME" | bc -l) )); then
+                  FASTEST_TIME=$TIME
+                  FASTEST_MIRROR=$MIRROR
+              fi
+          done
 
-          # # 输出最快的镜像
-          # echo "-----------------------------------"
-          # echo "Fastest mirror: $FASTEST_MIRROR"
-          # echo "Response time: $FASTEST_TIME seconds"
+          # 输出最快的镜像
+          echo "-----------------------------------"
+          echo "Fastest mirror: $FASTEST_MIRROR"
+          echo "Response time: $FASTEST_TIME seconds"
 
-          # echo "[base]" > /etc/yum.repos.d/CentOS-Base.repo
-          # echo "name=CentOS-Base" >> /etc/yum.repos.d/CentOS-Base.repo
-          # echo "baseurl=${FASTEST_MIRROR}os/x86_64/$basearch/" >> /etc/yum.repos.d/CentOS-Base.repo
-          # echo "gpgcheck=0" >> /etc/yum.repos.d/CentOS-Base.repo
-          # echo "[updates]"  >> /etc/yum.repos.d/CentOS-Base.repo
-          # echo "name=CentOS-updates" >> /etc/yum.repos.d/CentOS-Base.repo
-          # echo "baseurl=${FASTEST_MIRROR}updates/x86_64/$basearch/" >> /etc/yum.repos.d/CentOS-Base.repo
-          # echo "gpgcheck=0" >> /etc/yum.repos.d/CentOS-Base.repo
-          # echo "[extras]"  >> /etc/yum.repos.d/CentOS-Base.repo
-          # echo "name=CentOS-extras" >> /etc/yum.repos.d/CentOS-Base.repo
-          # echo "baseurl=${FASTEST_MIRROR}extras/x86_64/$basearch/" >> /etc/yum.repos.d/CentOS-Base.repo
-          # echo "gpgcheck=0" >> /etc/yum.repos.d/CentOS-Base.repo
-          # echo "[centosplus]"  >> /etc/yum.repos.d/CentOS-Base.repo
-          # echo "name=CentOS-centosplus" >> /etc/yum.repos.d/CentOS-Base.repo
-          # echo "baseurl=${FASTEST_MIRROR}centosplus/x86_64/$basearch/" >> /etc/yum.repos.d/CentOS-Base.repo
-          # echo "gpgcheck=0" >> /etc/yum.repos.d/CentOS-Base.repo
+          echo "[base]" > /etc/yum.repos.d/CentOS-Base.repo
+          echo "name=CentOS-Base" >> /etc/yum.repos.d/CentOS-Base.repo
+          echo "baseurl=${FASTEST_MIRROR}os/x86_64/$basearch/" >> /etc/yum.repos.d/CentOS-Base.repo
+          echo "gpgcheck=0" >> /etc/yum.repos.d/CentOS-Base.repo
+          echo "[updates]"  >> /etc/yum.repos.d/CentOS-Base.repo
+          echo "name=CentOS-updates" >> /etc/yum.repos.d/CentOS-Base.repo
+          echo "baseurl=${FASTEST_MIRROR}updates/x86_64/$basearch/" >> /etc/yum.repos.d/CentOS-Base.repo
+          echo "gpgcheck=0" >> /etc/yum.repos.d/CentOS-Base.repo
+          echo "[extras]"  >> /etc/yum.repos.d/CentOS-Base.repo
+          echo "name=CentOS-extras" >> /etc/yum.repos.d/CentOS-Base.repo
+          echo "baseurl=${FASTEST_MIRROR}extras/x86_64/$basearch/" >> /etc/yum.repos.d/CentOS-Base.repo
+          echo "gpgcheck=0" >> /etc/yum.repos.d/CentOS-Base.repo
+          echo "[centosplus]"  >> /etc/yum.repos.d/CentOS-Base.repo
+          echo "name=CentOS-centosplus" >> /etc/yum.repos.d/CentOS-Base.repo
+          echo "baseurl=${FASTEST_MIRROR}centosplus/x86_64/$basearch/" >> /etc/yum.repos.d/CentOS-Base.repo
+          echo "gpgcheck=0" >> /etc/yum.repos.d/CentOS-Base.repo
 
           yum clean all
           yum makecache
-          # yum install -y https://dl.fedoraproject.org/pub/archive/epel/7/x86_64/Packages/e/epel-release-7-14.noarch.rpm
-          yum install -y epel-release
+          yum install -y https://dl.fedoraproject.org/pub/archive/epel/7/x86_64/Packages/e/epel-release-7-14.noarch.rpm
           ls -lh /etc/yum.repos.d/
 
           # echo "[buildlogs-cdn-centos-x86_64]" > /etc/yum.repos.d/centos7-devtoolset-12.repo
@@ -213,6 +212,12 @@ jobs:
           # gcc -v
           # make -v
 
+          echo "[buildlogs-cdn-centos-x86_64]" > /etc/yum.repos.d/centos7-devtoolset-10.repo
+          echo "name=devtoolset-10" >> /etc/yum.repos.d/centos7-devtoolset-10.repo
+          echo "baseurl=https://buildlogs.cdn.centos.org/c7-devtoolset-10.x86_64" >> /etc/yum.repos.d/centos7-devtoolset-10.repo
+          echo "gpgcheck=0" >> /etc/yum.repos.d/centos7-devtoolset-10.repo
+          echo "enabled=1" >> /etc/yum.repos.d/centos7-devtoolset-10.repo
+          yum -y update
           yum -y install devtoolset-10 --nogpgcheck
           scl enable devtoolset-10 bash
           source /opt/rh/devtoolset-10/enable
