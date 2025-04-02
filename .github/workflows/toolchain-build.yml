@@ -178,9 +178,25 @@ jobs:
           echo "Fastest mirror: $FASTEST_MIRROR"
           echo "Response time: $FASTEST_TIME seconds"
 
-          echo "[CentOS-Base]" > /etc/yum.repos.d/CentOS-Base.repo
+          echo "[base]" > /etc/yum.repos.d/CentOS-Base.repo
           echo "name=CentOS-Base" >> /etc/yum.repos.d/CentOS-Base.repo
-          echo "baseurl=$FASTEST_MIRROR" >> /etc/yum.repos.d/CentOS-Base.repo
+          echo "baseurl=${FASTEST_MIRROR}os/$basearch/" >> /etc/yum.repos.d/CentOS-Base.repo
+          echo "gpgcheck=0" >> /etc/yum.repos.d/CentOS-Base.repo
+          echo "[update]"  >> /etc/yum.repos.d/CentOS-Base.repo
+          echo "name=CentOS-update" >> /etc/yum.repos.d/CentOS-Base.repo
+          echo "baseurl=${FASTEST_MIRROR}update/$basearch/" >> /etc/yum.repos.d/CentOS-Base.repo
+          echo "gpgcheck=0" >> /etc/yum.repos.d/CentOS-Base.repo
+          echo "[extras]"  >> /etc/yum.repos.d/CentOS-Base.repo
+          echo "name=CentOS-extras" >> /etc/yum.repos.d/CentOS-Base.repo
+          echo "baseurl=${FASTEST_MIRROR}extras/$basearch/" >> /etc/yum.repos.d/CentOS-Base.repo
+          echo "gpgcheck=0" >> /etc/yum.repos.d/CentOS-Base.repo
+          echo "[centosplus]"  >> /etc/yum.repos.d/CentOS-Base.repo
+          echo "name=CentOS-centosplus" >> /etc/yum.repos.d/CentOS-Base.repo
+          echo "baseurl=${FASTEST_MIRROR}centosplus/$basearch/" >> /etc/yum.repos.d/CentOS-Base.repo
+          echo "gpgcheck=0" >> /etc/yum.repos.d/CentOS-Base.repo
+          echo "[contrib]"  >> /etc/yum.repos.d/CentOS-Base.repo
+          echo "name=CentOS-contrib" >> /etc/yum.repos.d/CentOS-Base.repo
+          echo "baseurl=${FASTEST_MIRROR}contrib/$basearch/" >> /etc/yum.repos.d/CentOS-Base.repo
           echo "gpgcheck=0" >> /etc/yum.repos.d/CentOS-Base.repo
 
           yum clean all
