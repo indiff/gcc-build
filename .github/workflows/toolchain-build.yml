@@ -488,47 +488,27 @@ jobs:
               "https://vault.centos.org/6.10/"
           )
 
-          # 初始化变量
-          FASTEST_MIRROR=""
-          FASTEST_TIME=99999
-
-          echo "Testing mirror response times..."
-
-          # 测试每个镜像的响应时间
-          for MIRROR in "${MIRRORS[@]}"; do
-              echo -n "Testing $MIRROR ... "
-              # 使用 curl 测试响应时间
-              TIME=$(curl -o /dev/null -s -w "%{time_total}\n" "$MIRROR")
-              echo "$TIME seconds"
-
-              # 比较响应时间，记录最快的镜像
-              if (( $(echo "$TIME < $FASTEST_TIME" | bc -l) )); then
-                  FASTEST_TIME=$TIME
-                  FASTEST_MIRROR=$MIRROR
-              fi
-          done
-
-          # 输出最快的镜像
-          echo "-----------------------------------"
-          echo "Fastest mirror: $FASTEST_MIRROR"
-          echo "Response time: $FASTEST_TIME seconds"
-
-          echo "[base]" > /etc/yum.repos.d/CentOS-Base.repo
-          echo "name=CentOS-Base" >> /etc/yum.repos.d/CentOS-Base.repo
-          echo "baseurl=${FASTEST_MIRROR}os/x86_64/$basearch/" >> /etc/yum.repos.d/CentOS-Base.repo
-          echo "gpgcheck=0" >> /etc/yum.repos.d/CentOS-Base.repo
-          echo "[updates]"  >> /etc/yum.repos.d/CentOS-Base.repo
-          echo "name=CentOS-updates" >> /etc/yum.repos.d/CentOS-Base.repo
-          echo "baseurl=${FASTEST_MIRROR}updates/x86_64/$basearch/" >> /etc/yum.repos.d/CentOS-Base.repo
-          echo "gpgcheck=0" >> /etc/yum.repos.d/CentOS-Base.repo
-          echo "[extras]"  >> /etc/yum.repos.d/CentOS-Base.repo
-          echo "name=CentOS-extras" >> /etc/yum.repos.d/CentOS-Base.repo
-          echo "baseurl=${FASTEST_MIRROR}extras/x86_64/$basearch/" >> /etc/yum.repos.d/CentOS-Base.repo
-          echo "gpgcheck=0" >> /etc/yum.repos.d/CentOS-Base.repo
-          echo "[centosplus]"  >> /etc/yum.repos.d/CentOS-Base.repo
-          echo "name=CentOS-centosplus" >> /etc/yum.repos.d/CentOS-Base.repo
-          echo "baseurl=${FASTEST_MIRROR}centosplus/x86_64/$basearch/" >> /etc/yum.repos.d/CentOS-Base.repo
-          echo "gpgcheck=0" >> /etc/yum.repos.d/CentOS-Base.repo
+          cat << EOF > /etc/yum.repos.d/CentOS-Base.repo
+          [base]
+          name=CentOS-vault-6.10
+          baseurl=https://vault.centos.org/6.10/os/$basearch/
+          gpgcheck=0
+          [updates]
+          name=CentOS-vault-6.10 - Updates
+          baseurl=https://vault.centos.org/6.10/updates/$basearch/
+          gpgcheck=0
+          [extras]
+          name=CentOS-vault-6.10 - Extras - mirrors.aliyun.com
+          failovermethod=priority
+          baseurl=https://vault.centos.org/6.10/extras/$basearch/
+          gpgcheck=0
+          [centosplus]
+          name=CentOS-vault-6.10 - Plus - mirrors.aliyun.com
+          failovermethod=priority
+          baseurl=https://vault.centos.org/6.10/centosplus/$basearch/
+          gpgcheck=0
+          enabled=1
+          EOF
 
           yum clean all
           yum makecache
