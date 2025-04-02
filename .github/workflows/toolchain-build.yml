@@ -197,7 +197,7 @@ jobs:
 
           yum clean all
           yum makecache
-          yum install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+          yum install -y https://dl.fedoraproject.org/pub/archive/epel/7/x86_64/Packages/e/epel-release-7-14.noarch.rpm
           ls -lh /etc/yum.repos.d/
 
           # echo "[buildlogs-cdn-centos-x86_64]" > /etc/yum.repos.d/centos7-devtoolset-12.repo
