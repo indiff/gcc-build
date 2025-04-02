@@ -498,7 +498,7 @@ jobs:
               "https://archive.kernel.org/centos-vault/6.10/"
               "https://vault.centos.org/6.10/"
           )
-
+          
           cat << EOF > /etc/yum.repos.d/CentOS-Base.repo
           [base]
           name=CentOS-vault-6.10
@@ -520,7 +520,6 @@ jobs:
           gpgcheck=0
           enabled=1
           EOF
-
           yum clean all
           yum makecache
           yum install -y https://dl.fedoraproject.org/pub/archive/epel/6/x86_64/Packages/e/epel-release-6-8.noarch.rpm
