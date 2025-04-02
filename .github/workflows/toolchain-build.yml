@@ -39,7 +39,9 @@ jobs:
           echo "GCC_BUILD_PREFIX=${build_prefix}" >> "$GITHUB_OUTPUT"
 
   build-arm64-tc:
-    runs-on: ubuntu-latest
+    # skip
+    if: false  
+    runs-on: ubuntu-24.04-arm
 
     steps:
     - uses: actions/checkout@v4
@@ -83,6 +85,8 @@ jobs:
          gcc-version
 
   build-x86-tc:
+    # skip
+    if: false
     runs-on: ubuntu-latest
 
     steps:
@@ -140,8 +144,8 @@ jobs:
           echo 'LANGUAGE=zh_CN.UTF-8' >> /etc/environment
           echo 'LC_ALL=zh_CN.UTF-8' >> /etc/environment
           echo 'LC_CTYPE=zh_CN.UTF-8' >> /etc/environment
-          curl -o /etc/yum.repos.d/CentOS-Base.repo https://mirrors.aliyun.com/repo/Centos-7.repo
-          curl -o /etc/yum.repos.d/epel.repo https://mirrors.aliyun.com/repo/epel-7.repo
+          # curl -o /etc/yum.repos.d/CentOS-Base.repo https://mirrors.aliyun.com/repo/Centos-7.repo
+          # curl -o /etc/yum.repos.d/epel.repo https://mirrors.aliyun.com/repo/epel-7.repo
 
           # 定义镜像列表  "http://mirrors.aliyun.com/centos-vault/7.9.2009"
           MIRRORS=(
@@ -266,6 +270,7 @@ jobs:
           cd "${WORK_DIR}"
           echo "Downloaded prerequisites!"
 
+          curl -s -X POST "https://api.telegram.org/bot${env.BOT_TOKEN}/sendMessage" -d chat_id="${env.CHAT_ID}" -d "disable_web_page_preview=true" -d "parse_mode=html" -d text="<b>Starting centos7 GCC Build</b>"
           cd "${WORK_DIR}"
           echo "Building Binutils"
           mkdir build-binutils
@@ -330,6 +335,76 @@ jobs:
           make install-target-libgcc -j"$JOBS"
           echo "Built GCC!"
 
+          while getopts a: flag; do
+            if [[ $flag == "a" ]]; then
+              arch="$OPTARG"
+              case "${OPTARG}" in
+                "arm") ARCH_CLANG="ARM" && TARGET_CLANG="arm-linux-gnueabi" && TARGET_GCC="arm-eabi" ;;
+                "arm64") ARCH_CLANG="AArch64" && TARGET_CLANG="aarch64-linux-gnu" && TARGET_GCC="aarch64-elf" ;;
+                "x86") ARCH_CLANG="X86" && TARGET_CLANG="x86_64-linux-gnu" && TARGET_GCC="x86_64-elf" ;;
+                *) echo "Invalid architecture passed: $OPTARG" && exit 1 ;;
+              esac
+            else
+              echo "Invalid argument passed" && exit 1
+            fi
+          done
+
+          # Let's keep this as is
+          export WORK_DIR="$(pwd)"
+          export PREFIX="${WORK_DIR}/gcc-${arch}"
+          export PATH="$PREFIX/bin:$PATH"
+
+          echo "Cleaning up previously cloned repos..."
+          rm -rf "${WORK_DIR}"/llvm-project
+
+          echo "Building Integrated lld for ${arch} with ${TARGET_CLANG} as target"
+          echo ">"
+          echo "> Downloading LLVM for LLD"
+          echo ">"
+          cd "${WORK_DIR}"
+          git clone https://github.com/llvm/llvm-project.git -b main "${WORK_DIR}/llvm-project" --depth=1
+
+          curl -s -X POST "https://api.telegram.org/bot${env.BOT_TOKEN}/sendMessage" -d chat_id="${env.CHAT_ID}" -d "disable_web_page_preview=true" -d "parse_mode=html" -d text="<b>Starting centos7 LLD Build</b>"
+          cd "${WORK_DIR}"
+          echo ">"
+          echo "> Building LLD"
+          echo ">"
+          mkdir -p "${WORK_DIR}/llvm-project/build"
+          cd "${WORK_DIR}/llvm-project/build"
+          export INSTALL_LLD_DIR="${WORK_DIR}/gcc-${arch}"
+          cmake -G "Ninja" \
+            -DLLVM_ENABLE_PROJECTS=lld \
+            -DCMAKE_INSTALL_PREFIX="$INSTALL_LLD_DIR" \
+            -DLLVM_DEFAULT_TARGET_TRIPLE="$TARGET_CLANG" \
+            -DLLVM_TARGET_ARCH="X86" \
+            -DLLVM_TARGETS_TO_BUILD=$ARCH_CLANG \
+            -DCMAKE_CXX_COMPILER="$(which clang++)" \
+            -DCMAKE_C_COMPILER="$(which clang)" \
+            -DLLVM_OPTIMIZED_TABLEGEN=True \
+            -DLLVM_USE_LINKER=lld \
+            -DLLVM_ENABLE_LTO=Full \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DLLVM_BUILD_RUNTIME=Off \
+            -DLLVM_INCLUDE_TESTS=Off \
+            -DLLVM_INCLUDE_EXAMPLES=Off \
+            -DLLVM_INCLUDE_BENCHMARKS=Off \
+            -DLLVM_ENABLE_MODULES=Off \
+            -DLLVM_ENABLE_BACKTRACES=Off \
+            -DLLVM_PARALLEL_COMPILE_JOBS="$(nproc --all)" \
+            -DLLVM_PARALLEL_LINK_JOBS="$(nproc --all)" \
+            -DBUILD_SHARED_LIBS=Off \
+            -DLLVM_INSTALL_TOOLCHAIN_ONLY=On \
+            -DCMAKE_C_FLAGS="-O3" \
+            -DCMAKE_CXX_FLAGS="-O3" \
+            -DLLVM_ENABLE_PIC=False \
+            "${WORK_DIR}"/llvm-project/llvm
+          ninja -j$(nproc --all)
+          ninja -j$(nproc --all) install
+          # Create proper symlinks
+          cd "${INSTALL_LLD_DIR}"/bin
+          ln -s lld ${TARGET_GCC}-ld.lld
+          cd "${WORK_DIR}"
+
           cd "${WORK_DIR}"
           CUR_DIR=$(pwd)
           X86S=$(which strip)
@@ -352,9 +427,7 @@ jobs:
           #   grep "not strip" | grep -v "relocatable" |
           #   tr ':' ' ' | awk '{print $1}' |
           #   while read -r file; do $A32S "$file"; done
-
           rm ".file-idx"
-
           cd gcc-x86
           zip -r -q -9 /workspace/centos7-eva-gcc-x86-$(/bin/date -u '+%d%m%Y').zip .
           # get glibc Version
@@ -377,19 +450,341 @@ jobs:
           docker run --cpus="$(nproc --all)" -u root --rm -v ${{ github.workspace }}:/workspace -v ${{ needs.before_build.outputs.GCC_BUILD_PREFIX }}:${{ needs.before_build.outputs.GCC_BUILD_PREFIX }} -w /workspace centos:7 /bin/bash -c "/workspace/build.sh -a x86"
           export build_timestamp="$(date +'%Y%m%d_%H%M')"
           export glib_version="$(cat glibc_version.txt)"
-          export size_kb=$(du -k opt_nginx.zip | cut -f1)
+          export size_kb=$(du -k *.zip | head -n 1 | cut -f1)
           tree ${{ needs.before_build.outputs.GCC_BUILD_PREFIX }}
 
       - name: Upload GCC package
         uses: actions/upload-artifact@v4
         with:
-          name: nginx-centos7-${{ needs.before_build.outputs.NGINX_BUILD_VERSION }}
+          name: gcc-centos7-${{ needs.before_build.outputs.GCC_BUILD_VERSION }}
+          path: |
+            ${{ github.workspace }}/*.zip
+  
+  build-in-centos6:
+    runs-on: ubuntu-latest
+    needs: before_build
+
+    steps:
+      - name: Checkout v4
+        uses: actions/checkout@v4
+
+      - name: Create build script
+        run: |
+          set -xe
+          cat << 'EOF' > build.sh
+          #!/bin/bash
+          set -xe
+          echo 'LANG=zh_CN.UTF-8' >> /etc/environment
+          echo 'LANGUAGE=zh_CN.UTF-8' >> /etc/environment
+          echo 'LC_ALL=zh_CN.UTF-8' >> /etc/environment
+          echo 'LC_CTYPE=zh_CN.UTF-8' >> /etc/environment
+          
+          # 定义镜像列表  "http://mirrors.aliyun.com/centos-vault/7.9.2009"
+          MIRRORS=(
+              "http://mirror.rackspace.com/centos-vault/6.10/"
+              "https://mirror.nsc.liu.se/centos-store/6.10/"
+              "https://linuxsoft.cern.ch/centos-vault/6.10/"
+              "https://archive.kernel.org/centos-vault/6.10/"
+              "https://vault.centos.org/6.10/"
+          )
+
+          # 初始化变量
+          FASTEST_MIRROR=""
+          FASTEST_TIME=99999
+
+          echo "Testing mirror response times..."
+
+          # 测试每个镜像的响应时间
+          for MIRROR in "${MIRRORS[@]}"; do
+              echo -n "Testing $MIRROR ... "
+              # 使用 curl 测试响应时间
+              TIME=$(curl -o /dev/null -s -w "%{time_total}\n" "$MIRROR")
+              echo "$TIME seconds"
+
+              # 比较响应时间，记录最快的镜像
+              if (( $(echo "$TIME < $FASTEST_TIME" | bc -l) )); then
+                  FASTEST_TIME=$TIME
+                  FASTEST_MIRROR=$MIRROR
+              fi
+          done
+
+          # 输出最快的镜像
+          echo "-----------------------------------"
+          echo "Fastest mirror: $FASTEST_MIRROR"
+          echo "Response time: $FASTEST_TIME seconds"
+
+          echo "[base]" > /etc/yum.repos.d/CentOS-Base.repo
+          echo "name=CentOS-Base" >> /etc/yum.repos.d/CentOS-Base.repo
+          echo "baseurl=${FASTEST_MIRROR}os/x86_64/$basearch/" >> /etc/yum.repos.d/CentOS-Base.repo
+          echo "gpgcheck=0" >> /etc/yum.repos.d/CentOS-Base.repo
+          echo "[updates]"  >> /etc/yum.repos.d/CentOS-Base.repo
+          echo "name=CentOS-updates" >> /etc/yum.repos.d/CentOS-Base.repo
+          echo "baseurl=${FASTEST_MIRROR}updates/x86_64/$basearch/" >> /etc/yum.repos.d/CentOS-Base.repo
+          echo "gpgcheck=0" >> /etc/yum.repos.d/CentOS-Base.repo
+          echo "[extras]"  >> /etc/yum.repos.d/CentOS-Base.repo
+          echo "name=CentOS-extras" >> /etc/yum.repos.d/CentOS-Base.repo
+          echo "baseurl=${FASTEST_MIRROR}extras/x86_64/$basearch/" >> /etc/yum.repos.d/CentOS-Base.repo
+          echo "gpgcheck=0" >> /etc/yum.repos.d/CentOS-Base.repo
+          echo "[centosplus]"  >> /etc/yum.repos.d/CentOS-Base.repo
+          echo "name=CentOS-centosplus" >> /etc/yum.repos.d/CentOS-Base.repo
+          echo "baseurl=${FASTEST_MIRROR}centosplus/x86_64/$basearch/" >> /etc/yum.repos.d/CentOS-Base.repo
+          echo "gpgcheck=0" >> /etc/yum.repos.d/CentOS-Base.repo
+
+          yum clean all
+          yum makecache
+          yum install -y https://dl.fedoraproject.org/pub/archive/epel/6/x86_64/Packages/e/epel-release-6-8.noarch.rpm
+          ls -lh /etc/yum.repos.d/
+
+          echo "[centos-sclo-rh]" > /etc/yum.repos.d/centos6-devtoolset.repo
+          echo "name=CentOS-6 - SCLo rh" >> /etc/yum.repos.d/centos6-devtoolset.repo
+          echo "baseurl=https://vault.centos.org/6.10/sclo/x86_64/rh" >> /etc/yum.repos.d/centos6-devtoolset.repo
+          echo "gpgcheck=0" >> /etc/yum.repos.d/centos6-devtoolset.repo
+          echo "enabled=1" >> /etc/yum.repos.d/centos6-devtoolset.repo
+          yum -y install devtoolset-9
+          scl enable devtoolset-9 bash
+          source /opt/rh/devtoolset-9/enable
+          gcc -v
+          make -v
+
+          yum -y install tzdata
+          ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
+          echo 'Asia/Shanghai' > /etc/timezone
+          yum update -y
+          yum install -y flex bison ncurses-dev texinfo gcc gperf patch libtool automake g++ libncurses5-dev gawk subversion expat libexpat1-dev binutils-dev bc libcap-dev autoconf libgmp-dev build-essential pkg-config libmpc-dev libmpfr-dev autopoint gettext txt2man liblzma-dev libssl-dev libz-dev mercurial wget tar cmake zstd ninja-build lz4 liblz4-tool liblz4-dev lzma libc6-dev-i386 ncurses-devel expat-devel binutils-devel gmp-devel make pkgconfig mpfr-devel gettext-devel zlib-devel lz4-devel xz xz-devel glibc-devel.i686 which clang lld bzip2 glibc glibc-devel
+          yum install -y pcre-devel zlib-devel make git wget sed perl-IPC-Cmd GeoIP GeoIP-devel zip systemd autoconf automake libtool
+          yum install -y perl-Test-Simple perl-FindBin perl-IPC-Cmd perl-Text-Template perl-File-Compare perl-File-Copy perl-Data-Dumper
+
+
+          # TODO: Add more dynamic option handling
+          while getopts a: flag; do
+            case "${flag}" in
+              a) arch=${OPTARG} ;;
+              *) echo "Invalid argument passed" && exit 1 ;;
+            esac
+          done
+
+          # TODO: Better target handling
+          case "${arch}" in
+            "arm") TARGET="arm-eabi" ;;
+            "arm64") TARGET="aarch64-elf" ;;
+            "arm64gnu") TARGET="aarch64-linux-gnu" ;;
+            "x86") TARGET="x86_64-elf" ;;
+          esac
+          # Declare the number of jobs to run simultaneously
+          JOBS=$(nproc --all)
+
+          export WORK_DIR="$PWD"
+          export PREFIX="$WORK_DIR/gcc-${arch}"
+          export PATH="$PREFIX/bin:/usr/bin/core_perl:$PATH"
+          export OPT_FLAGS="-flto -flto-compression-level=10 -O3 -pipe -ffunction-sections -fdata-sections"
+          rm -rf "$WORK_DIR"/{binutils,build-binutils,build-gcc,gcc}
+
+          echo "Downloading Pre-requisites"
+          echo "Cloning binutils"
+          git clone git://sourceware.org/git/binutils-gdb.git -b master binutils --depth=1
+          sed -i '/^development=/s/true/false/' binutils/bfd/development.sh
+          echo "Cloned binutils!"
+          echo "Cloning GCC"
+          git clone git://gcc.gnu.org/git/gcc.git -b master gcc --depth=1
+          cd "${WORK_DIR}"
+          echo "Downloaded prerequisites!"
+          
+          
+          curl -s -X POST "https://api.telegram.org/bot${BOT_TOKEN}/sendMessage" -d chat_id="${CHAT_ID}" -d "disable_web_page_preview=true" -d "parse_mode=html" -d text="<b>Starting centos6 GCC Build</b>"
+          cd "${WORK_DIR}"
+          echo "Building Binutils"
+          mkdir build-binutils
+          cd build-binutils
+          env CFLAGS="$OPT_FLAGS" CXXFLAGS="$OPT_FLAGS" \
+            ../binutils/configure --target="$TARGET" \
+            --disable-docs \
+            --disable-gdb \
+            --disable-nls \
+            --disable-werror \
+            --enable-gold \
+            --prefix="$PREFIX" \
+            --with-pkgversion="Eva Binutils" \
+            --with-sysroot
+          make -j"$JOBS"
+          make install -j"$JOBS"
+          cd ../
+          echo "Built Binutils, proceeding to next step...."
+
+          cd "${WORK_DIR}"
+          echo "Building GCC"
+          cd gcc
+          ./contrib/download_prerequisites
+          echo "Bleeding Edge" > gcc/DEV-PHASE
+          cd ../
+          mkdir build-gcc
+          cd build-gcc
+          env CFLAGS="$OPT_FLAGS" CXXFLAGS="$OPT_FLAGS" \
+            ../gcc/configure --target="$TARGET" \
+            --with-bugurl=https://github.com/indiff/gcc-build \
+            --disable-decimal-float \
+            --disable-docs \
+            --disable-gcov \
+            --disable-libffi \
+            --disable-libgomp \
+            --disable-libmudflap \
+            --disable-libquadmath \
+            --disable-libstdcxx-pch \
+            --disable-nls \
+            --disable-shared \
+            --enable-bootstrap \
+            --enable-multilib \
+            --enable-gnu-unique-object \
+            --enable-plugin  \
+            --enable-gnu-indirect-functio \
+            --enable-initfini-array \
+            --enable-default-ssp \
+            --enable-languages=c,c++,fortran,lto \
+            --enable-threads=posix \
+            --prefix="$PREFIX" \
+            --with-gnu-as \
+            --with-gnu-ld \
+            --with-headers="/usr/include" \
+            --with-linker-hash-style=gnu \
+            --with-newlib \
+            --with-pkgversion="Eva GCC" \
+            --with-sysroot
+
+          make all-gcc -j"$JOBS"
+          make all-target-libgcc -j"$JOBS"
+          make install-gcc -j"$JOBS"
+          make install-target-libgcc -j"$JOBS"
+          echo "Built GCC!"
+          
+          
+          while getopts a: flag; do
+            if [[ $flag == "a" ]]; then
+              arch="$OPTARG"
+              case "${OPTARG}" in
+                "arm") ARCH_CLANG="ARM" && TARGET_CLANG="arm-linux-gnueabi" && TARGET_GCC="arm-eabi" ;;
+                "arm64") ARCH_CLANG="AArch64" && TARGET_CLANG="aarch64-linux-gnu" && TARGET_GCC="aarch64-elf" ;;
+                "x86") ARCH_CLANG="X86" && TARGET_CLANG="x86_64-linux-gnu" && TARGET_GCC="x86_64-elf" ;;
+                *) echo "Invalid architecture passed: $OPTARG" && exit 1 ;;
+              esac
+            else
+              echo "Invalid argument passed" && exit 1
+            fi
+          done
+
+          # Let's keep this as is
+          export WORK_DIR="$(pwd)"
+          export PREFIX="${WORK_DIR}/gcc-${arch}"
+          export PATH="$PREFIX/bin:$PATH"
+
+          echo "Cleaning up previously cloned repos..."
+          rm -rf "${WORK_DIR}"/llvm-project
+
+          echo "Building Integrated lld for ${arch} with ${TARGET_CLANG} as target"
+          echo ">"
+          echo "> Downloading LLVM for LLD"
+          echo ">"
+          cd "${WORK_DIR}"
+          git clone https://github.com/llvm/llvm-project.git -b main "${WORK_DIR}/llvm-project" --depth=1
+
+
+          curl -s -X POST "https://api.telegram.org/bot${BOT_TOKEN}/sendMessage" -d chat_id="${CHAT_ID}" -d "disable_web_page_preview=true" -d "parse_mode=html" -d text="<b>Starting centos7 LLD Build</b>"
+          cd "${WORK_DIR}"
+          echo ">"
+          echo "> Building LLD"
+          echo ">"
+          mkdir -p "${WORK_DIR}/llvm-project/build"
+          cd "${WORK_DIR}/llvm-project/build"
+          export INSTALL_LLD_DIR="${WORK_DIR}/gcc-${arch}"
+          cmake -G "Ninja" \
+            -DLLVM_ENABLE_PROJECTS=lld \
+            -DCMAKE_INSTALL_PREFIX="$INSTALL_LLD_DIR" \
+            -DLLVM_DEFAULT_TARGET_TRIPLE="$TARGET_CLANG" \
+            -DLLVM_TARGET_ARCH="X86" \
+            -DLLVM_TARGETS_TO_BUILD=$ARCH_CLANG \
+            -DCMAKE_CXX_COMPILER="$(which clang++)" \
+            -DCMAKE_C_COMPILER="$(which clang)" \
+            -DLLVM_OPTIMIZED_TABLEGEN=True \
+            -DLLVM_USE_LINKER=lld \
+            -DLLVM_ENABLE_LTO=Full \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DLLVM_BUILD_RUNTIME=Off \
+            -DLLVM_INCLUDE_TESTS=Off \
+            -DLLVM_INCLUDE_EXAMPLES=Off \
+            -DLLVM_INCLUDE_BENCHMARKS=Off \
+            -DLLVM_ENABLE_MODULES=Off \
+            -DLLVM_ENABLE_BACKTRACES=Off \
+            -DLLVM_PARALLEL_COMPILE_JOBS="$(nproc --all)" \
+            -DLLVM_PARALLEL_LINK_JOBS="$(nproc --all)" \
+            -DBUILD_SHARED_LIBS=Off \
+            -DLLVM_INSTALL_TOOLCHAIN_ONLY=On \
+            -DCMAKE_C_FLAGS="-O3" \
+            -DCMAKE_CXX_FLAGS="-O3" \
+            -DLLVM_ENABLE_PIC=False \
+            "${WORK_DIR}"/llvm-project/llvm
+          ninja -j$(nproc --all)
+          ninja -j$(nproc --all) install
+          # Create proper symlinks
+          cd "${INSTALL_LLD_DIR}"/bin
+          ln -s lld ${TARGET_GCC}-ld.lld
+          cd "${WORK_DIR}"
+
+          cd "${WORK_DIR}"
+          CUR_DIR=$(pwd)
+          X86S=$(which strip)
+          #A64S=$(which aarch64-linux-gnu-strip)
+          #A32S=$(which arm-linux-gnu-strip)
+
+          find "$CUR_DIR" -type f -exec file {} \; >.file-idx
+
+          grep "x86" .file-idx |
+            grep "not strip" | grep -v "relocatable" |
+            tr ':' ' ' | awk '{print $1}' |
+            while read -r file; do $X86S "$file"; done
+
+          # grep "ARM" .file-idx | grep "aarch64" |
+          #   grep "not strip" | grep -v "relocatable" |
+          #   tr ':' ' ' | awk '{print $1}' |
+          #   while read -r file; do $A64S "$file"; done
+
+          # grep "ARM" .file-idx | grep "32.bit" |
+          #   grep "not strip" | grep -v "relocatable" |
+          #   tr ':' ' ' | awk '{print $1}' |
+          #   while read -r file; do $A32S "$file"; done
+          rm ".file-idx"
+          cd gcc-x86
+          zip -r -q -9 /workspace/centos6-eva-gcc-x86-$(/bin/date -u '+%d%m%Y').zip .
+          # get glibc Version
+          echo $(cut -d- -f2 <<<$(rpm -q glibc)) >> /workspace/glibc_version.txt
+          EOF
+          chmod +x build.sh
+          
+      # - name: Upload build.sh
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: build.sh
+      #     path: build.sh     
+
+      - name: Build GCC in Docker
+        run: |
+          sudo timedatectl set-timezone Asia/Shanghai
+          timedatectl status
+          sudo mkdir -p ${{ needs.before_build.outputs.GCC_BUILD_PREFIX }}
+          sudo chown -R 777 ${{ needs.before_build.outputs.GCC_BUILD_PREFIX }}
+          docker run --cpus="$(nproc --all)" -u root --rm -v ${{ github.workspace }}:/workspace -v ${{ needs.before_build.outputs.GCC_BUILD_PREFIX }}:${{ needs.before_build.outputs.GCC_BUILD_PREFIX }} -w /workspace centos:centos6.10 /bin/bash -c "/workspace/build.sh -a x86"
+          export build_timestamp="$(date +'%Y%m%d_%H%M')"
+          export glib_version="$(cat glibc_version.txt)"
+          export size_kb=$(du -k *.zip | head -n 1 | cut -f1)
+          tree ${{ needs.before_build.outputs.GCC_BUILD_PREFIX }}
+
+      - name: Upload GCC package
+        uses: actions/upload-artifact@v4
+        with:
+          name: gcc-centos6-${{ needs.before_build.outputs.GCC_BUILD_VERSION }}
           path: |
             ${{ github.workspace }}/*.zip
        
 
   publish-release:
-      needs: [build-arm64-tc,build-x86-tc,build-in-centos7]
+      needs: [build-in-centos7,build-in-centos6] # build-arm64-tc,build-x86-tc,
       runs-on: ubuntu-latest
 
       steps:
@@ -400,10 +795,20 @@ jobs:
             path: ${{ github.workspace }}
         - name: Release Tag
           id: release_tag
-          run: echo "TAG_NAME='$(date -u +%d%m%Y)'" >> $GITHUB_ENV
+          run: |
+            sudo add-apt-repository ppa:ubuntu-toolchain-r/test
+            sudo apt update
+            # sudo add-apt-repository ppa:ubuntu-toolchain-r/ppa
+            sudo apt upgrade
+            sudo apt install -y chrony
+            sudo systemctl enable chrony
+            sudo systemctl start chrony
+            sudo timedatectl set-timezone Asia/Shanghai
+            timedatectl status
+            echo "TAG_NAME='$(date -u +%d%m%Y)'" >> $GITHUB_ENV
         - name: Create Release
           run: |
-            gh release create ${{ env.TAG_NAME }} -F aarch64-tarball/gcc-version */*.zip
+            gh release create ${{ env.TAG_NAME }} -F */*.zip
 
   send-day:
     needs: [publish-release]
@@ -412,5 +817,5 @@ jobs:
     steps:
       - name: Send telegram messages
         run: |
-          curl -s -X POST "https://api.telegram.org/bot${BOT_TOKEN}/sendMessage" -d chat_id="${CHAT_ID}" -d "disable_web_page_preview=true" -d "parse_mode=html" -d text="It's $(date +%A) my dudes!"
+          curl -s -X POST "https://api.telegram.org/bot${env.BOT_TOKEN}/sendMessage" -d chat_id="${env.CHAT_ID}" -d "disable_web_page_preview=true" -d "parse_mode=html" -d text="It's $(date +%A) my dudes!"
           curl -s -X POST "https://api.telegram.org/bot${BOT_TOKEN}/sendMessage" -d chat_id="${CHAT_ID}" -d "disable_web_page_preview=true" -d "parse_mode=html" -d text="The year is $(date +'%j' | awk '{printf "%.2f\n", $0 / 365.25 * 100}')% complete. Time is flying."
