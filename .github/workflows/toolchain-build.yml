@@ -499,27 +499,7 @@ jobs:
               "https://vault.centos.org/6.10/"
           )
           
-          cat << EOF > /etc/yum.repos.d/CentOS-Base.repo
-          [base]
-          name=CentOS-vault-6.10
-          baseurl=https://vault.centos.org/6.10/os/$basearch/
-          gpgcheck=0
-          [updates]
-          name=CentOS-vault-6.10 - Updates
-          baseurl=https://vault.centos.org/6.10/updates/$basearch/
-          gpgcheck=0
-          [extras]
-          name=CentOS-vault-6.10 - Extras - mirrors.aliyun.com
-          failovermethod=priority
-          baseurl=https://vault.centos.org/6.10/extras/$basearch/
-          gpgcheck=0
-          [centosplus]
-          name=CentOS-vault-6.10 - Plus - mirrors.aliyun.com
-          failovermethod=priority
-          baseurl=https://vault.centos.org/6.10/centosplus/$basearch/
-          gpgcheck=0
-          enabled=1
-          EOF
+          curl -o /etc/yum.repos.d/CentOS-Base.repo https://mirrors.aliyun.com/repo/Centos-vault-6.10.repo
           yum clean all
           yum makecache
           yum install -y https://dl.fedoraproject.org/pub/archive/epel/6/x86_64/Packages/e/epel-release-6-8.noarch.rpm
