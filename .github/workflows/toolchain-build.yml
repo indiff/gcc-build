@@ -182,9 +182,9 @@ jobs:
           echo "name=CentOS-Base" >> /etc/yum.repos.d/CentOS-Base.repo
           echo "baseurl=${FASTEST_MIRROR}os/x86_64/$basearch/" >> /etc/yum.repos.d/CentOS-Base.repo
           echo "gpgcheck=0" >> /etc/yum.repos.d/CentOS-Base.repo
-          echo "[update]"  >> /etc/yum.repos.d/CentOS-Base.repo
-          echo "name=CentOS-update" >> /etc/yum.repos.d/CentOS-Base.repo
-          echo "baseurl=${FASTEST_MIRROR}update/x86_64/$basearch/" >> /etc/yum.repos.d/CentOS-Base.repo
+          echo "[updates]"  >> /etc/yum.repos.d/CentOS-Base.repo
+          echo "name=CentOS-updates" >> /etc/yum.repos.d/CentOS-Base.repo
+          echo "baseurl=${FASTEST_MIRROR}updates/x86_64/$basearch/" >> /etc/yum.repos.d/CentOS-Base.repo
           echo "gpgcheck=0" >> /etc/yum.repos.d/CentOS-Base.repo
           echo "[extras]"  >> /etc/yum.repos.d/CentOS-Base.repo
           echo "name=CentOS-extras" >> /etc/yum.repos.d/CentOS-Base.repo
