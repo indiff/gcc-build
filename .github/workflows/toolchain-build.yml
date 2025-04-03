@@ -230,7 +230,7 @@ jobs:
           echo "gpgcheck=0" >> /etc/yum.repos.d/centos7-devtoolset-10.repo
           echo "enabled=1" >> /etc/yum.repos.d/centos7-devtoolset-10.repo
           yum -y update
-          yum -y install devtoolset-10 --nogpgcheck
+          yum -y install devtoolset-12 --nogpgcheck
           scl enable devtoolset-12 bash
           source /opt/rh/devtoolset-12/enable
           gcc -v
