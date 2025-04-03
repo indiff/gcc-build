@@ -239,11 +239,11 @@ jobs:
           rm -f /etc/yum.repos.d/centos7-llvm.repo
           echo "[centos7-llvm]" > /etc/yum.repos.d/centos7-llvm.repo
           echo "name=CentOS-7 - llvm rh" >> /etc/yum.repos.d/centos7-llvm.repo
-          echo "baseurl=https://buildlogs.cdn.centos.org/c7-llvm-toolset-14.0.x86_64/" >> /etc/yum.repos.d/centos7-llvm.repo
+          echo "baseurl=https://buildlogs.cdn.centos.org/c7-llvm-toolset-13.0.x86_64/" >> /etc/yum.repos.d/centos7-llvm.repo
           echo "gpgcheck=0" >> /etc/yum.repos.d/centos7-llvm.repo
           echo "enabled=1" >> /etc/yum.repos.d/centos7-llvm.repo
-          yum -y install llvm-toolset-14.0
-          scl enable llvm-toolset-14.0 bash
+          yum -y install llvm-toolset-7
+          scl enable llvm-toolset-7 bash
           clang --version
 
           # TODO: Add more dynamic option handling
