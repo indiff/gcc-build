@@ -212,9 +212,7 @@ jobs:
           yum install -y perl-Test-Simple perl-FindBin perl-IPC-Cmd perl-Text-Template perl-File-Compare perl-File-Copy perl-Data-Dumper
           yum install -y llvm llvm-devel clang clang-devel libstdc++-devel
 
-          
-
-          echo "[buildlogs-cdn-centos-x86_64]" > /etc/yum.repos.d/centos7-devtoolset-10.repo
+          echo "[buildlogs-devtoolset-10-centos-x86_64]" > /etc/yum.repos.d/centos7-devtoolset-10.repo
           echo "name=devtoolset-10" >> /etc/yum.repos.d/centos7-devtoolset-10.repo
           echo "baseurl=https://buildlogs.cdn.centos.org/c7-devtoolset-10.x86_64" >> /etc/yum.repos.d/centos7-devtoolset-10.repo
           echo "gpgcheck=0" >> /etc/yum.repos.d/centos7-devtoolset-10.repo
@@ -229,7 +227,7 @@ jobs:
           # Not using downloaded buildlogs-cdn-centos-x86_64/repomd.xml because it is older than what we have:
           rm -f /etc/yum.repos.d/centos7-devtoolset-10.repo
           yum clean all
-          echo "[buildlogs-cdn-centos-x86_64]" > /etc/yum.repos.d/centos7-devtoolset-12.repo
+          echo "[buildlogs-devtoolset-12-centos-x86_64]" > /etc/yum.repos.d/centos7-devtoolset-12.repo
           echo "name=devtoolset-12" >> /etc/yum.repos.d/centos7-devtoolset-12.repo
           echo "baseurl=https://buildlogs.cdn.centos.org/c7-devtoolset-12.x86_64" >> /etc/yum.repos.d/centos7-devtoolset-12.repo
           echo "gpgcheck=0" >> /etc/yum.repos.d/centos7-devtoolset-12.repo
