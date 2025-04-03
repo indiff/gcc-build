@@ -242,8 +242,9 @@ jobs:
           echo "baseurl=https://buildlogs.cdn.centos.org/c7-llvm-toolset-11.0.x86_64/" >> /etc/yum.repos.d/centos7-llvm.repo
           echo "gpgcheck=0" >> /etc/yum.repos.d/centos7-llvm.repo
           echo "enabled=1" >> /etc/yum.repos.d/centos7-llvm.repo
-          yum -y install llvm-toolset-11
-          scl enable llvm-toolset-11 bash
+          yum -y install llvm-toolset-11.0
+          scl enable llvm-toolset-11.0 bash
+          source /opt/rh/llvm-toolset-11.0/enable
           clang --version
 
           # TODO: Add more dynamic option handling
