@@ -212,17 +212,17 @@ jobs:
           yum install -y perl-Test-Simple perl-FindBin perl-IPC-Cmd perl-Text-Template perl-File-Compare perl-File-Copy perl-Data-Dumper
           yum install -y llvm llvm-devel clang clang-devel libstdc++-devel
 
-          # echo "[buildlogs-cdn-centos-x86_64]" > /etc/yum.repos.d/centos7-devtoolset-12.repo
-          # echo "name=devtoolset-12" >> /etc/yum.repos.d/centos7-devtoolset-12.repo
-          # echo "baseurl=https://buildlogs.cdn.centos.org/c7-devtoolset-12.x86_64" >> /etc/yum.repos.d/centos7-devtoolset-12.repo
-          # echo "gpgcheck=0" >> /etc/yum.repos.d/centos7-devtoolset-12.repo
-          # echo "enabled=1" >> /etc/yum.repos.d/centos7-devtoolset-12.repo
-          # yum -y update
-          # yum -y install devtoolset-12 --nogpgcheck
-          # scl enable devtoolset-12 bash
-          # source /opt/rh/devtoolset-12/enable
-          # gcc -v
-          # make -v
+          echo "[buildlogs-cdn-centos-x86_64]" > /etc/yum.repos.d/centos7-devtoolset-12.repo
+          echo "name=devtoolset-12" >> /etc/yum.repos.d/centos7-devtoolset-12.repo
+          echo "baseurl=https://buildlogs.cdn.centos.org/c7-devtoolset-12.x86_64" >> /etc/yum.repos.d/centos7-devtoolset-12.repo
+          echo "gpgcheck=0" >> /etc/yum.repos.d/centos7-devtoolset-12.repo
+          echo "enabled=1" >> /etc/yum.repos.d/centos7-devtoolset-12.repo
+          yum -y update
+          yum -y install devtoolset-12 --nogpgcheck
+          #scl enable devtoolset-12 bash
+          #source /opt/rh/devtoolset-12/enable
+          #gcc -v
+          #make -v
 
           echo "[buildlogs-cdn-centos-x86_64]" > /etc/yum.repos.d/centos7-devtoolset-10.repo
           echo "name=devtoolset-10" >> /etc/yum.repos.d/centos7-devtoolset-10.repo
@@ -239,12 +239,12 @@ jobs:
           rm -f /etc/yum.repos.d/centos7-llvm.repo
           echo "[centos7-llvm]" > /etc/yum.repos.d/centos7-llvm.repo
           echo "name=CentOS-7 - llvm rh" >> /etc/yum.repos.d/centos7-llvm.repo
-          echo "baseurl=https://buildlogs.cdn.centos.org/c7-llvm-toolset-13.0.x86_64/" >> /etc/yum.repos.d/centos7-llvm.repo
+          echo "baseurl=https://buildlogs.cdn.centos.org/c7-llvm-toolset-14.0.x86_64/" >> /etc/yum.repos.d/centos7-llvm.repo
           echo "gpgcheck=0" >> /etc/yum.repos.d/centos7-llvm.repo
           echo "enabled=1" >> /etc/yum.repos.d/centos7-llvm.repo
-          yum -y install llvm-toolset-13.0
-          scl enable llvm-toolset-13.0 bash
-          source /opt/rh/llvm-toolset-13.0/enable
+          yum -y install llvm-toolset-14.0
+          scl enable llvm-toolset-14.0 bash
+          source /opt/rh/llvm-toolset-14.0/enable
           clang --version
 
           # TODO: Add more dynamic option handling
