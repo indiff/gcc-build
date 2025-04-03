@@ -354,9 +354,9 @@ jobs:
           make all-target-libgcc -j"$JOBS"
           make install-gcc -j"$JOBS"
           make install-target-libgcc -j"$JOBS"
-          echo "Built GCC!"
-
-          cd gcc-x86
+          echo "Built GCC end!"
+          
+          cd /workspace/gcc-x86
           zip -r -q -9 /workspace/centos7-eva-gcc-x86-$(/bin/date -u '+%d%m%Y').zip .
           cd "${WORK_DIR}"
 
@@ -464,7 +464,8 @@ jobs:
           #   tr ':' ' ' | awk '{print $1}' |
           #   while read -r file; do $A32S "$file"; done
           rm ".file-idx"
-          cd gcc-x86
+          
+          cd /workspace/gcc-x86
           zip -r -q -9 /workspace/centos7-eva-gcc-lld-x86-$(/bin/date -u '+%d%m%Y').zip .
           # get glibc Version
           echo $(cut -d- -f2 <<<$(rpm -q glibc)) >> /workspace/glibc_version.txt
