@@ -373,6 +373,8 @@ jobs:
               echo "Invalid argument passed" && exit 1
             fi
           done
+          
+          ARCH_CLANG="X86" && TARGET_CLANG="x86_64-linux-gnu" && TARGET_GCC="x86_64-elf" ;;
 
           # Let's keep this as is
           export WORK_DIR="$(pwd)"
@@ -384,7 +386,7 @@ jobs:
           # sudo ln -sf /usr/bin/cmake3 /usr/bin/cmake
 
           curl -sLo cmake3.tar.gz https://github.com/Kitware/CMake/releases/download/v3.31.6/cmake-3.31.6-linux-x86_64.tar.gz
-          tar -xzvf cmake3.tar.gz
+          tar -xzf cmake3.tar.gz
           mv cmake-3.31.6-linux-x86_64 /opt/cmake
           rm -f /usr/bin/cmake
           ln -sf /opt/cmake/bin/cmake /usr/bin/cmake
