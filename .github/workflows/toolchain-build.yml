@@ -226,13 +226,13 @@ jobs:
 
           echo "[buildlogs-cdn-centos-x86_64]" > /etc/yum.repos.d/centos7-devtoolset-10.repo
           echo "name=devtoolset-10" >> /etc/yum.repos.d/centos7-devtoolset-10.repo
-          echo "baseurl=https://buildlogs.cdn.centos.org/c7-devtoolset-10.x86_64" >> /etc/yum.repos.d/centos7-devtoolset-10.repo
+          echo "baseurl=https://buildlogs.cdn.centos.org/c7-devtoolset-12.x86_64" >> /etc/yum.repos.d/centos7-devtoolset-10.repo
           echo "gpgcheck=0" >> /etc/yum.repos.d/centos7-devtoolset-10.repo
           echo "enabled=1" >> /etc/yum.repos.d/centos7-devtoolset-10.repo
           yum -y update
           yum -y install devtoolset-10 --nogpgcheck
-          scl enable devtoolset-10 bash
-          source /opt/rh/devtoolset-10/enable
+          scl enable devtoolset-12 bash
+          source /opt/rh/devtoolset-12/enable
           gcc -v
           make -v
 
