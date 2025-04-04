@@ -129,6 +129,7 @@ jobs:
   build-in-centos7:
     runs-on: ubuntu-latest
     needs: before_build
+    timeout-minutes: 360 # 设置超时时间为6小时
 
     steps:
       - name: Free Disk-Space
