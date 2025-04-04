@@ -133,7 +133,7 @@ jobs:
 
     steps:
       - name: Free Disk-Space
-        run: df -h && sudo apt-get clean && docker system prune -a -f && sudo rm -rf /usr/local/lib/android /usr/share/dotnet /opt/ghc && df -h
+        run: df -h && sudo apt-get clean && docker system prune -a -f && sudo rm -rf /usr/local/lib/android /usr/share/dotnet /opt/ghc && df -h && free -h
 
       - name: Checkout v4
         uses: actions/checkout@v4
@@ -245,7 +245,6 @@ jobs:
           source /opt/rh/devtoolset-10/enable
           gcc -v
           make -v
-
           
           
           
@@ -362,6 +361,18 @@ jobs:
           
           cd /workspace/gcc-x86
           zip -r -q -9 /workspace/centos7-eva-gcc-x86-$(/bin/date -u '+%d%m%Y').zip .
+          # free memory
+          # 创建一个2GB的交换文件
+          sudo fallocate -l 2G /swapfile
+          sudo chmod 600 /swapfile
+          sudo mkswap /swapfile
+          sudo swapon /swapfile
+          # 确认交换空间已启用
+          sudo swapon --show
+          free -h
+          sync
+          echo 3 > /proc/sys/vm/drop_caches
+
           cd "${WORK_DIR}"
 
           while getopts a: flag; do
