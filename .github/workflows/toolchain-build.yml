@@ -374,7 +374,7 @@ jobs:
             fi
           done
           
-          ARCH_CLANG="X86" && TARGET_CLANG="x86_64-linux-gnu" && TARGET_GCC="x86_64-elf" ;;
+          ARCH_CLANG="X86" && TARGET_CLANG="x86_64-linux-gnu" && TARGET_GCC="x86_64-elf"
 
           # Let's keep this as is
           export WORK_DIR="$(pwd)"
