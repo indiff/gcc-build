@@ -363,12 +363,13 @@ jobs:
           zip -r -q -9 /workspace/centos7-eva-gcc-x86-$(/bin/date -u '+%d%m%Y').zip .
           # free memory
           # 创建一个2GB的交换文件
-          sudo fallocate -l 2G /swapfile
-          sudo chmod 600 /swapfile
-          sudo mkswap /swapfile
-          sudo swapon /swapfile
+          # fallocate -l 2G /swapfile
+          dd if=/dev/zero of=/swapfile bs=1M count=8192
+          chmod 600 /swapfile
+          mkswap /swapfile
+          swapon /swapfile
           # 确认交换空间已启用
-          sudo swapon --show
+          swapon --show
           free -h
           sync
           echo 3 > /proc/sys/vm/drop_caches
