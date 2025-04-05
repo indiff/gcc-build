@@ -579,6 +579,17 @@ jobs:
           source /opt/rh/devtoolset-9/enable
           gcc -v
           make -v
+          # 确保系统已安装所需的依赖工具和库
+          yum install -y gettext-devel openssl-devel perl-CPAN perl-devel zlib-devel
+          # 安装最新版本的 Git
+          curl -sLO https://mirrors.edge.kernel.org/pub/software/scm/git/git-2.49.0.tar.gz
+          tar -zxf git-2.49.0.tar.gz
+          cd git-2.49.0
+          make configure
+          ./configure --prefix=/usr/local
+          make all
+          make install
+          cd ..
           
           # TODO: Add more dynamic option handling
           while getopts a: flag; do
