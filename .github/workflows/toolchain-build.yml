@@ -535,7 +535,7 @@ jobs:
         with:
           name: gcc-centos7-${{ needs.before_build.outputs.GCC_BUILD_VERSION }}
           path: |
-            ${{ github.workspace }}/*.zip
+            ${{ github.workspace }}/*.xz
   
   build-in-centos6:
     # skip
