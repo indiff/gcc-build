@@ -4,7 +4,7 @@ on:
   push:
     branches: [ main ]
   schedule:
-    - cron: '0 0 * * 0,4'
+    - cron: '0 0 * * *'
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
     inputs:
@@ -262,14 +262,14 @@ jobs:
           free -h
           # 创建一个2GB的交换文件
           # fallocate -l 2G /swapfile
-          fallocate -l 8G /tmp/swapfile || dd if=/dev/zero of=/swapfile bs=1M count=8192
-          chmod 600 /tmp/swapfile
-          chown -R root:root /tmp/swapfile
-          mkswap /tmp/swapfile
-          swapon /tmp/swapfile
+          #fallocate -l 8G /tmp/swapfile || dd if=/dev/zero of=/swapfile bs=1M count=8192
+          #chmod 600 /tmp/swapfile
+          #chown -R root:root /tmp/swapfile
+          #mkswap /tmp/swapfile
+          #swapon /tmp/swapfile
           # 确认交换空间已启用
-          swapon --show
-          free -h
+          #swapon --show
+          #free -h
           
 
           rm -f /etc/yum.repos.d/centos7-llvm.repo
@@ -384,11 +384,12 @@ jobs:
           
           cd /workspace/gcc-x86
           zip -r -q -9 /workspace/centos7-eva-gcc-x86-$(/bin/date -u '+%d%m%Y').zip .
+          
           # free memory
           free -h
           sync
           echo 3 > /proc/sys/vm/drop_caches
-          free -h
+          free -h && df -h
           
           
 
