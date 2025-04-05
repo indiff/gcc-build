@@ -362,6 +362,10 @@ jobs:
           cd /workspace/gcc-x86
           zip -r -q -9 /workspace/centos7-eva-gcc-x86-$(/bin/date -u '+%d%m%Y').zip .
           # free memory
+          free -h
+          sync
+          echo 3 > /proc/sys/vm/drop_caches
+          free -h
           # 创建一个2GB的交换文件
           # fallocate -l 2G /swapfile
           dd if=/dev/zero of=/swapfile bs=1M count=8192
@@ -371,8 +375,7 @@ jobs:
           # 确认交换空间已启用
           swapon --show
           free -h
-          sync
-          echo 3 > /proc/sys/vm/drop_caches
+          
 
           cd "${WORK_DIR}"
 
@@ -502,7 +505,7 @@ jobs:
           timedatectl status
           sudo mkdir -p ${{ needs.before_build.outputs.GCC_BUILD_PREFIX }}
           sudo chown -R 777 ${{ needs.before_build.outputs.GCC_BUILD_PREFIX }}
-          docker run --cpus="$(nproc --all)" -u root --rm -v ${{ github.workspace }}:/workspace -v ${{ needs.before_build.outputs.GCC_BUILD_PREFIX }}:${{ needs.before_build.outputs.GCC_BUILD_PREFIX }} -w /workspace centos:7 /bin/bash -c "/workspace/build.sh -a x86"
+          docker run --cpus="$(nproc --all)" --privileged -u root --rm -v ${{ github.workspace }}:/workspace -v ${{ needs.before_build.outputs.GCC_BUILD_PREFIX }}:${{ needs.before_build.outputs.GCC_BUILD_PREFIX }} -w /workspace centos:7 /bin/bash -c "/workspace/build.sh -a x86"
           export build_timestamp="$(date +'%Y%m%d_%H%M')"
           export glib_version="$(cat glibc_version.txt)"
           export size_kb=$(du -k *.zip | head -n 1 | cut -f1)
