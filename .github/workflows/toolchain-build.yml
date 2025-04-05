@@ -264,7 +264,7 @@ jobs:
           # fallocate -l 2G /swapfile
           fallocate -l 8G /tmp/swapfile || dd if=/dev/zero of=/swapfile bs=1M count=8192
           chmod 600 /tmp/swapfile
-          chown -r root:root /tmp/swapfile
+          chown -R root:root /tmp/swapfile
           mkswap /tmp/swapfile
           swapon /tmp/swapfile
           # 确认交换空间已启用
