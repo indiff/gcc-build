@@ -383,7 +383,9 @@ jobs:
           echo "Built GCC end!"
           
           cd /workspace/gcc-x86
-          zip -r -q -9 /workspace/centos7-eva-gcc-x86-$(/bin/date -u '+%d%m%Y').zip .
+          zname=/workspace/centos7-eva-gcc-x86-$(/bin/date -u '+%Y%m%d')
+          zip -r -q -9 $zname.zip .
+          mv $zname.zip $zname.xz
           
           # free memory
           free -h
@@ -798,12 +800,7 @@ jobs:
           echo $(cut -d- -f2 <<<$(rpm -q glibc)) >> /workspace/glibc_version.txt
           EOF
           chmod +x build.sh
-          
-      # - name: Upload build.sh
-      #   uses: actions/upload-artifact@v4
-      #   with:
-      #     name: build.sh
-      #     path: build.sh     
+         
 
       - name: Build GCC in Docker
         run: |
@@ -850,10 +847,11 @@ jobs:
             sudo systemctl start chrony
             sudo timedatectl set-timezone Asia/Shanghai
             timedatectl status
-            echo "TAG_NAME='$(date -u +%d%m%Y)'" >> $GITHUB_ENV
+            echo "TAG_NAME='$(date -u +%Y%m%d)'" >> $GITHUB_ENV
         - name: Create Release
           run: |
-            gh release create ${{ env.TAG_NAME }} -F */*.zip
+            echo "你好$date!" > hello.txt
+            gh release create ${{ env.TAG_NAME }} -F hello.txt */*.xz
           env:
             GITHUB_TOKEN: ${{ github.token }}  
 
