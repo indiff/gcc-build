@@ -835,6 +835,9 @@ jobs:
           uses: actions/download-artifact@main
           with:
             path: ${{ github.workspace }}
+            pattern: gcc-*
+            merge-multiple: false
+          
         - name: Release Tag
           id: release_tag
           run: |
