@@ -345,8 +345,9 @@ jobs:
           cd build-gcc
           # ../gcc/configure --target="$TARGET" \
           #             --with-newlib \
+          # --target="x86_64-pc-linux-gnu"
           env CFLAGS="$OPT_FLAGS" CXXFLAGS="$OPT_FLAGS" \
-            ../gcc/configure --target="x86_64-pc-linux-gnu" \
+            ../gcc/configure --build=x86_64-redhat-linux \
             --with-bugurl=https://github.com/indiff/gcc-build \
             --disable-decimal-float \
             --disable-docs \
