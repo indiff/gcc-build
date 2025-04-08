@@ -346,7 +346,7 @@ jobs:
           # ../gcc/configure --target="$TARGET" \
           #             --with-newlib \
           env CFLAGS="$OPT_FLAGS" CXXFLAGS="$OPT_FLAGS" \
-            ../gcc/configure  \
+            ../gcc/configure --target="$TARGET" \
             --with-bugurl=https://github.com/indiff/gcc-build \
             --disable-decimal-float \
             --disable-docs \
