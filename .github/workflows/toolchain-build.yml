@@ -39,7 +39,8 @@ jobs:
       - name: Get buildPrefix
         id: get
         run: |
-          curl -sLo ver "https://gcc.gnu.org/git/?p=gcc.git;a=blob_plain;f=gcc/BASE-VER"
+          curl --max-time 10 -sLo ver "https://github.com/gcc-mirror/gcc/raw/refs/heads/master/gcc/BASE-VER"
+          # curl --max-time 10 -sLo ver "https://gcc.gnu.org/git/?p=gcc.git;a=blob_plain;f=gcc/BASE-VER"
           export version=$(cat ver)
           echo "GCC_BUILD_VERSION=${version}" >> "$GITHUB_OUTPUT"
           export build_prefix="${{ github.event.inputs.buildPrefix }}"
@@ -317,15 +318,16 @@ jobs:
           echo "Building Binutils"
           mkdir build-binutils
           cd build-binutils
+          # --target="$TARGET" 
           env CFLAGS="$OPT_FLAGS" CXXFLAGS="$OPT_FLAGS" \
-            ../binutils/configure --target="$TARGET" \
+            ../binutils/configure \
             --disable-docs \
             --disable-gdb \
             --disable-nls \
             --disable-werror \
             --enable-gold \
             --prefix="$PREFIX" \
-            --with-pkgversion="Eva Binutils" \
+            --with-pkgversion="Indiff binutils" \
             --with-sysroot
           make -j"$JOBS"
           make install -j"$JOBS"
@@ -340,8 +342,10 @@ jobs:
           cd ../
           mkdir build-gcc
           cd build-gcc
+          # ../gcc/configure --target="$TARGET" \
+          #             --with-newlib \
           env CFLAGS="$OPT_FLAGS" CXXFLAGS="$OPT_FLAGS" \
-            ../gcc/configure --target="$TARGET" \
+            ../gcc/configure  \
             --with-bugurl=https://github.com/indiff/gcc-build \
             --disable-decimal-float \
             --disable-docs \
@@ -353,22 +357,26 @@ jobs:
             --disable-libstdcxx-pch \
             --disable-nls \
             --disable-shared \
+            --disable-libunwind-exceptions \
+            --enable-__cxa_atexit \
             --enable-bootstrap \
             --enable-multilib \
             --enable-gnu-unique-object \
             --enable-plugin  \
-            --enable-gnu-indirect-functio \
+            --enable-gnu-indirect-function \
             --enable-initfini-array \
             --enable-default-ssp \
             --enable-languages=c,c++,fortran,lto \
             --enable-threads=posix \
+            --enable-libstdcxx-backtrace \
             --prefix="$PREFIX" \
+            --with-tune=generic \ 
+            --with-gcc-major-version-only \
             --with-gnu-as \
             --with-gnu-ld \
             --with-headers="/usr/include" \
             --with-linker-hash-style=gnu \
-            --with-newlib \
-            --with-pkgversion="Eva GCC" \
+            --with-pkgversion="Indiff GCC" \
             --with-sysroot
 
           make all-gcc -j"$JOBS"
@@ -389,7 +397,6 @@ jobs:
           free -h && df -h
           # follow can not work,exit success
           exit 0
-          
           
 
           cd "${WORK_DIR}"
@@ -590,14 +597,25 @@ jobs:
           # 确保系统已安装所需的依赖工具和库
           yum install -y gettext-devel openssl-devel perl-CPAN perl-devel zlib-devel
           # 安装最新版本的 Git
+
+          export WORK_DIR="$PWD"
+          # Declare the number of jobs to run simultaneously
+          JOBS=$(nproc --all)
           curl -sLO https://mirrors.edge.kernel.org/pub/software/scm/git/git-2.49.0.tar.gz
           tar -zxf git-2.49.0.tar.gz
           cd git-2.49.0
           make configure
-          ./configure --prefix=/usr/local
-          make all
-          make install
-          cd ..
+          ./configure --prefix=/opt/git
+          make all -j"$JOBS"
+          make install -j"$JOBS"
+          cd /opt/git
+          gname=/workspace/centos6-indiff-git-2.49.0-$(/bin/date -u '+%Y%m%d')
+          zip -r -q -9 $gname.zip .
+          mv $gname.zip $gname.xz
+          # rm -f /usr/bin/git
+          ln -sf /opt/git/bin/git /usr/bin/git
+          git --version
+          cd $WORK_DIR
           
           # TODO: Add more dynamic option handling
           while getopts a: flag; do
@@ -614,13 +632,12 @@ jobs:
             "arm64gnu") TARGET="aarch64-linux-gnu" ;;
             "x86") TARGET="x86_64-elf" ;;
           esac
-          # Declare the number of jobs to run simultaneously
-          JOBS=$(nproc --all)
 
-          export WORK_DIR="$PWD"
+          
           export PREFIX="$WORK_DIR/gcc-${arch}"
           export PATH="$PREFIX/bin:/usr/bin/core_perl:$PATH"
-          export OPT_FLAGS="-flto -flto-compression-level=10 -O3 -pipe -ffunction-sections -fdata-sections"
+          # export OPT_FLAGS="-flto -flto-compression-level=10 -O3 -pipe -ffunction-sections -fdata-sections"
+          export OPT_FLAGS="-flto -flto-compression-level=9 -O3 -pipe -ffunction-sections -fdata-sections"
           rm -rf "$WORK_DIR"/{binutils,build-binutils,build-gcc,gcc}
 
           echo "Downloading Pre-requisites"
@@ -649,16 +666,18 @@ jobs:
           echo "Building Binutils"
           mkdir build-binutils
           cd build-binutils
+          # --target="$TARGET" 
           env CFLAGS="$OPT_FLAGS" CXXFLAGS="$OPT_FLAGS" \
-            ../binutils/configure --target="$TARGET" \
+            ../binutils/configure \
             --disable-docs \
             --disable-gdb \
             --disable-nls \
             --disable-werror \
+            --disable-gdbserver \
             --enable-gold \
             --prefix="$PREFIX" \
-            --with-pkgversion="Eva Binutils" \
-            --with-sysroot
+            --with-pkgversion="Indiff Binutils" \
+            --with-sysroot || cat config.log
           make -j"$JOBS"
           make install -j"$JOBS"
           cd ../
@@ -672,8 +691,9 @@ jobs:
           cd ../
           mkdir build-gcc
           cd build-gcc
+          #  --target="$TARGET"
           env CFLAGS="$OPT_FLAGS" CXXFLAGS="$OPT_FLAGS" \
-            ../gcc/configure --target="$TARGET" \
+            ../gcc/configure \
             --with-bugurl=https://github.com/indiff/gcc-build \
             --disable-decimal-float \
             --disable-docs \
@@ -700,7 +720,7 @@ jobs:
             --with-headers="/usr/include" \
             --with-linker-hash-style=gnu \
             --with-newlib \
-            --with-pkgversion="indiff GCC" \
+            --with-pkgversion="Indiff GCC" \
             --with-sysroot
 
           make all-gcc -j"$JOBS"
