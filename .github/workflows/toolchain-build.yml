@@ -403,7 +403,6 @@ jobs:
             --with-gnu-ld \
             --with-linker-hash-style=gnu \
             --with-pkgversion="Indiff GCC" \
-            --with-headers="/usr/include" \
             --with-sysroot
 
           make all-gcc -j"$JOBS"
@@ -670,7 +669,11 @@ jobs:
 
           echo "Downloading Pre-requisites"
           echo "Cloning binutils"
-          git clone git://sourceware.org/git/binutils-gdb.git -b master binutils --depth=1
+          #git clone git://sourceware.org/git/binutils-gdb.git -b master binutils --depth=1
+          BACKUP_URLS=("git://sourceware.org/git/binutils-gdb.git" "https://github.com/bminor/binutils-gdb.git")
+          for URL in "${BACKUP_URLS[@]}"; do
+              git clone "$URL" -b master binutils --depth=1 && break
+          done
           sed -i '/^development=/s/true/false/' binutils/bfd/development.sh
           echo "Cloned binutils!"
           echo "Cloning GCC"
