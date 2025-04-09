@@ -292,7 +292,8 @@ jobs:
             "arm") TARGET="arm-eabi" ;;
             "arm64") TARGET="aarch64-elf" ;;
             "arm64gnu") TARGET="aarch64-linux-gnu" ;;
-            "x86") TARGET="x86_64-elf" ;;
+            # "x86") TARGET="x86_64-elf" ;;
+            "x86") TARGET="x86_64-linux-gnu" ;;
           esac
           # Declare the number of jobs to run simultaneously
           JOBS=$(nproc --all)
@@ -321,13 +322,24 @@ jobs:
           cd build-binutils
           # --target="$TARGET" 
           env CFLAGS="$OPT_FLAGS" CXXFLAGS="$OPT_FLAGS" \
-            ../binutils/configure --target="$TARGET" \
+            ../binutils/configure --target="$TARGET" --build="$TARGET" --host="$TARGET" \
+            --program-prefix= \
+            --disable-dependency-tracking \
             --disable-docs \
             --disable-gdb \
             --disable-nls \
             --disable-werror \
             --enable-gold \
+            --enable-deterministic-archives=no \
+            --enable-lto \
+            --enable-compressed-debug-sections=none \
+            --enable-generate-build-notes=no \
+            --enable-threads=yes \
+            --enable-targets=x86_64-pep,bpf-unknown-none \
+            --enable-relro=yes \
+            --enable-plugins \
             --prefix="$PREFIX" \
+            --with-bugurl=https://github.com/indiff/gcc-build \
             --with-pkgversion="Indiff binutils" \
             --with-sysroot
           make -j"$JOBS"
@@ -346,8 +358,10 @@ jobs:
           # ../gcc/configure --target="$TARGET" \
           #             --with-newlib \
           # --target="x86_64-pc-linux-gnu"
+          # --target="$TARGET" --build="$TARGET" --host="$TARGET"
+          #             --enable-libstdcxx-backtrace \
           env CFLAGS="$OPT_FLAGS" CXXFLAGS="$OPT_FLAGS" \
-            ../gcc/configure --build=x86_64-redhat-linux \
+            ../gcc/configure --target="$TARGET" --build="$TARGET" --host="$TARGET" \
             --with-bugurl=https://github.com/indiff/gcc-build \
             --disable-decimal-float \
             --disable-docs \
@@ -370,7 +384,6 @@ jobs:
             --enable-default-ssp \
             --enable-languages=c,c++,fortran,lto \
             --enable-threads=posix \
-            --enable-libstdcxx-backtrace \
             --prefix="$PREFIX" \
             --with-tune=generic \ 
             --with-gcc-major-version-only \
