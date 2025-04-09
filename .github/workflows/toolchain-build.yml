@@ -403,6 +403,7 @@ jobs:
             --with-gnu-ld \
             --with-linker-hash-style=gnu \
             --with-pkgversion="Indiff GCC" \
+            --with-headers="/usr/include" \
             --with-sysroot
 
           make all-gcc -j"$JOBS"
@@ -695,16 +696,25 @@ jobs:
           cd build-binutils
           # --target="$TARGET" 
           env CFLAGS="$OPT_FLAGS" CXXFLAGS="$OPT_FLAGS" \
-            ../binutils/configure \
-            --disable-docs \
-            --disable-gdb \
-            --disable-nls \
-            --disable-werror \
-            --disable-gdbserver \
-            --enable-gold \
-            --prefix="$PREFIX" \
-            --with-pkgversion="Indiff Binutils" \
-            --with-sysroot
+              ../binutils/configure --target="$TARGET" --build="$TARGET" --host="$TARGET" \
+              --program-prefix= \
+              --disable-dependency-tracking \
+              --disable-docs \
+              --disable-gdb \
+              --disable-nls \
+              --disable-werror \
+              --enable-gold \
+              --enable-deterministic-archives=no \
+              --enable-lto \
+              --enable-compressed-debug-sections=none \
+              --enable-generate-build-notes=no \
+              --enable-threads=yes \
+              --enable-relro=yes \
+              --enable-plugins \
+              --prefix="$PREFIX" \
+              --with-bugurl=https://github.com/indiff/gcc-build \
+              --with-pkgversion="Indiff binutils" \
+              --with-sysroot
           make -j"$JOBS"
           make install -j"$JOBS"
           cd ../
