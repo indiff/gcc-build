@@ -361,7 +361,9 @@ jobs:
           cd gcc
           # https://www.mirrorservice.org/sites/sourceware.org/pub/gcc/infrastructure
           # https://ftp.mpi-inf.mpg.de/mirrors/gnu/mirror/gcc.gnu.org/pub/gcc/infrastructure/
-          ./contrib/download_prerequisites
+          ./contrib/download_prerequisites || \
+            (sed -i "s|http://gcc.gnu.org/pub/gcc/infrastructure/|https://www.mirrorservice.org/sites/sourceware.org/pub/gcc/infrastructure/|" contrib/download_prerequisites && \
+            ./contrib/download_prerequisites)
           echo "Bleeding Edge" > gcc/DEV-PHASE
           cd ../
           mkdir build-gcc
