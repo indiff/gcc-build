@@ -308,11 +308,20 @@ jobs:
 
           echo "Downloading Pre-requisites"
           echo "Cloning binutils"
-          git clone git://sourceware.org/git/binutils-gdb.git -b master binutils --depth=1
+          #git clone git://sourceware.org/git/binutils-gdb.git -b master binutils --depth=1
+          BACKUP_URLS=("git://sourceware.org/git/binutils-gdb.git" "https://github.com/bminor/binutils-gdb.git")
+          for URL in "${BACKUP_URLS[@]}"; do
+              git clone "$URL" -b master binutils --depth=1 && break
+          done
           sed -i '/^development=/s/true/false/' binutils/bfd/development.sh
           echo "Cloned binutils!"
           echo "Cloning GCC"
-          git clone git://gcc.gnu.org/git/gcc.git -b master gcc --depth=1
+          # git clone git://gcc.gnu.org/git/gcc.git -b master gcc --depth=1
+          BACKUP_URLS=("git://gcc.gnu.org/git/gcc.git" "https://github.com/gcc-mirror/gcc")
+          for URL in "${BACKUP_URLS[@]}"; do
+              git clone "$URL" -b master gcc --depth=1 && break
+          done
+
           cd "${WORK_DIR}"
           echo "Downloaded prerequisites!"
 
@@ -385,7 +394,7 @@ jobs:
             --enable-languages=c,c++,fortran,lto \
             --enable-threads=posix \
             --prefix="$PREFIX" \
-            --with-tune=generic \ 
+            --with-tune=generic \
             --with-gcc-major-version-only \
             --with-gnu-as \
             --with-gnu-ld \
@@ -401,7 +410,7 @@ jobs:
           echo "Built GCC end!"
           
           cd /workspace/gcc-x86
-          zname=/workspace/centos7-eva-gcc-x86-$(/bin/date -u '+%Y%m%d')
+          zname=/workspace/centos7-indiff-gcc-x86-$(/bin/date -u '+%Y%m%d')
           zip -r -q -9 $zname.zip .
           mv $zname.zip $zname.xz
           
