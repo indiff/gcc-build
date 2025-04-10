@@ -372,6 +372,8 @@ jobs:
           # --target="$TARGET" --build="$TARGET" --host="$TARGET"
           #             --enable-libstdcxx-backtrace \
           # --with-headers="/usr/include" \
+          # https://gitlab.com/redhat/centos-stream/rpms/gcc-toolset-14-gcc
+          rm -rf ../gcc/testsuite
           env CFLAGS="$OPT_FLAGS" CXXFLAGS="$OPT_FLAGS" \
             ../gcc/configure --target="$TARGET" --build="$TARGET" --host="$TARGET" \
             --with-bugurl=https://github.com/indiff/gcc-build \
@@ -396,14 +398,18 @@ jobs:
             --enable-default-ssp \
             --enable-languages=c,c++,fortran,lto \
             --enable-threads=posix \
+            --enable-libstdcxx-backtrace \
+            --enable-offload-targets=nvptx-none \
+            --without-cuda-driver --enable-offload-defaulted \
+            --with-tune=generic \
+            --with-arch_32=x86-64 \
             --prefix="$PREFIX" \
             --with-tune=generic \
             --with-gcc-major-version-only \
             --with-gnu-as \
             --with-gnu-ld \
             --with-linker-hash-style=gnu \
-            --with-pkgversion="Indiff GCC" \
-            --with-sysroot
+            --with-pkgversion="Indiff GCC"
 
           make all-gcc -j"$JOBS"
           make all-target-libgcc -j"$JOBS"
