@@ -332,8 +332,8 @@ jobs:
           ./configure --prefix=/opt/git
           rlib=$WORK_DIR/vcpkg/packages/curl_x64-linux
           slib=$WORK_DIR/vcpkg/packages/openssl_x64-linux
-          cp -f $rlib/include/curl.h /usr/include/curl/curl.h
-          make -j"$JOBS" NO_EXPAT=1 NO_TCLTK=1 NO_GETTEXT=1 NO_PERL=1 LDFLAGS="-static -I$rlib/include" \
+          cp -f $rlib/include/curl/curl.h /usr/include/curl/curl.h
+          make -j"$JOBS" NO_EXPAT=1 NO_TCLTK=1 NO_GETTEXT=1 NO_PERL=1 CFLAGS="-I/workspace/vcpkg/packages/curl_x64-linux/include/curl" LDFLAGS="-static -I$rlib/include/curl" \
               NO_REGEX=NeedsStartEnd \
               NO_INSTALL_HARDLINKS=Yes \
               INSTALL_SYMLINKS=Yes \
