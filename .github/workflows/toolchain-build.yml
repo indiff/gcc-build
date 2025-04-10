@@ -305,15 +305,19 @@ jobs:
           export OPT_FLAGS=""
           rm -rf "$WORK_DIR"/{binutils,build-binutils,build-gcc,gcc}
           
-          curl -sLO https://mirrors.edge.kernel.org/pub/software/scm/git/git-${{ env.GIT_VERSION }}.tar.gz
-          tar -zxf git-${{ env.GIT_VERSION }}.tar.gz
-          cd git-${{ env.GIT_VERSION }}
+          # curl -sLO https://mirrors.edge.kernel.org/pub/software/scm/git/git-${{ env.GIT_VERSION }}.tar.gz
+          # tar -zxf git-${{ env.GIT_VERSION }}.tar.gz
+          # cd git-${{ env.GIT_VERSION }}
+          git clone https://github.com/git/git.git --depth 1
+          cd git
+          GIT_VERSION=$(cat GIT-VERSION-FILE | cut -d'=' -f2)
           make configure
           ./configure --prefix=/opt/git
           make all -j"$JOBS"
           make install -j"$JOBS"
           cd /opt/git
-          gname=/workspace/centos6-indiff-git-${{ env.GIT_VERSION }}-$(/bin/date -u '+%Y%m%d')
+          # gname=/workspace/centos7-indiff-git-${{ env.GIT_VERSION }}-$(/bin/date -u '+%Y%m%d')
+          gname=/workspace/centos7-indiff-git-${GIT_VERSION}-$(/bin/date -u '+%Y%m%d')
           zip -r -q -9 $gname.zip .
           mv $gname.zip $gname.xz
           ln -sf /opt/git/bin/git /usr/bin/git
