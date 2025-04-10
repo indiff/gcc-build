@@ -322,7 +322,7 @@ jobs:
           ./bootstrap-vcpkg.sh
           ./vcpkg integrate install
           ./vcpkg install openssl curl[tool]
-          tree .
+          tree packages
           cd $WORK_DIR
 
           git clone https://github.com/git/git.git --depth 1
