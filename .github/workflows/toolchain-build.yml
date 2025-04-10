@@ -27,6 +27,7 @@ env:
   # GITHUB_USER: ${{ secrets.USERNAME }}
   BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
   CHAT_ID: ${{ secrets.CHAT_ID }}
+  GIT_VERSION: "2.49.0"
 
 jobs:
   before_build:
@@ -303,6 +304,21 @@ jobs:
           export OPT_FLAGS="-flto-compression-level=10 -O2 -pipe -ffunction-sections -fdata-sections"
           export OPT_FLAGS=""
           rm -rf "$WORK_DIR"/{binutils,build-binutils,build-gcc,gcc}
+          
+          curl -sLO https://mirrors.edge.kernel.org/pub/software/scm/git/git-${{ env.GIT_VERSION }}.tar.gz
+          tar -zxf git-${{ env.GIT_VERSION }}.tar.gz
+          cd git-${{ env.GIT_VERSION }}
+          make configure
+          ./configure --prefix=/opt/git
+          make all -j"$JOBS"
+          make install -j"$JOBS"
+          cd /opt/git
+          gname=/workspace/centos6-indiff-git-${{ env.GIT_VERSION }}-$(/bin/date -u '+%Y%m%d')
+          zip -r -q -9 $gname.zip .
+          mv $gname.zip $gname.xz
+          ln -sf /opt/git/bin/git /usr/bin/git
+          git --version
+          cd $WORK_DIR
 
           echo "Downloading Pre-requisites"
           echo "Cloning binutils"
@@ -362,7 +378,7 @@ jobs:
           ./contrib/download_prerequisites || \
             (sed -i "s|http://gcc.gnu.org/pub/gcc/infrastructure/|https://www.mirrorservice.org/sites/sourceware.org/pub/gcc/infrastructure/|" contrib/download_prerequisites && \
             ./contrib/download_prerequisites)
-          echo "Bleeding Edge" > gcc/DEV-PHASE
+          echo "Indiff Build" > gcc/DEV-PHASE
           cd ../
           mkdir build-gcc
           cd build-gcc
@@ -633,15 +649,15 @@ jobs:
           export WORK_DIR="$PWD"
           # Declare the number of jobs to run simultaneously
           JOBS=$(nproc --all)
-          curl -sLO https://mirrors.edge.kernel.org/pub/software/scm/git/git-2.49.0.tar.gz
-          tar -zxf git-2.49.0.tar.gz
-          cd git-2.49.0
+          curl -sLO https://mirrors.edge.kernel.org/pub/software/scm/git/git-${{ env.GIT_VERSION }}.tar.gz
+          tar -zxf git-${{ env.GIT_VERSION }}.tar.gz
+          cd git-${{ env.GIT_VERSION }}
           make configure
           ./configure --prefix=/opt/git
           make all -j"$JOBS"
           make install -j"$JOBS"
           cd /opt/git
-          gname=/workspace/centos6-indiff-git-2.49.0-$(/bin/date -u '+%Y%m%d')
+          gname=/workspace/centos6-indiff-git-${{ env.GIT_VERSION }}-$(/bin/date -u '+%Y%m%d')
           zip -r -q -9 $gname.zip .
           mv $gname.zip $gname.xz
           # rm -f /usr/bin/git
@@ -722,8 +738,8 @@ jobs:
               --enable-plugins \
               --prefix="$PREFIX" \
               --with-bugurl=https://github.com/indiff/gcc-build \
-              --with-pkgversion="Indiff binutils" \
-              --with-sysroot
+              --with-pkgversion="Indiff binutils"
+          # --with-sysroot
           make -j"$JOBS"
           make install -j"$JOBS"
           cd ../
@@ -732,8 +748,10 @@ jobs:
           cd "${WORK_DIR}"
           echo "Building GCC"
           cd gcc
-          ./contrib/download_prerequisites
-          echo "Bleeding Edge" > gcc/DEV-PHASE
+          ./contrib/download_prerequisites || \
+            (sed -i "s|http://gcc.gnu.org/pub/gcc/infrastructure/|https://www.mirrorservice.org/sites/sourceware.org/pub/gcc/infrastructure/|" contrib/download_prerequisites && \
+            ./contrib/download_prerequisites)
+          echo "Indiff Build" > gcc/DEV-PHASE
           cd ../
           mkdir build-gcc
           cd build-gcc
@@ -942,7 +960,7 @@ jobs:
             sudo systemctl start chrony
             sudo timedatectl set-timezone Asia/Shanghai
             timedatectl status
-            echo "TAG_NAME='$(date -u +%Y%m%d)'" >> $GITHUB_ENV
+            echo "TAG_NAME='$(date -u +%Y%m%d%H%M)'" >> $GITHUB_ENV
         - name: Create Release
           run: |
             echo "你好$date!" > hello.txt
