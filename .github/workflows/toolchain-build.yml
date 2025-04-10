@@ -308,13 +308,27 @@ jobs:
           # curl -sLO https://mirrors.edge.kernel.org/pub/software/scm/git/git-${{ env.GIT_VERSION }}.tar.gz
           # tar -zxf git-${{ env.GIT_VERSION }}.tar.gz
           # cd git-${{ env.GIT_VERSION }}
+          git clone https://github.com/Microsoft/vcpkg.git
+          cd vcpkg
+          ./bootstrap-vcpkg.sh
+          ./vcpkg integrate install
+          vcpkg install openssl curl[tool]
+          tree vcpkg
+          cd $WORK_DIR
+
           git clone https://github.com/git/git.git --depth 1
           cd git
           GIT_VERSION=$(cat GIT-VERSION-FILE | cut -d'=' -f2)
           make configure
           ./configure --prefix=/opt/git
-          make all -j"$JOBS"
-          make install -j"$JOBS"
+          rlib=$WORK_DIR/vcpkg/install
+          make -j"$JOBS" NO_EXPAT=1 NO_TCLTK=1 NO_GETTEXT=1 NO_PERL=1 LDFLAGS="-static" \
+              NO_REGEX=NeedsStartEnd \
+              NO_INSTALL_HARDLINKS=Yes \
+              INSTALL_SYMLINKS=Yes \
+              CURL_LIBCURL="$rlib/libcurl.a $rlib/libssl.a $rlib/libcrypto.a -static-libgcc" all install
+
+          #make install -j"$JOBS"
           cd /opt/git
           # gname=/workspace/centos7-indiff-git-${{ env.GIT_VERSION }}-$(/bin/date -u '+%Y%m%d')
           gname=/workspace/centos7-indiff-git-${GIT_VERSION}-$(/bin/date -u '+%Y%m%d')
@@ -653,6 +667,7 @@ jobs:
           export WORK_DIR="$PWD"
           # Declare the number of jobs to run simultaneously
           JOBS=$(nproc --all)
+
           curl -sLO https://mirrors.edge.kernel.org/pub/software/scm/git/git-${{ env.GIT_VERSION }}.tar.gz
           tar -zxf git-${{ env.GIT_VERSION }}.tar.gz
           cd git-${{ env.GIT_VERSION }}
