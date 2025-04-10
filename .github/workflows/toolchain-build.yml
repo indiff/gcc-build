@@ -308,11 +308,14 @@ jobs:
           # curl -sLO https://mirrors.edge.kernel.org/pub/software/scm/git/git-${{ env.GIT_VERSION }}.tar.gz
           # tar -zxf git-${{ env.GIT_VERSION }}.tar.gz
           # cd git-${{ env.GIT_VERSION }}
-          git clone https://github.com/Microsoft/vcpkg.git
+          # https://learn.microsoft.com/zh-cn/vcpkg/concepts/build-system-integration
+          git clone https://github.com/Microsoft/vcpkg.git --depth 1
           cd vcpkg
+          export VCPKG_ROOT=$(pwd)
+          export PATH=$VCPKG_ROOT:$PATH
           ./bootstrap-vcpkg.sh
           ./vcpkg integrate install
-          vcpkg install openssl curl[tool]
+          ./vcpkg install openssl curl[tool]
           tree .
           cd $WORK_DIR
 
