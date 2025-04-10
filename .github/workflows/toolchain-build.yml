@@ -330,8 +330,8 @@ jobs:
           GIT_VERSION=$(cat GIT-VERSION-FILE | cut -d'=' -f2)
           make configure
           ./configure --prefix=/opt/git
-          rlib=$WORK_DIR/vcpkg/packages/curl_x64-linux
-          slib=$WORK_DIR/vcpkg/packages/openssl_x64-linux
+          rlib=$WORK_DIR/vcpkg/packages/curl_x64-linux/lib
+          slib=$WORK_DIR/vcpkg/packages/openssl_x64-linux/lib
           cp -f $rlib/include/curl/curl.h /usr/include/curl/curl.h
           # LDFLAGS="-static -I$rlib/include/curl"
           make -j"$JOBS" NO_EXPAT=1 NO_TCLTK=1 NO_GETTEXT=1 NO_PERL=1 CFLAGS="-I/workspace/vcpkg/packages/curl_x64-linux/include/curl" \
