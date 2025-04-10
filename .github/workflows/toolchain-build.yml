@@ -330,12 +330,13 @@ jobs:
           GIT_VERSION=$(cat GIT-VERSION-FILE | cut -d'=' -f2)
           make configure
           ./configure --prefix=/opt/git
-          rlib=$WORK_DIR/vcpkg/install
+          rlib=$WORK_DIR/vcpkg/packages/curl_x64-linux
+          slib=$WORK_DIR/vcpkg/packages/openssl_x64-linux
           make -j"$JOBS" NO_EXPAT=1 NO_TCLTK=1 NO_GETTEXT=1 NO_PERL=1 LDFLAGS="-static" \
               NO_REGEX=NeedsStartEnd \
               NO_INSTALL_HARDLINKS=Yes \
               INSTALL_SYMLINKS=Yes \
-              CURL_LIBCURL="$rlib/libcurl.a $rlib/libssl.a $rlib/libcrypto.a -static-libgcc" all install
+              CURL_LIBCURL="$rlib/libcurl.a $slib/libssl.a $slib/libcrypto.a -static-libgcc" all install
 
           #make install -j"$JOBS"
           cd /opt/git
