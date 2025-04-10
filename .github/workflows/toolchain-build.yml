@@ -334,7 +334,7 @@ jobs:
           slib=$WORK_DIR/vcpkg/packages/openssl_x64-linux
           cp -f $rlib/include/curl/curl.h /usr/include/curl/curl.h
           # LDFLAGS="-static -I$rlib/include/curl" 
-          make -j"$JOBS" NO_EXPAT=1 NO_TCLTK=1 NO_GETTEXT=1 NO_PERL=1 CFLAGS="-I$rlib/include/curl" LDFLAGS="-static" \
+          make -j"$JOBS" NO_EXPAT=1 NO_TCLTK=1 NO_GETTEXT=1 NO_PERL=1 CFLAGS="-I$rlib/include/curl" \
               NO_REGEX=NeedsStartEnd \
               NO_INSTALL_HARDLINKS=Yes \
               INSTALL_SYMLINKS=Yes \
