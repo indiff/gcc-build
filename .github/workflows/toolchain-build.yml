@@ -315,40 +315,7 @@ jobs:
           yum -y install https://packages.endpointdev.com/rhel/7/os/x86_64/endpoint-repo.x86_64.rpm
           yum -y install git
           git --version
-          git clone https://github.com/Microsoft/vcpkg.git --depth 1
-          cd vcpkg
-          export VCPKG_ROOT=$(pwd)
-          export PATH=$VCPKG_ROOT:$PATH
-          ./bootstrap-vcpkg.sh
-          ./vcpkg integrate install
-          ./vcpkg install curl[openssl]
-          tree packages
-          cd $WORK_DIR
-
-          git clone https://github.com/git/git.git --depth 1
-          cd git
-          GIT_VERSION=$(cat GIT-VERSION-FILE | cut -d'=' -f2)
-          make configure
-          ./configure --prefix=/opt/git
-          vdir=$WORK_DIR/vcpkg/installed/x64-linux
-          # cp -f $rlib/include/curl/curl.h /usr/include/curl/curl.h
-          # LDFLAGS="-static -I$rlib/include/curl" 
-          make -j"$JOBS" NO_EXPAT=1 NO_TCLTK=1 NO_GETTEXT=1 NO_PERL=1 CFLAGS="-I${vdir}/include/curl" \
-              LDFLAGS="-L${vdir}/lib"  \
-              NO_REGEX=NeedsStartEnd \
-              NO_INSTALL_HARDLINKS=Yes \
-              INSTALL_SYMLINKS=Yes \
-              CURL_LIBCURL="${vdir}/lib/libcurl.a ${vdir}/lib/libssl.a ${vdir}/lib/libcrypto.a -static-libgcc" all install
-          # package git
-          cd /opt/git
-          # gname=/workspace/centos7-indiff-git-${{ env.GIT_VERSION }}-$(/bin/date -u '+%Y%m%d')
-          gname=/workspace/centos7-indiff-git-${GIT_VERSION}-$(/bin/date -u '+%Y%m%d')
-          zip -r -q -9 $gname.zip .
-          mv $gname.zip $gname.xz
-          ln -sf /opt/git/bin/git /usr/bin/git
-          git --version
-          cd $WORK_DIR
-
+          
           echo "Downloading Pre-requisites"
           echo "Cloning binutils"
           #git clone git://sourceware.org/git/binutils-gdb.git -b master binutils --depth=1
@@ -373,7 +340,8 @@ jobs:
           echo "Building Binutils"
           mkdir build-binutils
           cd build-binutils
-          # --target="$TARGET" 
+          # --target="$TARGET"
+          TARGET="x86_64-redhat-linux-gnu"
           env CFLAGS="$OPT_FLAGS" CXXFLAGS="$OPT_FLAGS" \
               ../binutils/configure --target="$TARGET" --build="$TARGET" --host="$TARGET" \
               --program-prefix= \
@@ -382,6 +350,7 @@ jobs:
               --disable-gdb \
               --disable-nls \
               --disable-werror \
+              --enable-ld \
               --enable-gold \
               --enable-deterministic-archives=no \
               --enable-lto \
@@ -392,8 +361,9 @@ jobs:
               --enable-plugins \
               --prefix="$PREFIX" \
               --with-bugurl=https://github.com/indiff/gcc-build \
-              --with-pkgversion="Indiff binutils" \
-              --with-sysroot
+              --with-sysroot=/  \
+              --with-pkgversion="Indiff binutils"
+              
           make -j"$JOBS"
           make install -j"$JOBS"
           cd ../
@@ -749,7 +719,8 @@ jobs:
           echo "Building Binutils"
           mkdir build-binutils
           cd build-binutils
-          # --target="$TARGET" 
+          # --target="$TARGET"
+          TARGET="x86_64-redhat-linux-gnu"
           env CFLAGS="$OPT_FLAGS" CXXFLAGS="$OPT_FLAGS" \
               ../binutils/configure --target="$TARGET" --build="$TARGET" --host="$TARGET" \
               --program-prefix= \
@@ -758,6 +729,7 @@ jobs:
               --disable-gdb \
               --disable-nls \
               --disable-werror \
+              --enable-ld \
               --enable-gold \
               --enable-deterministic-archives=no \
               --enable-lto \
