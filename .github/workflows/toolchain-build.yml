@@ -321,7 +321,7 @@ jobs:
           export PATH=$VCPKG_ROOT:$PATH
           ./bootstrap-vcpkg.sh
           ./vcpkg integrate install
-          ./vcpkg install openssl curl[tool]
+          ./vcpkg install curl[openssl]
           tree packages
           cd $WORK_DIR
 
@@ -330,17 +330,16 @@ jobs:
           GIT_VERSION=$(cat GIT-VERSION-FILE | cut -d'=' -f2)
           make configure
           ./configure --prefix=/opt/git
-          rlib=$WORK_DIR/vcpkg/packages/curl_x64-linux
-          slib=$WORK_DIR/vcpkg/packages/openssl_x64-linux
-          cp -f $rlib/include/curl/curl.h /usr/include/curl/curl.h
+          vdir=$WORK_DIR/vcpkg/installed/x64-linux
+          # cp -f $rlib/include/curl/curl.h /usr/include/curl/curl.h
           # LDFLAGS="-static -I$rlib/include/curl" 
-          make -j"$JOBS" NO_EXPAT=1 NO_TCLTK=1 NO_GETTEXT=1 NO_PERL=1 CFLAGS="-I$rlib/include/curl" \
+          make -j"$JOBS" NO_EXPAT=1 NO_TCLTK=1 NO_GETTEXT=1 NO_PERL=1 CFLAGS="-I${vdir}/include/curl" \
+              LDFLAGS="-L${vdir}/lib"  \
               NO_REGEX=NeedsStartEnd \
               NO_INSTALL_HARDLINKS=Yes \
               INSTALL_SYMLINKS=Yes \
-              CURL_LIBCURL="$rlib/lib/libcurl.a $slib/lib/libssl.a $slib/lib/libcrypto.a -static-libgcc" all install
-
-          #make install -j"$JOBS"
+              CURL_LIBCURL="${vdir}/lib/libcurl.a ${vdir}/lib/libssl.a ${vdir}/lib/libcrypto.a -static-libgcc" all install
+          # package git
           cd /opt/git
           # gname=/workspace/centos7-indiff-git-${{ env.GIT_VERSION }}-$(/bin/date -u '+%Y%m%d')
           gname=/workspace/centos7-indiff-git-${GIT_VERSION}-$(/bin/date -u '+%Y%m%d')
