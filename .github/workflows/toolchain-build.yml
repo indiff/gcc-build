@@ -654,9 +654,10 @@ jobs:
           cd git-${{ env.GIT_VERSION }}
           make configure
           ./configure --prefix=/opt/git
-          make all -j"$JOBS"
+          make -j"$JOBS"
           make install -j"$JOBS"
           cd /opt/git
+          du -sh *
           gname=/workspace/centos6-indiff-git-${{ env.GIT_VERSION }}-$(/bin/date -u '+%Y%m%d_%H%M')
           zip -r -q -9 $gname.zip .
           mv $gname.zip $gname.xz
