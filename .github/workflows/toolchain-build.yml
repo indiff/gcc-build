@@ -657,13 +657,18 @@ jobs:
           make all -j"$JOBS"
           make install -j"$JOBS"
           cd /opt/git
-          gname=/workspace/centos6-indiff-git-${{ env.GIT_VERSION }}-$(/bin/date -u '+%Y%m%d')
+          gname=/workspace/centos6-indiff-git-${{ env.GIT_VERSION }}-$(/bin/date -u '+%Y%m%d_%H%M')
           zip -r -q -9 $gname.zip .
           mv $gname.zip $gname.xz
           # rm -f /usr/bin/git
           ln -sf /opt/git/bin/git /usr/bin/git
           git --version
           cd $WORK_DIR
+
+          # can not build binutils in centos 6
+          # ../../binutils/gold/output.cc:32:10: fatal error: uchar.h: No such file or directory
+          # 32 | #include <uchar.h>
+          exit 0
           
           # TODO: Add more dynamic option handling
           while getopts a: flag; do
@@ -795,7 +800,7 @@ jobs:
           make install-target-libgcc -j"$JOBS"
           echo "Built GCC end!"
           cd /workspace/gcc-x86
-          zname=/workspace/centos6-indiff-gcc-x86-$(/bin/date -u '+%Y%m%d')
+          zname=/workspace/centos6-indiff-gcc-x86-$(/bin/date -u '+%Y%m%d_%H%M')
           zip -r -q -9 $zname.zip .
           mv $zname.zip $zname.xz
           
@@ -938,7 +943,7 @@ jobs:
        
 
   publish-release:
-      needs: [build-in-centos7] # build-arm64-tc,build-x86-tc,build-in-centos6
+      needs: [build-in-centos7,build-in-centos6] # build-arm64-tc,build-x86-tc,build-in-centos6
       runs-on: ubuntu-latest
 
       steps:
@@ -962,7 +967,7 @@ jobs:
             sudo systemctl start chrony
             sudo timedatectl set-timezone Asia/Shanghai
             timedatectl status
-            echo "TAG_NAME='$(date -u +%Y%m%d%H%M)'" >> $GITHUB_ENV
+            echo "TAG_NAME=$(date +'%Y%m%d_%H%M')" >> $GITHUB_ENV
         - name: Create Release
           run: |
             echo "你好$date!" > hello.txt
