@@ -689,11 +689,14 @@ jobs:
           mv "${gname}.zip" "${gname}.xz"
           ls -lh $gname.xz
           # rm -f /usr/bin/git
-          ln -sf /opt/git/bin/git /usr/bin/git
+          # ln -sf /opt/git/bin/git /usr/bin/git
+          cp -f /opt/git/bin/git /usr/bin/git
           rm -rf /usr/local/libexec
-          ln -sf /opt/git/libexec /usr/local/libexec
+          
+          # ln -sf /opt/git/libexec /usr/local/libexec
           git --version
-          git clone --depth 1 https://github.com/indiff/qttabbar.git
+
+          # git clone --depth 1 https://github.com/indiff/qttabbar.git
           cd $WORK_DIR
 
           # can not build binutils in centos 6
@@ -728,7 +731,7 @@ jobs:
           echo "Downloading Pre-requisites"
           echo "Cloning binutils"
           #git clone git://sourceware.org/git/binutils-gdb.git -b master binutils --depth=1
-          BACKUP_URLS=("git://sourceware.org/git/binutils-gdb.git" "https://github.com/bminor/binutils-gdb.git")
+          BACKUP_URLS=("git://sourceware.org/git/binutils-gdb.git" "git://github.com/bminor/binutils-gdb.git")
           for URL in "${BACKUP_URLS[@]}"; do
               git clone "$URL" -b master binutils --depth=1 && break
           done
