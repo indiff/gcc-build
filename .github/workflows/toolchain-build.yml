@@ -433,7 +433,7 @@ jobs:
           echo "Built GCC end!"
           
           cd /workspace/gcc-x86
-          zname=/workspace/centos7-indiff-gcc-x86_64-$(date +'%Y%m%d_%H%M')
+          zname=/workspace/gcc-indiff-centos7-x86_64-$(date +'%Y%m%d_%H%M')
           zip -r -q -9 $zname.zip .
           mv $zname.zip $zname.xz
           
@@ -659,37 +659,41 @@ jobs:
           rm -rf po_bak
           make configure
           ./configure --prefix=/opt/git
+          # htmldir=/tmp/git-docs mandir=/tmp/git-docs infodir=/tmp/git-docs \
+          # TEST_BUILTINS_OBJS="" \
+          # TEST_OBJS="" \
+          # TEST_PROGRAMS="" \
+          # TEST_PROGRAMS_NEED_X="" \
+          # TEST_BUILTINS_OBJS="" \
+          # UNIT_TEST_PROGRAMS="" \
+          # UNIT_TEST_DIR="" \
+          # UNIT_TEST_BIN="" \
+          # UNIT_TEST_PROGS="" \
+          # UNIT_TEST_OBJS="" \
+          # CLAR_TEST_SUITES="" \
+          # CLAR_TEST_PROG="" \
           make -j"$JOBS" NO_EXPAT=1 NO_TCLTK=1 NO_GETTEXT=1 NO_PERL=1 CFLAGS="-O2 -pipe -w" \
               NO_REGEX=NeedsStartEnd \
               NO_INSTALL_HARDLINKS=Yes \
-              TEST_BUILTINS_OBJS="" \
-              TEST_OBJS="" \
-              TEST_PROGRAMS="" \
-              TEST_PROGRAMS_NEED_X="" \
-              UNIT_TEST_PROGRAMS="" \
-              UNIT_TEST_DIR="" \
-              UNIT_TEST_BIN="" \
-              TEST_BUILTINS_OBJS="" \
-              CLAR_TEST_SUITES="" \
-              CLAR_TEST_PROG="" \
-              UNIT_TEST_PROGS="" \
-              UNIT_TEST_OBJS="" \
-              htmldir=/tmp/git-docs mandir=/tmp/git-docs infodir=/tmp/git-docs \
-              INSTALL_SYMLINKS=Yes
+              INSTALL_SYMLINKS=Yes all
           make install -j"$JOBS"
           cd /opt/git
           du -sh .
           du -sh *
           tree /opt/git
+          tree /opt/git > /workspace/git-indiff-centos6-tree.xz
           echo $(pwd)
-          gname="/workspace/centos6-indiff-git-${{ env.GIT_VERSION }}-$(date +'%Y%m%d_%H%M')"
+          gname="/workspace/git-indiff-centos6-${{ env.GIT_VERSION }}-$(date +'%Y%m%d_%H%M')"
           cd /opt/git
           zip -r -q -9 "${gname}.zip" .
           mv "${gname}.zip" "${gname}.xz"
           ls -lh $gname.xz
           # rm -f /usr/bin/git
           ln -sf /opt/git/bin/git /usr/bin/git
+          rm -rf /usr/local/libexec
+          ln -sf /opt/git/libexec /usr/local/libexec
           git --version
+          git clone --depth 1 https://github.com/indiff/qttabbar.git
           cd $WORK_DIR
 
           # can not build binutils in centos 6
