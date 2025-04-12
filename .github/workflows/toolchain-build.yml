@@ -652,17 +652,39 @@ jobs:
           curl -sLO https://mirrors.edge.kernel.org/pub/software/scm/git/git-${{ env.GIT_VERSION }}.tar.gz
           tar -zxf git-${{ env.GIT_VERSION }}.tar.gz
           cd git-${{ env.GIT_VERSION }}
+          cp -rf po po_bak
+          rm -f po/*.po
+          cp po_bak/zh*.po po/
+          rm -rf po_bak
           make configure
           ./configure --prefix=/opt/git
-          make -j"$JOBS"
+          make -j"$JOBS" NO_EXPAT=1 NO_TCLTK=1 NO_GETTEXT=1 NO_PERL=1 CFLAGS="-O2 -pipe -w" \
+              NO_REGEX=NeedsStartEnd \
+              NO_INSTALL_HARDLINKS=Yes \
+              TEST_BUILTINS_OBJS="" \
+              TEST_OBJS="" \
+              TEST_PROGRAMS="" \
+              TEST_PROGRAMS_NEED_X="" \
+              UNIT_TEST_PROGRAMS="" \
+              UNIT_TEST_DIR="" \
+              UNIT_TEST_BIN="" \
+              TEST_BUILTINS_OBJS="" \
+              CLAR_TEST_SUITES="" \
+              CLAR_TEST_PROG="" \
+              UNIT_TEST_PROGS="" \
+              UNIT_TEST_OBJS="" \
+              htmldir=/tmp/git-docs mandir=/tmp/git-docs infodir=/tmp/git-docs \
+              INSTALL_SYMLINKS=Yes
           make install -j"$JOBS"
           cd /opt/git
-          du -sh /opt/git
+          du -sh .
           du -sh *
-          tree /opt
+          tree /opt/git
+          echo $(pwd)
           gname=/workspace/centos6-indiff-git-${{ env.GIT_VERSION }}-$(/bin/date -u '+%Y%m%d_%H%M')
           zip -r -q -9 $gname.zip .
           mv $gname.zip $gname.xz
+          ls -lh $gname.xz
           # rm -f /usr/bin/git
           ln -sf /opt/git/bin/git /usr/bin/git
           git --version
@@ -751,6 +773,7 @@ jobs:
               --with-pkgversion="Indiff binutils"
           # --with-sysroot
           make -j"$JOBS"
+
           make install -j"$JOBS"
           cd ../
           echo "Built Binutils, proceeding to next step...."
