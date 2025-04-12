@@ -659,7 +659,7 @@ jobs:
           rm -rf po_bak
           make configure
           ./configure --prefix=/opt/git
-          make -j"$JOBS" --prefix=/opt/git NO_EXPAT=1 NO_TCLTK=1 NO_GETTEXT=1 NO_PERL=1 CFLAGS="-O2 -pipe -w" \
+          make -j"$JOBS" NO_EXPAT=1 NO_TCLTK=1 NO_GETTEXT=1 NO_PERL=1 CFLAGS="-O2 -pipe -w" \
               NO_REGEX=NeedsStartEnd \
               NO_INSTALL_HARDLINKS=Yes \
               TEST_BUILTINS_OBJS="" \
@@ -986,16 +986,17 @@ jobs:
         - name: Release Tag
           id: release_tag
           run: |
-            sudo add-apt-repository ppa:ubuntu-toolchain-r/test
-            sudo apt update
+            # sudo add-apt-repository ppa:ubuntu-toolchain-r/test
+            # sudo apt update
             # sudo add-apt-repository ppa:ubuntu-toolchain-r/ppa
-            sudo apt upgrade
+            # sudo apt upgrade
             sudo apt install -y chrony
             sudo systemctl enable chrony
             sudo systemctl start chrony
             sudo timedatectl set-timezone Asia/Shanghai
             timedatectl status
             echo "TAG_NAME=$(date +'%Y%m%d_%H%M')" >> $GITHUB_ENV
+
         - name: Create Release
           run: |
             echo "你好$date!" > hello.txt
