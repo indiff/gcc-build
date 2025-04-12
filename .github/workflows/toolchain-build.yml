@@ -433,7 +433,7 @@ jobs:
           echo "Built GCC end!"
           
           cd /workspace/gcc-x86
-          zname=/workspace/centos7-indiff-gcc-x86-$(/bin/date -u '+%Y%m%d')
+          zname=/workspace/centos7-indiff-gcc-x86_64-$(date +'%Y%m%d_%H%M')
           zip -r -q -9 $zname.zip .
           mv $zname.zip $zname.xz
           
@@ -555,7 +555,7 @@ jobs:
           rm ".file-idx"
           
           cd /workspace/gcc-x86
-          zip -r -q -9 /workspace/centos7-eva-gcc-lld-x86-$(/bin/date -u '+%d%m%Y').zip .
+          zip -r -q -9 /workspace/centos7-indiff-gcc-lld-x86_64-$(date +'%Y%m%d_%H%M').zip .
           # get glibc Version
           echo $(cut -d- -f2 <<<$(rpm -q glibc)) >> /workspace/glibc_version.txt
           EOF
@@ -622,9 +622,10 @@ jobs:
           yum install -y https://dl.fedoraproject.org/pub/archive/epel/6/x86_64/Packages/e/epel-release-6-8.noarch.rpm
           ls -lh /etc/yum.repos.d/
 
-          yum -y install tzdata
+          yum install -y tzdata sudo
           ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
           echo 'Asia/Shanghai' > /etc/timezone
+
           yum update -y
           yum install -y flex bison ncurses-dev texinfo gcc gperf patch libtool automake g++ libncurses5-dev gawk subversion expat libexpat1-dev binutils-dev bc libcap-dev autoconf libgmp-dev build-essential pkg-config libmpc-dev libmpfr-dev autopoint gettext txt2man liblzma-dev libssl-dev libz-dev mercurial wget tar cmake zstd ninja-build lz4 liblz4-tool liblz4-dev lzma libc6-dev-i386 ncurses-devel expat-devel binutils-devel gmp-devel make pkgconfig mpfr-devel gettext-devel zlib-devel lz4-devel xz xz-devel glibc-devel.i686 which clang lld bzip2 glibc glibc-devel --skip-broken
           yum install -y pcre-devel zlib-devel make git wget sed perl-IPC-Cmd GeoIP GeoIP-devel zip systemd autoconf automake libtool
@@ -658,7 +659,7 @@ jobs:
           rm -rf po_bak
           make configure
           ./configure --prefix=/opt/git
-          make -j"$JOBS" NO_EXPAT=1 NO_TCLTK=1 NO_GETTEXT=1 NO_PERL=1 CFLAGS="-O2 -pipe -w" \
+          make -j"$JOBS" --prefix=/opt/git NO_EXPAT=1 NO_TCLTK=1 NO_GETTEXT=1 NO_PERL=1 CFLAGS="-O2 -pipe -w" \
               NO_REGEX=NeedsStartEnd \
               NO_INSTALL_HARDLINKS=Yes \
               TEST_BUILTINS_OBJS="" \
@@ -681,9 +682,10 @@ jobs:
           du -sh *
           tree /opt/git
           echo $(pwd)
-          gname=/workspace/centos6-indiff-git-${{ env.GIT_VERSION }}-$(/bin/date -u '+%Y%m%d_%H%M')
-          zip -r -q -9 $gname.zip .
-          mv $gname.zip $gname.xz
+          gname="/workspace/centos6-indiff-git-${{ env.GIT_VERSION }}-$(date +'%Y%m%d_%H%M')"
+          cd /opt/git
+          zip -r -q -9 "${gname}.zip" .
+          mv "${gname}.zip" "${gname}.xz"
           ls -lh $gname.xz
           # rm -f /usr/bin/git
           ln -sf /opt/git/bin/git /usr/bin/git
@@ -826,7 +828,7 @@ jobs:
           make install-target-libgcc -j"$JOBS"
           echo "Built GCC end!"
           cd /workspace/gcc-x86
-          zname=/workspace/centos6-indiff-gcc-x86-$(/bin/date -u '+%Y%m%d_%H%M')
+          zname=/workspace/centos6-indiff-gcc-x86-$(date +'%Y%m%d_%H%M')
           zip -r -q -9 $zname.zip .
           mv $zname.zip $zname.xz
           
