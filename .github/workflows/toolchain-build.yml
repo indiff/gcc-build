@@ -96,7 +96,7 @@ jobs:
 
   build-x86-tc:
     # skip
-    if: false
+    if: true
     runs-on: ubuntu-latest
 
     steps:
@@ -588,7 +588,7 @@ jobs:
   
   build-in-centos6:
     # skip
-    if: true
+    if: false
     runs-on: ubuntu-latest
     needs: before_build
 
