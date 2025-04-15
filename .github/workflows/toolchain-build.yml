@@ -127,14 +127,14 @@ jobs:
         tree gcc-x86
         #tar -cvf eva-gcc-x86-$(/bin/date -u '+%d%m%Y').xz gcc-x86/*
         cd gcc-x86
-        zip -r -q -9 ../eva-gcc-x86-$(/bin/date -u '+%d%m%Y').zip .
+        zip -r -q -9 ../gcc-indiff-ubuntu-x86_64-$(date +'%Y%m%d_%H%M').xz .
         
 
     - uses: actions/upload-artifact@main
       with:
        name: x86-tarball
        path: |
-         *.zip
+         *.xz
 
   build-in-centos7:
     runs-on: ubuntu-latest
@@ -978,7 +978,8 @@ jobs:
        
 
   publish-release:
-      needs: [build-in-centos7,build-in-centos6] # build-arm64-tc,build-x86-tc,build-in-centos6
+      #  build-in-centos6 can not buildss
+      needs: [build-in-centos7, build-x86-tc] # build-arm64-tc,build-x86-tc,build-in-centos6
       runs-on: ubuntu-latest
 
       steps:

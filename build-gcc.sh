@@ -23,7 +23,8 @@ case "${arch}" in
   "arm") TARGET="arm-eabi" ;;
   "arm64") TARGET="aarch64-elf" ;;
   "arm64gnu") TARGET="aarch64-linux-gnu" ;;
-  "x86") TARGET="x86_64-elf" ;;
+  # "x86") TARGET="x86_64-elf" ;;
+  "x86") TARGET="x86_64-linux-gnu" ;;
 esac
 
 export WORK_DIR="$PWD"
@@ -51,24 +52,35 @@ download_resources() {
 }
 
 build_binutils() {
-  cd "${WORK_DIR}"
-  echo "Building Binutils"
-  mkdir build-binutils
-  cd build-binutils
-  env CFLAGS="$OPT_FLAGS" CXXFLAGS="$OPT_FLAGS" \
-    ../binutils/configure --target="$TARGET" \
-    --disable-docs \
-    --disable-gdb \
-    --disable-nls \
-    --disable-werror \
-    --enable-gold \
-    --prefix="$PREFIX" \
-    --with-pkgversion="Eva Binutils" \
-    --with-sysroot
-  make -j"$JOBS"
-  make install -j"$JOBS"
-  cd ../
-  echo "Built Binutils, proceeding to next step...."
+	  cd "${WORK_DIR}"
+	  echo "Building Binutils"
+	  mkdir build-binutils
+	  cd build-binutils
+	  env CFLAGS="$OPT_FLAGS" CXXFLAGS="$OPT_FLAGS" \
+		../binutils/configure --target="$TARGET" --build="$TARGET" --host="$TARGET"  \
+		--program-prefix= \
+		--disable-docs \
+		--disable-gdb \
+		--disable-nls \
+		--disable-werror \
+		--enable-ld \
+		--enable-gold \
+		--enable-deterministic-archives=no \
+		--enable-lto \
+		--enable-compressed-debug-sections=none \
+		--enable-generate-build-notes=no \
+		--enable-threads=yes \
+		--enable-relro=yes \
+		--enable-plugins \
+		--prefix="$PREFIX" \
+		--with-bugurl=https://github.com/indiff/gcc-build \
+		--with-sysroot=/  \
+		--with-pkgversion="Indiff binutils"
+	  
+	  make -j"$JOBS"
+	  make install -j"$JOBS"
+	  cd ../
+	  echo "Built Binutils, proceeding to next step...."
 }
 
 build_gcc() {
@@ -93,23 +105,30 @@ build_gcc() {
     --disable-libstdcxx-pch \
     --disable-nls \
     --disable-shared \
+	--disable-libunwind-exceptions \
+	--enable-__cxa_atexit \
     --enable-bootstrap \
     --enable-multilib \
     --enable-gnu-unique-object \
     --enable-plugin  \
-    --enable-gnu-indirect-functio \
+    --enable-gnu-indirect-function \
     --enable-initfini-array \
     --enable-default-ssp \
     --enable-languages=c,c++,fortran,lto \
     --enable-threads=posix \
+	--enable-libstdcxx-backtrace \
+	--enable-offload-targets=nvptx-none \
+	--without-cuda-driver --enable-offload-defaulted \
+	--with-tune=generic \
+	--with-gcc-major-version-only \
+	--with-arch_32=x86-64 \
     --prefix="$PREFIX" \
     --with-gnu-as \
     --with-gnu-ld \
     --with-headers="/usr/include" \
     --with-linker-hash-style=gnu \
     --with-newlib \
-    --with-pkgversion="Eva GCC" \
-    --with-sysroot
+    --with-pkgversion="Indiff GCC"
 
   make all-gcc -j"$JOBS"
   make all-target-libgcc -j"$JOBS"
