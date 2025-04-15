@@ -125,9 +125,7 @@ build_gcc() {
     --prefix="$PREFIX" \
     --with-gnu-as \
     --with-gnu-ld \
-    --with-headers="/usr/include" \
     --with-linker-hash-style=gnu \
-    --with-newlib \
     --with-pkgversion="Indiff GCC"
 
   make all-gcc -j"$JOBS"
