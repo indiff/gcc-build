@@ -1,6 +1,6 @@
 # GCC Cross Compiler Toolchain Build Script
 
-[![GCC+LLD Build](https://github.com/mvaisakh/gcc-build/actions/workflows/toolchain-build.yml/badge.svg)](https://github.com/mvaisakh/gcc-build/actions/workflows/toolchain-build.yml)
+[![GCC+LLD Build](https://github.com/indiff/gcc-build/actions/workflows/toolchain-build.yml/badge.svg)](https://github.com/indiff/gcc-build/actions/workflows/toolchain-build.yml)
 
 This repository contains the script needed to compile bare metal GCC for various architectures using Linux distributions. The GCC source is fetched from the master branch hence, contains all the bleeding edge changes.
 
