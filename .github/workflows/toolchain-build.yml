@@ -28,7 +28,8 @@ env:
   BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
   CHAT_ID: ${{ secrets.CHAT_ID }}
   GIT_VERSION: "2.49.0"
-
+  gcc_indiff_ubuntu_url: "https://github.com/indiff/gcc-build/releases/download/20250416_1126/gcc-indiff-ubuntu-x86_64-20250416_1125.xz"
+  gcc_indiff_centos7_url: "https://github.com/indiff/gcc-build/releases/download/20250416_1126/gcc-indiff-centos7-x86_64-20250416_1053.xz"
 jobs:
   before_build:
     runs-on: [ ubuntu-latest ]
@@ -122,7 +123,14 @@ jobs:
         # 示例安装GCC 14
         sudo apt install gcc-14
         sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-14 14
-        
+        gcc --version
+
+        # update my gcc
+        curl -sLo /opt/indiff-gcc.zip ${{ env.gcc_indiff_ubuntu_url }}
+        sudo unzip /opt/indiff-gcc.zip -d /opt/indiff-gcc
+        sudo update-alternatives --install /opt/indiff-gcc/bin/gcc gcc /usr/bin/gcc-15 15
+        gcc --version
+
     - name: Build
       run: |
         chmod a+x build-*.sh
@@ -265,6 +273,11 @@ jobs:
           source /opt/rh/devtoolset-10/enable
           gcc -v
           make -v
+
+          # update my gcc
+          curl -sLo /opt/indiff-gcc.zip ${{ env.gcc_indiff_centos7_url }}
+          unzip /opt/indiff-gcc.zip -d /opt/indiff-gcc
+          export CC=/opt/indiff-gcc/bin/gcc
           
           free -h
           # 创建一个2GB的交换文件
