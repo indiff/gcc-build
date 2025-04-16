@@ -277,11 +277,11 @@ jobs:
           make -v
 
           # update my gcc
-          curl -sLo /opt/indiff-gcc.zip ${{ env.gcc_indiff_centos7_url }}
-          unzip /opt/indiff-gcc.zip -d /opt/indiff-gcc
-          yum install -y elfutils-devel
-          export CC=/opt/indiff-gcc/bin/gcc
-          export LD=/opt/indiff-gcc/bin/ld
+          # curl -sLo /opt/indiff-gcc.zip ${{ env.gcc_indiff_centos7_url }}
+          # unzip /opt/indiff-gcc.zip -d /opt/indiff-gcc
+          # yum install -y elfutils-devel
+          # export CC=/opt/indiff-gcc/bin/gcc
+          # export LD=/opt/indiff-gcc/bin/ld
           
           free -h
           # 创建一个2GB的交换文件
