@@ -115,6 +115,14 @@ jobs:
         /usr/bin/timedatectl set-timezone Asia/Shanghai || true; 
         /usr/bin/timedatectl set-ntp true || true;
         sudo apt-get install -y flex bison ncurses-dev texinfo gcc gperf patch libtool automake g++ libncurses5-dev gawk subversion expat libexpat1-dev binutils-dev bc libcap-dev autoconf libgmp-dev build-essential pkg-config libmpc-dev libmpfr-dev autopoint gettext txt2man liblzma-dev libssl-dev libz-dev mercurial wget tar cmake zstd ninja-build lz4 liblz4-tool liblz4-dev lzma libc6-dev-i386 --fix-broken --fix-missing
+        # update latest gcc
+        sudo add-apt-repository ppa:ubuntu-toolchain-r/test
+        sudo apt update
+        sudo apt upgrade
+        # 示例安装GCC 14
+        sudo apt install gcc-14
+        sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-14 14
+        
     - name: Build
       run: |
         chmod a+x build-*.sh
@@ -122,17 +130,16 @@ jobs:
         ./build-gcc.sh -a x86
         cd gcc-x86
         zip -r -q -9 ../gcc-indiff-ubuntu-x86_64-$(date +'%Y%m%d_%H%M').xz .
-        cd ..
-        ./build-lld.sh -a x86
-        script_dir=$(pwd)
-        bash "$script_dir/strip-binaries.sh"
+        # cd ..
+        # ./build-lld.sh -a x86
+        # script_dir=$(pwd)
+        # bash "$script_dir/strip-binaries.sh"
 
     - name: Create tarball
       run: |
         tree gcc-x86
-        #tar -cvf eva-gcc-x86-$(/bin/date -u '+%d%m%Y').xz gcc-x86/*
-        cd gcc-x86
-        zip -r -q -9 ../gcc-indiff-ubuntu-x86_64-all-$(date +'%Y%m%d_%H%M').xz .
+        # cd gcc-x86
+        # zip -r -q -9 ../gcc-indiff-ubuntu-x86_64-all-$(date +'%Y%m%d_%H%M').xz .
         
 
     - uses: actions/upload-artifact@main

@@ -88,13 +88,17 @@ build_gcc() {
   echo "Building GCC"
   cd gcc
   ./contrib/download_prerequisites
-  echo "Bleeding Edge" > gcc/DEV-PHASE
+  echo "Indiff Build" > gcc/DEV-PHASE
   cd ../
   mkdir build-gcc
   cd build-gcc
+  rm -rf ../gcc/testsuite
+  # --target="$TARGET" --build="$TARGET" --host="$TARGET" 
   env CFLAGS="$OPT_FLAGS" CXXFLAGS="$OPT_FLAGS" \
-    ../gcc/configure --target="$TARGET" \
+    ../gcc/configure --target="$TARGET" --build="$TARGET" --host="$TARGET"  \
     --with-bugurl=https://github.com/indiff/gcc-build \
+	--program-prefix="" \
+	--program-suffix="" \
     --disable-decimal-float \
     --disable-docs \
     --disable-gcov \
@@ -105,8 +109,8 @@ build_gcc() {
     --disable-libstdcxx-pch \
     --disable-nls \
     --disable-shared \
-	--disable-libunwind-exceptions \
-	--enable-__cxa_atexit \
+    --disable-libunwind-exceptions \
+    --enable-__cxa_atexit \
     --enable-bootstrap \
     --enable-multilib \
     --enable-gnu-unique-object \
@@ -116,12 +120,12 @@ build_gcc() {
     --enable-default-ssp \
     --enable-languages=c,c++,fortran,lto \
     --enable-threads=posix \
-	--enable-libstdcxx-backtrace \
-	--enable-offload-targets=nvptx-none \
-	--without-cuda-driver --enable-offload-defaulted \
-	--with-tune=generic \
-	--with-gcc-major-version-only \
-	--with-arch_32=x86-64 \
+    --enable-libstdcxx-backtrace \
+    --enable-offload-targets=nvptx-none \
+    --without-cuda-driver --enable-offload-defaulted \
+    --with-tune=generic \
+    --with-gcc-major-version-only \
+    --with-arch_32=x86-64 \
     --prefix="$PREFIX" \
     --with-gnu-as \
     --with-gnu-ld \
