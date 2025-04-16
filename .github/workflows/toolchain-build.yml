@@ -279,6 +279,7 @@ jobs:
           # update my gcc
           curl -sLo /opt/indiff-gcc.zip ${{ env.gcc_indiff_centos7_url }}
           unzip /opt/indiff-gcc.zip -d /opt/indiff-gcc
+          yum install -y elfutils-devel
           export CC=/opt/indiff-gcc/bin/gcc
           
           free -h
