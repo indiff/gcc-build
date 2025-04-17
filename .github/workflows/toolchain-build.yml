@@ -185,11 +185,11 @@ jobs:
 
           # 定义镜像列表  "http://mirrors.aliyun.com/centos-vault/7.9.2009"
           MIRRORS=(
-              "http://mirror.rackspace.com/centos-vault/7.9.2009/"
-              "https://mirror.nsc.liu.se/centos-store/7.9.2009/"
-              "https://linuxsoft.cern.ch/centos-vault/7.9.2009/"
-              "https://archive.kernel.org/centos-vault/7.9.2009/"
-              "https://vault.centos.org/7.9.2009/"
+              "http://mirror.rackspace.com/centos-vault/7.9.2009"
+              "https://mirror.nsc.liu.se/centos-store/7.9.2009"
+              "https://linuxsoft.cern.ch/centos-vault/7.9.2009"
+              "https://archive.kernel.org/centos-vault/7.9.2009"
+              "https://vault.centos.org/7.9.2009"
           )
 
           # 初始化变量
@@ -219,19 +219,19 @@ jobs:
 
           echo "[base]" > /etc/yum.repos.d/CentOS-Base.repo
           echo "name=CentOS-Base" >> /etc/yum.repos.d/CentOS-Base.repo
-          echo "baseurl=${FASTEST_MIRROR}os/x86_64/$basearch/" >> /etc/yum.repos.d/CentOS-Base.repo
+          echo "baseurl=${FASTEST_MIRROR}/os/\$basearch/" >> /etc/yum.repos.d/CentOS-Base.repo
           echo "gpgcheck=0" >> /etc/yum.repos.d/CentOS-Base.repo
           echo "[updates]"  >> /etc/yum.repos.d/CentOS-Base.repo
           echo "name=CentOS-updates" >> /etc/yum.repos.d/CentOS-Base.repo
-          echo "baseurl=${FASTEST_MIRROR}updates/x86_64/$basearch/" >> /etc/yum.repos.d/CentOS-Base.repo
+          echo "baseurl=${FASTEST_MIRROR}/updates/\$basearch/" >> /etc/yum.repos.d/CentOS-Base.repo
           echo "gpgcheck=0" >> /etc/yum.repos.d/CentOS-Base.repo
           echo "[extras]"  >> /etc/yum.repos.d/CentOS-Base.repo
           echo "name=CentOS-extras" >> /etc/yum.repos.d/CentOS-Base.repo
-          echo "baseurl=${FASTEST_MIRROR}extras/x86_64/$basearch/" >> /etc/yum.repos.d/CentOS-Base.repo
+          echo "baseurl=${FASTEST_MIRROR}/extras/\$basearch/" >> /etc/yum.repos.d/CentOS-Base.repo
           echo "gpgcheck=0" >> /etc/yum.repos.d/CentOS-Base.repo
           echo "[centosplus]"  >> /etc/yum.repos.d/CentOS-Base.repo
           echo "name=CentOS-centosplus" >> /etc/yum.repos.d/CentOS-Base.repo
-          echo "baseurl=${FASTEST_MIRROR}centosplus/x86_64/$basearch/" >> /etc/yum.repos.d/CentOS-Base.repo
+          echo "baseurl=${FASTEST_MIRROR}/centosplus/\$basearch/" >> /etc/yum.repos.d/CentOS-Base.repo
           echo "gpgcheck=0" >> /etc/yum.repos.d/CentOS-Base.repo
 
           yum clean all
