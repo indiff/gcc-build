@@ -1008,7 +1008,7 @@ jobs:
 
   publish-release:
       #  build-in-centos6 can not buildss
-      needs: [build-in-centos7, build-x86-tc] # build-arm64-tc,build-x86-tc,build-in-centos6
+      needs: [before_build,build-in-centos7, build-x86-tc] # build-arm64-tc,build-x86-tc,build-in-centos6
       runs-on: ubuntu-latest
 
       steps:
