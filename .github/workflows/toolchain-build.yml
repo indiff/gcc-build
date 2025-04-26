@@ -430,21 +430,22 @@ jobs:
             --disable-libquadmath \
             --disable-libstdcxx-pch \
             --disable-nls \
-            --disable-shared \
+            --disable-multilib \
             --disable-libunwind-exceptions \
             --enable-__cxa_atexit \
+            --enable-shared \
             --enable-bootstrap \
-            --enable-multilib \
             --enable-gnu-unique-object \
             --enable-plugin  \
             --enable-gnu-indirect-function \
             --enable-initfini-array \
             --enable-default-ssp \
-            --enable-languages=c,c++,fortran,lto \
+            --enable-languages=c,c++,lto \
             --enable-threads=posix \
             --enable-libstdcxx-backtrace \
             --enable-offload-targets=nvptx-none \
             --without-cuda-driver --enable-offload-defaulted \
+            --with-default-libstdcxx-abi=gcc4-compatible \
             --with-tune=generic \
             --with-arch_32=x86-64 \
             --prefix="$PREFIX" \
