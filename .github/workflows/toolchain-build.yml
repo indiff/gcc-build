@@ -456,10 +456,12 @@ jobs:
             --with-linker-hash-style=gnu \
             --with-pkgversion="Indiff GCC"
 
-          make all-gcc -j"$JOBS"
-          make all-target-libgcc -j"$JOBS"
-          make install-gcc -j"$JOBS"
-          make install-target-libgcc -j"$JOBS"
+          # make all-gcc -j"$JOBS"
+          # make all-target-libgcc -j"$JOBS"
+          # make install-gcc -j"$JOBS"
+          # make install-target-libgcc -j"$JOBS"
+          make all -j"$JOBS"
+          make install -j"$JOBS"
           echo "Built GCC end!"
           
           cd /workspace/gcc-x86
