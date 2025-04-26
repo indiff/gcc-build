@@ -97,7 +97,7 @@ jobs:
 
   build-x86-tc:
     # skip
-    if: true
+    if: false
     runs-on: ubuntu-latest
     needs: before_build
 
@@ -416,6 +416,9 @@ jobs:
           # --target="$TARGET" --build="$TARGET" --host="$TARGET"
           #             --enable-libstdcxx-backtrace \
           # --with-headers="/usr/include" \
+          # --disable-libstdcxx-pch \
+          # --with-default-libstdcxx-abi=gcc4-compatible \
+          # --disable-nls \
           # https://gitlab.com/redhat/centos-stream/rpms/gcc-toolset-14-gcc
           rm -rf ../gcc/testsuite
           env CFLAGS="$OPT_FLAGS" CXXFLAGS="$OPT_FLAGS" \
@@ -428,8 +431,6 @@ jobs:
             --disable-libgomp \
             --disable-libmudflap \
             --disable-libquadmath \
-            --disable-libstdcxx-pch \
-            --disable-nls \
             --disable-multilib \
             --disable-libunwind-exceptions \
             --enable-__cxa_atexit \
@@ -445,7 +446,6 @@ jobs:
             --enable-libstdcxx-backtrace \
             --enable-offload-targets=nvptx-none \
             --without-cuda-driver --enable-offload-defaulted \
-            --with-default-libstdcxx-abi=gcc4-compatible \
             --with-tune=generic \
             --with-arch_32=x86-64 \
             --prefix="$PREFIX" \
@@ -1009,7 +1009,7 @@ jobs:
 
   publish-release:
       #  build-in-centos6 can not buildss
-      needs: [before_build,build-in-centos7, build-x86-tc] # build-arm64-tc,build-x86-tc,build-in-centos6
+      needs: [before_build,build-in-centos7] # build-arm64-tc,build-x86-tc,build-in-centos6
       runs-on: ubuntu-latest
 
       steps:
