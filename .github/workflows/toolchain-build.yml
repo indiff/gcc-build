@@ -453,6 +453,7 @@ jobs:
             --with-gcc-major-version-only \
             --with-gnu-as \
             --with-gnu-ld \
+            --with-zstd \
             --with-linker-hash-style=gnu \
             --with-pkgversion="Indiff GCC"
 
