@@ -134,8 +134,10 @@ build_gcc() {
 
   make all-gcc -j"$JOBS"
   make all-target-libgcc -j"$JOBS"
+  make all-target-libstdc++-v3 -j"$JOBS"
   make install-gcc -j"$JOBS"
   make install-target-libgcc -j"$JOBS"
+  make install-target-libstdc++-v3 -j"$JOBS"
   echo "Built GCC!"
 }
 
