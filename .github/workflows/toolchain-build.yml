@@ -97,7 +97,7 @@ jobs:
 
   build-x86-tc:
     # skip
-    if: false
+    if: true
     runs-on: ubuntu-latest
     needs: before_build
 
@@ -1013,7 +1013,7 @@ jobs:
 
   publish-release:
       #  build-in-centos6 can not buildss
-      needs: [before_build,build-in-centos7] # build-arm64-tc,build-x86-tc,build-in-centos6
+      needs: [before_build,build-in-centos7,build-x86-tc] # build-arm64-tc,build-x86-tc,build-in-centos6
       runs-on: ubuntu-latest
 
       steps:
