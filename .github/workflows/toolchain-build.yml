@@ -126,17 +126,17 @@ jobs:
         gcc --version
 
         # update my gcc
-        curl -sLo /opt/indiff-gcc.zip ${{ env.gcc_indiff_ubuntu_url }}
-        unzip /opt/indiff-gcc.zip -d /opt/indiff-gcc
-        sudo update-alternatives --install /usr/bin/gcc gcc /opt/indiff-gcc/bin/gcc 100
-        sudo update-alternatives --install /usr/bin/g++ g++ /opt/indiff-gcc/bin/g++ 100           
+        curl -sLo /opt/gcc-indiff.zip ${{ env.gcc_indiff_ubuntu_url }}
+        unzip /opt/gcc-indiff.zip -d /opt/gcc-indiff
+        sudo update-alternatives --install /usr/bin/gcc gcc /opt/gcc-indiff/bin/gcc 100
+        sudo update-alternatives --install /usr/bin/g++ g++ /opt/gcc-indiff/bin/g++ 100           
         gcc --version
         g++ --version
 
     - name: Build
       run: |
         chmod a+x build-*.sh
-        curl -s -X POST "https://api.telegram.org/bot${BOT_TOKEN}/sendMessage" -d chat_id="${CHAT_ID}" -d "disable_web_page_preview=true" -d "parse_mode=html" -d text="<b>Starting ARM (32-bit) GCC Build</b>"
+        curl -s -X POST "https://api.telegram.org/bot${BOT_TOKEN}/sendMessage" -d chat_id="${CHAT_ID}" -d "disable_web_page_preview=true" -d "parse_mode=html" -d text="<b>Starting Ubuntu GCC Build</b>"
         ./build-gcc.sh -a x86
         cd gcc-x86
         zip -r -q -9 ../gcc-indiff-ubuntu-${{ needs.before_build.outputs.GCC_BUILD_VERSION }}-x86_64-$(date +'%Y%m%d_%H%M').xz .
@@ -426,11 +426,11 @@ jobs:
           # --with-headers="/usr/include" \
           # --disable-libstdcxx-pch \
           # --with-default-libstdcxx-abi=gcc4-compatible \
-          # --disable-nls \
+          # --disable-nls \ 
           # https://gitlab.com/redhat/centos-stream/rpms/gcc-toolset-14-gcc
           rm -rf ../gcc/testsuite
-          env CFLAGS="$OPT_FLAGS -I${WORK_DIR}/vcpkg/installed/x64-linux/include" CXXFLAGS="$OPT_FLAGS -I${WORK_DIR}/vcpkg/installed/x64-linux/include" \
-            LDFLAGS="-L${WORK_DIR}/vcpkg/installed/x64-linux/lib" \
+          env CFLAGS="$OPT_FLAGS -I${VCPKG_ROOT}/installed/x64-linux/include" CXXFLAGS="$OPT_FLAGS -I${${VCPKG_ROOT}}/installed/x64-linux/include" \
+            LDFLAGS="-Wl,-Bstatic -lz -lzstd -Wl,-Bdynamic, -Wl,-z,relro,-rpath,${VCPKG_ROOT}/installed/x64-linux/lib -L${VCPKG_ROOT}/installed/x64-linux/lib" \
             ../gcc/configure --target="$TARGET" --build="$TARGET" --host="$TARGET" \
             --with-bugurl=https://github.com/indiff/gcc-build \
             --disable-decimal-float \
@@ -462,8 +462,8 @@ jobs:
             --with-gcc-major-version-only \
             --with-gnu-as \
             --with-gnu-ld \
-            --with-zstd=${WORK_DIR}/vcpkg/installed/x64-linux \
-            --with-zlib=${WORK_DIR}/vcpkg/installed/x64-linux \
+            --with-zstd="${VCPKG_ROOT}/installed/x64-linux" \
+            --with-zlib="${VCPKG_ROOT}/installed/x64-linux" \
             --with-linker-hash-style=gnu \
             --with-pkgversion="Indiff GCC"
 
