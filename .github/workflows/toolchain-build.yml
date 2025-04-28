@@ -430,7 +430,7 @@ jobs:
           # https://gitlab.com/redhat/centos-stream/rpms/gcc-toolset-14-gcc
           rm -rf ../gcc/testsuite
           env CFLAGS="$OPT_FLAGS -I${VCPKG_ROOT}/installed/x64-linux/include" CXXFLAGS="$OPT_FLAGS -I${VCPKG_ROOT}/installed/x64-linux/include" \
-            LDFLAGS="-Wl,-Bstatic -lz -lzstd -Wl,-Bdynamic, -Wl,-z,relro,-rpath,${VCPKG_ROOT}/installed/x64-linux/lib -L${VCPKG_ROOT}/installed/x64-linux/lib" \
+            LDFLAGS="-L${VCPKG_ROOT}/installed/x64-linux/lib" \
             ../gcc/configure --target="$TARGET" --build="$TARGET" --host="$TARGET" \
             --with-bugurl=https://github.com/indiff/gcc-build \
             --disable-decimal-float \
