@@ -362,10 +362,18 @@ jobs:
           done
 
           cd "${WORK_DIR}"
-          echo "Downloaded prerequisites!"
+          git clone --filter=blob:none https://github.com/Microsoft/vcpkg.git --depth 1
+          cd vcpkg
+          export VCPKG_ROOT=$(pwd)
+          export PATH=$VCPKG_ROOT:$PATH
+          ./bootstrap-vcpkg.sh
+          ./vcpkg integrate install
+          ./vcpkg install zlib zstd
 
+          echo "Downloaded prerequisites!"
           curl -s -X POST "https://api.telegram.org/bot${{ env.BOT_TOKEN }}/sendMessage" -d chat_id="${{ env.CHAT_ID }}" -d "disable_web_page_preview=true" -d "parse_mode=html" -d text="<b>Starting centos7 GCC Build</b>"
           cd "${WORK_DIR}"
+
           echo "Building Binutils"
           mkdir build-binutils
           cd build-binutils
@@ -421,7 +429,8 @@ jobs:
           # --disable-nls \
           # https://gitlab.com/redhat/centos-stream/rpms/gcc-toolset-14-gcc
           rm -rf ../gcc/testsuite
-          env CFLAGS="$OPT_FLAGS" CXXFLAGS="$OPT_FLAGS" \
+          env CFLAGS="$OPT_FLAGS -I${WORK_DIR}/vcpkg/installed/x64-linux/include" CXXFLAGS="$OPT_FLAGS -I${WORK_DIR}/vcpkg/installed/x64-linux/include" \
+            LDFLAGS="-L${WORK_DIR}/vcpkg/installed/x64-linux/lib" \
             ../gcc/configure --target="$TARGET" --build="$TARGET" --host="$TARGET" \
             --with-bugurl=https://github.com/indiff/gcc-build \
             --disable-decimal-float \
@@ -453,7 +462,8 @@ jobs:
             --with-gcc-major-version-only \
             --with-gnu-as \
             --with-gnu-ld \
-            --with-zstd \
+            --with-zstd=${WORK_DIR}/vcpkg/installed/x64-linux \
+            --with-zlib=${WORK_DIR}/vcpkg/installed/x64-linux \
             --with-linker-hash-style=gnu \
             --with-pkgversion="Indiff GCC"
 
