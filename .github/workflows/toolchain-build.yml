@@ -97,7 +97,7 @@ jobs:
 
   build-x86-tc:
     # skip
-    if: true
+    if: false
     runs-on: ubuntu-latest
     needs: before_build
 
@@ -431,8 +431,8 @@ jobs:
           rm -rf ../gcc/testsuite
           tree "${VCPKG_ROOT}/installed/x64-linux/include"
           tree "${VCPKG_ROOT}/installed/x64-linux/lib"
-          env CFLAGS="$OPT_FLAGS -I${VCPKG_ROOT}/installed/x64-linux/include" CXXFLAGS="$OPT_FLAGS -I${VCPKG_ROOT}/installed/x64-linux/include" \
-            CPPFLAGS="$OPT_FLAGS -I${VCPKG_ROOT}/installed/x64-linux/include" LDFLAGS="-L${VCPKG_ROOT}/installed/x64-linux/lib -l:libzstd.a -l:libz.a" \
+          env CFLAGS="$OPT_FLAGS -I${VCPKG_ROOT}/packages/zstd_x64-linux/include" CXXFLAGS="$OPT_FLAGS -I${VCPKG_ROOT}/packages/zstd_x64-linux/include" \
+            CPPFLAGS="$OPT_FLAGS -I${VCPKG_ROOT}/packages/zstd_x64-linux/include" LDFLAGS="-L${VCPKG_ROOT}/zstd_x64-linux/lib -l:libzstd.a" \
             ../gcc/configure --target="$TARGET" --build="$TARGET" --host="$TARGET" \
             --with-bugurl=https://github.com/indiff/gcc-build \
             --disable-decimal-float \
@@ -465,8 +465,9 @@ jobs:
             --with-gcc-major-version-only \
             --with-gnu-as \
             --with-gnu-ld \
-            --with-zstd-include="${VCPKG_ROOT}/installed/x64-linux/include" \
-            --with-zstd-lib="${VCPKG_ROOT}/installed/x64-linux/lib" \
+            --with-zstd="${VCPKG_ROOT}/packages/zstd_x64-linux" \
+            --with-zstd-include="${VCPKG_ROOT}/packages/zstd_x64-linux/include" \
+            --with-zstd-lib="${VCPKG_ROOT}/packages/zstd_x64-linux/lib" \
             --with-linker-hash-style=gnu \
             --with-pkgversion="Indiff GCC" || cat config.log
 
@@ -1027,7 +1028,7 @@ jobs:
 
   publish-release:
       #  build-in-centos6 can not buildss
-      needs: [before_build,build-in-centos7,build-x86-tc] # build-arm64-tc,build-x86-tc,build-in-centos6
+      needs: [before_build,build-in-centos7] # build-arm64-tc,build-x86-tc,build-in-centos6
       runs-on: ubuntu-latest
 
       steps:
