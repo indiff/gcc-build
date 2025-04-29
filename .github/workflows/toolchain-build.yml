@@ -432,7 +432,7 @@ jobs:
           tree "${VCPKG_ROOT}/installed/x64-linux/include"
           tree "${VCPKG_ROOT}/installed/x64-linux/lib"
           env CFLAGS="$OPT_FLAGS -I${VCPKG_ROOT}/installed/x64-linux/include" CXXFLAGS="$OPT_FLAGS -I${VCPKG_ROOT}/installed/x64-linux/include" \
-            CPPFLAGS="$OPT_FLAGS -I${VCPKG_ROOT}/installed/x64-linux/include" LDFLAGS="-L${VCPKG_ROOT}/installed/x64-linux/lib" \
+            CPPFLAGS="$OPT_FLAGS -I${VCPKG_ROOT}/installed/x64-linux/include" LDFLAGS="-L${VCPKG_ROOT}/installed/x64-linux/lib -l:libzstd.a -l:libz.a" \
             ../gcc/configure --target="$TARGET" --build="$TARGET" --host="$TARGET" \
             --with-bugurl=https://github.com/indiff/gcc-build \
             --disable-decimal-float \
@@ -446,6 +446,7 @@ jobs:
             --disable-libunwind-exceptions \
             --enable-__cxa_atexit \
             --enable-shared \
+            --enable-static \
             --enable-bootstrap \
             --enable-gnu-unique-object \
             --enable-plugin  \
