@@ -429,8 +429,8 @@ jobs:
           # --disable-nls \ 
           # https://gitlab.com/redhat/centos-stream/rpms/gcc-toolset-14-gcc
           rm -rf ../gcc/testsuite
-          tree -I${VCPKG_ROOT}/installed/x64-linux/include
-          tree -I${VCPKG_ROOT}/installed/x64-linux/lib
+          tree "${VCPKG_ROOT}/installed/x64-linux/include"
+          tree "${VCPKG_ROOT}/installed/x64-linux/lib"
           env CFLAGS="$OPT_FLAGS -I${VCPKG_ROOT}/installed/x64-linux/include" CXXFLAGS="$OPT_FLAGS -I${VCPKG_ROOT}/installed/x64-linux/include" \
             CPPFLAGS="$OPT_FLAGS -I${VCPKG_ROOT}/installed/x64-linux/include" LDFLAGS="-L${VCPKG_ROOT}/installed/x64-linux/lib" \
             LIBS="-lzstd" \
@@ -466,7 +466,8 @@ jobs:
             --with-gnu-as \
             --with-gnu-ld \
             --with-zstd="${VCPKG_ROOT}/installed/x64-linux" \
-            --with-zlib="${VCPKG_ROOT}/installed/x64-linux" \
+            --with-zstd-include="${VCPKG_ROOT}/installed/x64-linux/include" \
+            --with-zstd-lib="${VCPKG_ROOT}/installed/x64-linux/lib" \
             --with-linker-hash-style=gnu \
             --with-pkgversion="Indiff GCC" || cat config.log
 
