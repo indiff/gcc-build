@@ -429,8 +429,11 @@ jobs:
           # --disable-nls \ 
           # https://gitlab.com/redhat/centos-stream/rpms/gcc-toolset-14-gcc
           rm -rf ../gcc/testsuite
+          tree -I${VCPKG_ROOT}/installed/x64-linux/include
+          tree -I${VCPKG_ROOT}/installed/x64-linux/lib
           env CFLAGS="$OPT_FLAGS -I${VCPKG_ROOT}/installed/x64-linux/include" CXXFLAGS="$OPT_FLAGS -I${VCPKG_ROOT}/installed/x64-linux/include" \
-            LDFLAGS="-L${VCPKG_ROOT}/installed/x64-linux/lib" \
+            CPPFLAGS="$OPT_FLAGS -I${VCPKG_ROOT}/installed/x64-linux/include" LDFLAGS="-L${VCPKG_ROOT}/installed/x64-linux/lib" \
+            LIBS="-lzstd" \
             ../gcc/configure --target="$TARGET" --build="$TARGET" --host="$TARGET" \
             --with-bugurl=https://github.com/indiff/gcc-build \
             --disable-decimal-float \
@@ -465,7 +468,7 @@ jobs:
             --with-zstd="${VCPKG_ROOT}/installed/x64-linux" \
             --with-zlib="${VCPKG_ROOT}/installed/x64-linux" \
             --with-linker-hash-style=gnu \
-            --with-pkgversion="Indiff GCC"
+            --with-pkgversion="Indiff GCC" || cat config.log
 
           make all-gcc -j"$JOBS"
           make all-target-libgcc -j"$JOBS"
