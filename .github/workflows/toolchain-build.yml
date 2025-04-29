@@ -433,7 +433,6 @@ jobs:
           tree "${VCPKG_ROOT}/installed/x64-linux/lib"
           env CFLAGS="$OPT_FLAGS -I${VCPKG_ROOT}/installed/x64-linux/include" CXXFLAGS="$OPT_FLAGS -I${VCPKG_ROOT}/installed/x64-linux/include" \
             CPPFLAGS="$OPT_FLAGS -I${VCPKG_ROOT}/installed/x64-linux/include" LDFLAGS="-L${VCPKG_ROOT}/installed/x64-linux/lib" \
-            LIBS="-lzstd" \
             ../gcc/configure --target="$TARGET" --build="$TARGET" --host="$TARGET" \
             --with-bugurl=https://github.com/indiff/gcc-build \
             --disable-decimal-float \
@@ -465,7 +464,6 @@ jobs:
             --with-gcc-major-version-only \
             --with-gnu-as \
             --with-gnu-ld \
-            --with-zstd="${VCPKG_ROOT}/installed/x64-linux" \
             --with-zstd-include="${VCPKG_ROOT}/installed/x64-linux/include" \
             --with-zstd-lib="${VCPKG_ROOT}/installed/x64-linux/lib" \
             --with-linker-hash-style=gnu \
