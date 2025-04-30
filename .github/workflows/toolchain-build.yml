@@ -248,21 +248,21 @@ jobs:
           yum install -y perl-Test-Simple perl-FindBin perl-IPC-Cmd perl-Text-Template perl-File-Compare perl-File-Copy perl-Data-Dumper
           yum install -y llvm llvm-devel clang clang-devel libstdc++-devel glibc-devel tree
           
-          echo "[buildlogs-devtoolset-9-centos-x86_64]" > /etc/yum.repos.d/centos7-devtoolset-9.repo
-          echo "name=devtoolset-9" >> /etc/yum.repos.d/centos7-devtoolset-9.repo
-          echo "baseurl=https://buildlogs.cdn.centos.org/c7-devtoolset-9.x86_64" >> /etc/yum.repos.d/centos7-devtoolset-9.repo
-          echo "gpgcheck=0" >> /etc/yum.repos.d/centos7-devtoolset-9.repo
-          echo "enabled=1" >> /etc/yum.repos.d/centos7-devtoolset-9.repo
-          yum -y update
-          yum -y install devtoolset-9 --nogpgcheck
+          # echo "[buildlogs-devtoolset-9-centos-x86_64]" > /etc/yum.repos.d/centos7-devtoolset-9.repo
+          # echo "name=devtoolset-9" >> /etc/yum.repos.d/centos7-devtoolset-9.repo
+          # echo "baseurl=https://buildlogs.cdn.centos.org/c7-devtoolset-9.x86_64" >> /etc/yum.repos.d/centos7-devtoolset-9.repo
+          # echo "gpgcheck=0" >> /etc/yum.repos.d/centos7-devtoolset-9.repo
+          # echo "enabled=1" >> /etc/yum.repos.d/centos7-devtoolset-9.repo
+          # yum -y update
+          # yum -y install devtoolset-9 --nogpgcheck
           #scl enable devtoolset-9 bash
           #source /opt/rh/devtoolset-9/enable
           #gcc -v
           #make -v
 
           # Not using downloaded buildlogs-cdn-centos-x86_64/repomd.xml because it is older than what we have:
-          rm -f /etc/yum.repos.d/centos7-devtoolset-9.repo
-          yum clean all
+          # rm -f /etc/yum.repos.d/centos7-devtoolset-9.repo
+          # yum clean all
 
           echo "[buildlogs-devtoolset-10-centos-x86_64]" > /etc/yum.repos.d/centos7-devtoolset-10.repo
           echo "name=devtoolset-10" >> /etc/yum.repos.d/centos7-devtoolset-10.repo
@@ -284,28 +284,17 @@ jobs:
           # export LD=/opt/indiff-gcc/bin/ld
           
           free -h
-          # 创建一个2GB的交换文件
-          # fallocate -l 2G /swapfile
-          #fallocate -l 8G /tmp/swapfile || dd if=/dev/zero of=/swapfile bs=1M count=8192
-          #chmod 600 /tmp/swapfile
-          #chown -R root:root /tmp/swapfile
-          #mkswap /tmp/swapfile
-          #swapon /tmp/swapfile
-          # 确认交换空间已启用
-          #swapon --show
-          #free -h
-          
 
-          rm -f /etc/yum.repos.d/centos7-llvm.repo
-          echo "[centos7-13-llvm]" > /etc/yum.repos.d/centos7-llvm.repo
-          echo "name=CentOS-7 - llvm rh" >> /etc/yum.repos.d/centos7-llvm.repo
-          echo "baseurl=https://buildlogs.cdn.centos.org/c7-llvm-toolset-13.0.x86_64/" >> /etc/yum.repos.d/centos7-llvm.repo
-          echo "gpgcheck=0" >> /etc/yum.repos.d/centos7-llvm.repo
-          echo "enabled=1" >> /etc/yum.repos.d/centos7-llvm.repo
-          yum -y install llvm-toolset-13.0
-          scl enable llvm-toolset-13.0 bash
-          source /opt/rh/llvm-toolset-13.0/enable
-          clang --version
+          # rm -f /etc/yum.repos.d/centos7-llvm.repo
+          # echo "[centos7-13-llvm]" > /etc/yum.repos.d/centos7-llvm.repo
+          # echo "name=CentOS-7 - llvm rh" >> /etc/yum.repos.d/centos7-llvm.repo
+          # echo "baseurl=https://buildlogs.cdn.centos.org/c7-llvm-toolset-13.0.x86_64/" >> /etc/yum.repos.d/centos7-llvm.repo
+          # echo "gpgcheck=0" >> /etc/yum.repos.d/centos7-llvm.repo
+          # echo "enabled=1" >> /etc/yum.repos.d/centos7-llvm.repo
+          # yum -y install llvm-toolset-13.0
+          # scl enable llvm-toolset-13.0 bash
+          # source /opt/rh/llvm-toolset-13.0/enable
+          # clang --version
 
           # TODO: Add more dynamic option handling
           while getopts a: flag; do
@@ -334,11 +323,6 @@ jobs:
           export OPT_FLAGS=""
           rm -rf "$WORK_DIR"/{binutils,build-binutils,build-gcc,gcc}
           
-          # curl -sLO https://mirrors.edge.kernel.org/pub/software/scm/git/git-${{ env.GIT_VERSION }}.tar.gz
-          # tar -zxf git-${{ env.GIT_VERSION }}.tar.gz
-          # cd git-${{ env.GIT_VERSION }}
-          # https://learn.microsoft.com/zh-cn/vcpkg/concepts/build-system-integration
-
           # update git
           yum -y remove git
           yum -y install https://packages.endpointdev.com/rhel/7/os/x86_64/endpoint-repo.x86_64.rpm
@@ -362,13 +346,13 @@ jobs:
           done
 
           cd "${WORK_DIR}"
-          git clone --filter=blob:none https://github.com/Microsoft/vcpkg.git --depth 1
-          cd vcpkg
-          export VCPKG_ROOT=$(pwd)
-          export PATH=$VCPKG_ROOT:$PATH
-          ./bootstrap-vcpkg.sh
-          ./vcpkg integrate install
-          ./vcpkg install zlib zstd
+          # git clone --filter=blob:none https://github.com/Microsoft/vcpkg.git --depth 1
+          # cd vcpkg
+          # export VCPKG_ROOT=$(pwd)
+          # export PATH=$VCPKG_ROOT:$PATH
+          # ./bootstrap-vcpkg.sh
+          # ./vcpkg integrate install
+          # ./vcpkg install zlib zstd
 
           echo "Downloaded prerequisites!"
           curl -s -X POST "https://api.telegram.org/bot${{ env.BOT_TOKEN }}/sendMessage" -d chat_id="${{ env.CHAT_ID }}" -d "disable_web_page_preview=true" -d "parse_mode=html" -d text="<b>Starting centos7 GCC Build</b>"
@@ -428,11 +412,12 @@ jobs:
           # --with-default-libstdcxx-abi=gcc4-compatible \
           # --disable-nls \ 
           # https://gitlab.com/redhat/centos-stream/rpms/gcc-toolset-14-gcc
+          # CFLAGS="$OPT_FLAGS -I${VCPKG_ROOT}/packages/zstd_x64-linux/include" CXXFLAGS="$OPT_FLAGS -I${VCPKG_ROOT}/packages/zstd_x64-linux/include"
+          # CPPFLAGS="$OPT_FLAGS -I${VCPKG_ROOT}/packages/zstd_x64-linux/include" LDFLAGS="-L${VCPKG_ROOT}/packages/zstd_x64-linux/lib -l:libzstd.a"
+          # LIBS="${VCPKG_ROOT}/packages/zstd_x64-linux/lib/libzstd.a"
           rm -rf ../gcc/testsuite
-          tree "${VCPKG_ROOT}/packages/zstd_x64-linux/"
-          env CFLAGS="$OPT_FLAGS -I${VCPKG_ROOT}/packages/zstd_x64-linux/include" CXXFLAGS="$OPT_FLAGS -I${VCPKG_ROOT}/packages/zstd_x64-linux/include" \
-            CPPFLAGS="$OPT_FLAGS -I${VCPKG_ROOT}/packages/zstd_x64-linux/include" LDFLAGS="-L${VCPKG_ROOT}/packages/zstd_x64-linux/lib -l:libzstd.a" \
-            LIBS="${VCPKG_ROOT}/packages/zstd_x64-linux/lib/libzstd.a" \
+          # tree "${VCPKG_ROOT}/packages/zstd_x64-linux/"
+          env CFLAGS="$OPT_FLAGS" CXXFLAGS="$OPT_FLAGS" \
             ../gcc/configure --target="$TARGET" --build="$TARGET" --host="$TARGET" \
             --with-bugurl=https://github.com/indiff/gcc-build \
             --disable-decimal-float \
@@ -465,9 +450,7 @@ jobs:
             --with-gcc-major-version-only \
             --with-gnu-as \
             --with-gnu-ld \
-            --with-zstd="${VCPKG_ROOT}/packages/zstd_x64-linux" \
-            --with-zstd-include="${VCPKG_ROOT}/packages/zstd_x64-linux/include" \
-            --with-zstd-lib="${VCPKG_ROOT}/packages/zstd_x64-linux/lib" \
+            --with-zstd \
             --with-linker-hash-style=gnu \
             --with-pkgversion="Indiff GCC" || cat config.log
 
