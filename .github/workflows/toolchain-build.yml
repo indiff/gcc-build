@@ -429,10 +429,10 @@ jobs:
           # --disable-nls \ 
           # https://gitlab.com/redhat/centos-stream/rpms/gcc-toolset-14-gcc
           rm -rf ../gcc/testsuite
-          tree "${VCPKG_ROOT}/packages/zstd_x64-linux/include"
-          tree "${VCPKG_ROOT}/packages/zstd_x64-linux/lib"
+          tree "${VCPKG_ROOT}/packages/zstd_x64-linux/"
+          export LIBRARY_PATH="${VCPKG_ROOT}/packages/zstd_x64-linux/lib:$LIBRARY_PATH"
           env CFLAGS="$OPT_FLAGS -I${VCPKG_ROOT}/packages/zstd_x64-linux/include" CXXFLAGS="$OPT_FLAGS -I${VCPKG_ROOT}/packages/zstd_x64-linux/include" \
-            CPPFLAGS="$OPT_FLAGS -I${VCPKG_ROOT}/packages/zstd_x64-linux/include" LDFLAGS="-L${VCPKG_ROOT}/packages/zstd_x64-linux/lib -l:${VCPKG_ROOT}/packages/zstd_x64-linux/lib/libzstd.a" \
+            CPPFLAGS="$OPT_FLAGS -I${VCPKG_ROOT}/packages/zstd_x64-linux/include" LDFLAGS="-L${VCPKG_ROOT}/packages/zstd_x64-linux/lib -l:libzstd.a" \
             LIBS="${VCPKG_ROOT}/packages/zstd_x64-linux/lib/libzstd.a" \
             ../gcc/configure --target="$TARGET" --build="$TARGET" --host="$TARGET" \
             --with-bugurl=https://github.com/indiff/gcc-build \
