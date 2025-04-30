@@ -417,7 +417,8 @@ jobs:
           # LIBS="${VCPKG_ROOT}/packages/zstd_x64-linux/lib/libzstd.a"
           rm -rf ../gcc/testsuite
           # tree "${VCPKG_ROOT}/packages/zstd_x64-linux/"
-          env CFLAGS="$OPT_FLAGS" CXXFLAGS="$OPT_FLAGS" \
+          yum install -y libzstd-devel libzstd 
+          env CFLAGS="$OPT_FLAGS -I/usr/include" CXXFLAGS="$OPT_FLAGS -I/usr/include" \
             ../gcc/configure --target="$TARGET" --build="$TARGET" --host="$TARGET" \
             --with-bugurl=https://github.com/indiff/gcc-build \
             --disable-decimal-float \
