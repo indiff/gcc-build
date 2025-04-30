@@ -432,8 +432,8 @@ jobs:
           tree "${VCPKG_ROOT}/packages/zstd_x64-linux/include"
           tree "${VCPKG_ROOT}/packages/zstd_x64-linux/lib"
           env CFLAGS="$OPT_FLAGS -I${VCPKG_ROOT}/packages/zstd_x64-linux/include" CXXFLAGS="$OPT_FLAGS -I${VCPKG_ROOT}/packages/zstd_x64-linux/include" \
-            CPPFLAGS="$OPT_FLAGS -I${VCPKG_ROOT}/packages/zstd_x64-linux/include" LDFLAGS="-L${VCPKG_ROOT}/zstd_x64-linux/lib -l:${VCPKG_ROOT}/zstd_x64-linux/lib/libzstd.a" \
-            LIBS="${VCPKG_ROOT}/zstd_x64-linux/lib/libzstd.a" \
+            CPPFLAGS="$OPT_FLAGS -I${VCPKG_ROOT}/packages/zstd_x64-linux/include" LDFLAGS="-L${VCPKG_ROOT}/packages/zstd_x64-linux/lib -l:${VCPKG_ROOT}/packages/zstd_x64-linux/lib/libzstd.a" \
+            LIBS="${VCPKG_ROOT}/packages/zstd_x64-linux/lib/libzstd.a" \
             ../gcc/configure --target="$TARGET" --build="$TARGET" --host="$TARGET" \
             --with-bugurl=https://github.com/indiff/gcc-build \
             --disable-decimal-float \
