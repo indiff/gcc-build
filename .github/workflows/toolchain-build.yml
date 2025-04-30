@@ -1048,7 +1048,18 @@ jobs:
             | jq -r '.[0] | "\(.commit.author.name) \(.commit.message) \(.commit.author.date)"')
             # 输出变量
             echo "Commit Info: $commit_info"
-            echo -e "## 你好$(date) gcc ${{ needs.before_build.outputs.GCC_BUILD_VERSION }}\n > $commit_info" > hello.md
+            echo -e "## 你好$(date) gcc ${{ needs.before_build.outputs.GCC_BUILD_VERSION }}\n > $commit_info\n" > hello.md
+            bname=$(basename */*centos7*.xz)
+            cat <<'EOF' >> hello.md
+            ```
+            # Download to zip(proxy)
+            curl -#Lo gcc-indiff.zip https://ghproxy.cfd/https://github.com/indiff/gcc-build/releases/download/${{ env.TAG_NAME }}/${bname}
+            ```
+            ```
+            # Download to zip
+            curl -#Lo gcc-indiff.zip https://github.com/indiff/gcc-build/releases/download/${{ env.TAG_NAME }}/${bname}
+            ```
+            EOF
             gh release create ${{ env.TAG_NAME }} -F hello.md */*.xz
           env:
             GITHUB_TOKEN: ${{ github.token }}  
