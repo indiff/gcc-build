@@ -1053,15 +1053,17 @@ jobs:
             bname=$(basename */*centos7*.xz)
             
             {
-               echo -e "Download with proxy:"
-               echo -e "```bash"
-               echo -e "curl -#Lo gcc-indiff.zip \"https://ghproxy.cfd/https://github.com/indiff/gcc-build/releases/download/${{ env.TAG_NAME }}/${bname}\""
-               echo -e "```\n"
+               echo "Download with proxy:"
+               echo "```bash"
+               echo "curl -#Lo gcc-indiff.zip \"https://ghproxy.cfd/https://github.com/indiff/gcc-build/releases/download/${{ env.TAG_NAME }}/${bname}\""
+               echo "```"
+               echo 
 
-               echo -e "Direct download:"
-               echo -e "```bash"
-               echo -e "curl -#Lo gcc-indiff.zip \"https://github.com/indiff/gcc-build/releases/download/${{ env.TAG_NAME }}/${bname}\""
-               echo -e "```\n"
+               echo "Direct download:"
+               echo "```bash"
+               echo "curl -#Lo gcc-indiff.zip \"https://github.com/indiff/gcc-build/releases/download/${{ env.TAG_NAME }}/${bname}\""
+               echo -e "```"
+               echo 
             } >> hello.md
             gh release create ${{ env.TAG_NAME }} -F hello.md */*.xz
           env:
