@@ -1051,8 +1051,12 @@ jobs:
             echo "Commit Info: $commit_info"
             echo -e "## 你好$(date) gcc ${{ needs.before_build.outputs.GCC_BUILD_VERSION }}\n > $commit_info\n" > hello.md
             bname=$(basename */*centos7*.xz)
-            echo -e "``` curl -#Lo gcc-indiff.zip https://ghproxy.cfd/https://github.com/indiff/gcc-build/releases/download/${{ env.TAG_NAME }}/${bname}```\n" >> hello.md
-            echo -e "``` curl -#Lo gcc-indiff.zip https://github.com/indiff/gcc-build/releases/download/${{ env.TAG_NAME }}/${bname}```\n" >> hello.md
+            echo -e "```\n" >> hello.md
+            echo -e "curl -#Lo gcc-indiff.zip https://ghproxy.cfd/https://github.com/indiff/gcc-build/releases/download/${{ env.TAG_NAME }}/${bname}" >> hello.md
+            echo -e "```\n" >> hello.md
+            echo -e "```\n" >> hello.md
+            echo -e "curl -#Lo gcc-indiff.zip https://github.com/indiff/gcc-build/releases/download/${{ env.TAG_NAME }}/${bname}" >> hello.md
+            echo -e "```\n" >> hello.md
             gh release create ${{ env.TAG_NAME }} -F hello.md */*.xz
           env:
             GITHUB_TOKEN: ${{ github.token }}  
