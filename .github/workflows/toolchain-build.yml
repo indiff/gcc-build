@@ -1055,9 +1055,10 @@ jobs:
             Proxy download:
             ```bash         
             curl -#Lo gcc-indiff.zip "https://ghproxy.cfd/https://github.com/indiff/gcc-build/releases/download/${{ env.TAG_NAME }}/shitshit"
-            ```bash
+            ```
+            
             Direct download:
-            ```         
+            ```bash         
             curl -#Lo gcc-indiff.zip "https://github.com/indiff/gcc-build/releases/download/${{ env.TAG_NAME }}/shitshit"
             ```
             EOF
