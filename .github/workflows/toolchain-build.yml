@@ -359,6 +359,7 @@ jobs:
           curl -s -X POST "https://api.telegram.org/bot${{ env.BOT_TOKEN }}/sendMessage" -d chat_id="${{ env.CHAT_ID }}" -d "disable_web_page_preview=true" -d "parse_mode=html" -d text="<b>Starting centos7 GCC Build</b>"
           
           # --------- build zstd -----------------
+          REPOSITORY_MIRROR_URL_GITHUB="https://github.com"  
           COMPOMENTS_ZSTD_VERSION=1.5.7
           PREFIX_DIR="$PREFIX"
           PREFIX_BASE_NAME="$(basename "$PREFIX")"
@@ -608,7 +609,7 @@ jobs:
           # make install -j"$JOBS"
           echo "Built GCC end!"
           
-          cd /workspace/gcc-x86
+          cd /opt/gcc-indiff
           zname=/workspace/gcc-indiff-centos7-${{ needs.before_build.outputs.GCC_BUILD_VERSION }}-x86_64-$(date +'%Y%m%d_%H%M')
           zip -r -q -9 $zname.zip .
           mv $zname.zip $zname.xz
