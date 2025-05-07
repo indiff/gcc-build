@@ -314,9 +314,10 @@ jobs:
           esac
           # Declare the number of jobs to run simultaneously
           JOBS=$(nproc --all)
-
+          
+          cd /opt
           export WORK_DIR="$PWD"
-          export PREFIX="$WORK_DIR/gcc-${arch}"
+          export PREFIX="$WORK_DIR/gcc-indiff"
           export PATH="$PREFIX/bin:/usr/bin/core_perl:$PATH"
           # export OPT_FLAGS="-flto -flto-compression-level=10 -O3 -pipe -ffunction-sections -fdata-sections"
           export OPT_FLAGS="-flto-compression-level=10 -O2 -pipe -ffunction-sections -fdata-sections"
@@ -361,9 +362,10 @@ jobs:
           COMPOMENTS_ZSTD_VERSION=1.5.7
           PREFIX_DIR="$PREFIX"
           PREFIX_BASE_NAME="$(basename "$PREFIX")"
-          BUILD_STAGE1_LIBRARY_PREFIX="$WORKING_DIR/stage1-$PREFIX_BASE_NAME-library"
-          BUILD_STAGE1_TOOLS_PREFIX="$WORKING_DIR/stage1-$PREFIX_BASE_NAME-tools"
-          BUILD_STAGE1_GCC_PREFIX="$WORKING_DIR/stage1-$PREFIX_BASE_NAME-gcc"
+          BUILD_STAGE1_LIBRARY_PREFIX="$WORK_DIR/stage1-$PREFIX_BASE_NAME-library"
+          BUILD_STAGE1_TOOLS_PREFIX="$WORK_DIR/stage1-$PREFIX_BASE_NAME-tools"
+          BUILD_STAGE1_GCC_PREFIX="$WORK_DIR/stage1-$PREFIX_BASE_NAME-gcc"
+
           # ======================= 统一的包检查和下载函数 =======================
           function check_and_download() {
             PKG_NAME="$1"
@@ -525,8 +527,6 @@ jobs:
               --with-sysroot=/  \
               --with-pkgversion="Indiff binutils"
           
-          # Patch for binutils 2.39(gprofng's documents have some error when building)
-          sed -i.bak 's/[[:space:]]doc$//g' ../gprofng/Makefile.in
               
           make -j"$JOBS"
           make install -j"$JOBS"
