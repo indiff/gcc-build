@@ -366,6 +366,16 @@ jobs:
           BUILD_STAGE1_TOOLS_PREFIX="$WORK_DIR/stage1-$PREFIX_BASE_NAME-tools"
           BUILD_STAGE1_GCC_PREFIX="$WORK_DIR/stage1-$PREFIX_BASE_NAME-gcc"
 
+
+          # yum install -y cmake3
+          # sudo ln -sf /usr/bin/cmake3 /usr/bin/cmake
+
+          curl -sLo cmake3.tar.gz https://github.com/Kitware/CMake/releases/download/v3.31.6/cmake-3.31.6-linux-x86_64.tar.gz
+          tar -xzf cmake3.tar.gz
+          mv cmake-3.31.6-linux-x86_64 /opt/cmake
+          rm -f /usr/bin/cmake
+          ln -sf /opt/cmake/bin/cmake /usr/bin/cmake
+
           # ======================= 统一的包检查和下载函数 =======================
           function check_and_download() {
             PKG_NAME="$1"
@@ -645,14 +655,7 @@ jobs:
           export PATH="$PREFIX/bin:$PATH"
 
 
-          # yum install -y cmake3
-          # sudo ln -sf /usr/bin/cmake3 /usr/bin/cmake
 
-          curl -sLo cmake3.tar.gz https://github.com/Kitware/CMake/releases/download/v3.31.6/cmake-3.31.6-linux-x86_64.tar.gz
-          tar -xzf cmake3.tar.gz
-          mv cmake-3.31.6-linux-x86_64 /opt/cmake
-          rm -f /usr/bin/cmake
-          ln -sf /opt/cmake/bin/cmake /usr/bin/cmake
 
           echo "Cleaning up previously cloned repos..."
           rm -rf "${WORK_DIR}"/llvm-project
