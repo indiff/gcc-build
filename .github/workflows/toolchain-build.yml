@@ -359,7 +359,6 @@ jobs:
           curl -s -X POST "https://api.telegram.org/bot${{ env.BOT_TOKEN }}/sendMessage" -d chat_id="${{ env.CHAT_ID }}" -d "disable_web_page_preview=true" -d "parse_mode=html" -d text="<b>Starting centos7 GCC Build</b>"
           
           # --------- build zstd -----------------
-          REPOSITORY_MIRROR_URL_GITHUB="https://github.com"
           COMPOMENTS_ZSTD_VERSION=1.5.7
           PREFIX_DIR="$PREFIX"
           PREFIX_BASE_NAME="$(basename "$PREFIX")"
@@ -443,7 +442,7 @@ jobs:
             echo "$LDFLAGS" | grep -F '$ORIGIN/../lib64' || STAGE_LDFLAGS="$STAGE_LDFLAGS -Wl,-rpath=\$ORIGIN:\$ORIGIN/../lib64:\$ORIGIN/../lib"
 
             if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list zstd $BUILD_TARGET_COMPOMENTS) ]]; then
-              ZSTD_PKG=$(check_and_download "zstd" "zstd-$COMPOMENTS_ZSTD_VERSION*.tar.gz" "$REPOSITORY_MIRROR_URL_GITHUB/facebook/zstd/releases/download/v$COMPOMENTS_ZSTD_VERSION/zstd-$COMPOMENTS_ZSTD_VERSION.tar.gz" "zstd-$COMPOMENTS_ZSTD_VERSION.tar.gz")
+              ZSTD_PKG=$(check_and_download "zstd" "zstd-$COMPOMENTS_ZSTD_VERSION*.tar.gz" "https://github.com/facebook/zstd/releases/download/v$COMPOMENTS_ZSTD_VERSION/zstd-$COMPOMENTS_ZSTD_VERSION.tar.gz" "zstd-$COMPOMENTS_ZSTD_VERSION.tar.gz")
               if [[ $? -ne 0 ]]; then
                 echo -e "$ZSTD_PKG"
                 exit 1
