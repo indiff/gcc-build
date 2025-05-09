@@ -619,6 +619,8 @@ jobs:
           echo "Built GCC end!"
           
           cd /opt/gcc-indiff
+          cp -rf /opt/gcc-indiff/lib/libzstd* /opt/gcc-indiff/lib64/
+          
           zname=/workspace/gcc-indiff-centos7-${{ needs.before_build.outputs.GCC_BUILD_VERSION }}-x86_64-$(date +'%Y%m%d_%H%M')
           zip -r -q -9 $zname.zip .
           mv $zname.zip $zname.xz
