@@ -488,7 +488,7 @@ jobs:
 
                 env LDFLAGS="${STAGE_LDFLAGS}${LDFLAGS}" CFLAGS="${STAGE_CFLAGS}${CFLAGS}" CXXFLAGS="${STAGE_CFLAGS}${CXXFLAGS}" \
                   cmake --install . --prefix "$INSTALL_PREFIX_PATH"
-                cp "$INSTALL_PREFIX_PATH/lib/." "$INSTALL_PREFIX_PATH/lib64"
+                
 
                 if [[ $? -ne 0 ]]; then
                   echo -e "\\033[31;1mError: install zstd failed.\\033[39;49;0m"
