@@ -506,7 +506,6 @@ jobs:
 
           build_zstd "$PREFIX_DIR"
           ls -lh "$PREFIX_DIR/lib"
-          ls -lh "$PREFIX_DIR/lib64"
           
           cd "${WORK_DIR}"
           echo "Building Binutils"
