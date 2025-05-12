@@ -506,8 +506,7 @@ jobs:
 
           build_zstd "$PREFIX_DIR"
           cd "$PREFIX_DIR/lib"
-          zip -r -q /opt/tmp.zip .
-          unzip /opt/tmp.zip -d ../lib64
+          
           ls -lh "$PREFIX_DIR/lib64"
 
           
