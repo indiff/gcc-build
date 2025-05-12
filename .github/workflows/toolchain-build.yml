@@ -505,7 +505,7 @@ jobs:
           mkdir -p "$PREFIX_DIR/lib64"
 
           build_zstd "$PREFIX_DIR"
-          # cp
+          cp "$PREFIX_DIR/lib/." "$PREFIX_DIR/lib64"
           ls -lh "$PREFIX_DIR/lib64"
           
           cd "${WORK_DIR}"
