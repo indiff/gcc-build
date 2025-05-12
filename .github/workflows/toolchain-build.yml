@@ -502,9 +502,10 @@ jobs:
           # bootstrap
           mkdir -p "$PREFIX_DIR/include"
           mkdir -p "$PREFIX_DIR/lib"
-          mkdir -p "$PREFIX_DIR/lib64"
+          # mkdir -p "$PREFIX_DIR/lib64"
 
           build_zstd "$PREFIX_DIR"
+          cp -rf "$PREFIX_DIR/lib" "$PREFIX_DIR/lib64"
           
           cd "${WORK_DIR}"
           echo "Building Binutils"
