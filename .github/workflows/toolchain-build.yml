@@ -505,10 +505,7 @@ jobs:
           mkdir -p "$PREFIX_DIR/lib64"
 
           build_zstd "$PREFIX_DIR"
-          cd "$PREFIX_DIR/lib"
-          
           ls -lh "$PREFIX_DIR/lib64"
-
           
           cd "${WORK_DIR}"
           echo "Building Binutils"
