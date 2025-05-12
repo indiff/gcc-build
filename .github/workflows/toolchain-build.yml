@@ -487,11 +487,7 @@ jobs:
                 fi
 
                 env LDFLAGS="${STAGE_LDFLAGS}${LDFLAGS}" CFLAGS="${STAGE_CFLAGS}${CFLAGS}" CXXFLAGS="${STAGE_CFLAGS}${CXXFLAGS}" \
-                  cmake --install . --prefix "$INSTALL_PREFIX_PATH"
-                # 将生成的库文件从 lib 复制到 lib64
-                if [ -d "$INSTALL_PREFIX_PATH/lib" ]; then
-                   cp -r "$INSTALL_PREFIX_PATH/lib"/* "$INSTALL_PREFIX_PATH/lib64/"
-                fi
+                  cmake --install . --prefix "$INSTALL_PREFIX_PATH"                
 
                 if [[ $? -ne 0 ]]; then
                   echo -e "\\033[31;1mError: install zstd failed.\\033[39;49;0m"
@@ -509,6 +505,7 @@ jobs:
           mkdir -p "$PREFIX_DIR/lib64"
 
           build_zstd "$PREFIX_DIR"
+          ls -lh "$PREFIX_DIR/lib"
           ls -lh "$PREFIX_DIR/lib64"
           
           cd "${WORK_DIR}"
