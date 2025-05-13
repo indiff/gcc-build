@@ -461,8 +461,6 @@ jobs:
                 tar -axvf $ZSTD_PKG
                 ZSTD_DIR=$(ls -d zstd-$COMPOMENTS_ZSTD_VERSION* | grep -v \.tar\.gz)
                 cd $ZSTD_DIR
-                # git clone --filter=blob:none --depth 1 https://github.com/indiff/zstd.git zstd
-                # cd zstd
                 mkdir -p build_jobs_dir
                 cd build_jobs_dir
 
