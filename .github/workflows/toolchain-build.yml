@@ -463,6 +463,13 @@ jobs:
                 cd $ZSTD_DIR
                 mkdir -p build_jobs_dir
                 cd build_jobs_dir
+                
+                echo 'install(FILES
+                    "${CMAKE_CURRENT_BINARY_DIR}/zstdConfig.cmake"
+                    "${CMAKE_CURRENT_BINARY_DIR}/zstdConfigVersion.cmake"
+                    DESTINATION lib64
+                )
+                ' >> ../CMakeLists.txt
 
                 if [[ -e CMakeCache.txt ]]; then
                   cmake --build . --target clean
@@ -537,7 +544,6 @@ jobs:
               --with-bugurl=https://github.com/indiff/gcc-build \
               --with-sysroot=/  \
               --with-pkgversion="Indiff binutils"
-          
               
           make -j"$JOBS"
           make install -j"$JOBS"
@@ -655,9 +661,6 @@ jobs:
           export PREFIX="${WORK_DIR}/gcc-${arch}"
           export PATH="$PREFIX/bin:$PATH"
 
-
-
-
           echo "Cleaning up previously cloned repos..."
           rm -rf "${WORK_DIR}"/llvm-project
 
@@ -740,12 +743,6 @@ jobs:
           echo $(cut -d- -f2 <<<$(rpm -q glibc)) >> /workspace/glibc_version.txt
           EOF
           chmod +x build.sh
-          
-      # - name: Upload build.sh
-      #   uses: actions/upload-artifact@v4
-      #   with:
-      #     name: build.sh
-      #     path: build.sh     
 
       - name: Build GCC in Docker
         run: |
