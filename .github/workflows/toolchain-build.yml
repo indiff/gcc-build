@@ -359,7 +359,7 @@ jobs:
           curl -s -X POST "https://api.telegram.org/bot${{ env.BOT_TOKEN }}/sendMessage" -d chat_id="${{ env.CHAT_ID }}" -d "disable_web_page_preview=true" -d "parse_mode=html" -d text="<b>Starting centos7 GCC Build</b>"
           
           # --------- build zstd -----------------
-          COMPOMENTS_ZSTD_VERSION=1.5.7
+          COMPOMENTS_ZSTD_VERSION=1.5.8
           PREFIX_DIR="$PREFIX"
           PREFIX_BASE_NAME="$(basename "$PREFIX")"
           BUILD_STAGE1_LIBRARY_PREFIX="$WORK_DIR/stage1-$PREFIX_BASE_NAME-library"
