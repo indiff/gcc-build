@@ -452,7 +452,10 @@ jobs:
             echo "$LDFLAGS" | grep -F '$ORIGIN/../lib64' || STAGE_LDFLAGS="$STAGE_LDFLAGS -Wl,-rpath=\$ORIGIN:\$ORIGIN/../lib64:\$ORIGIN/../lib"
 
             if [[ -z "$BUILD_TARGET_COMPOMENTS" ]] || [[ "0" == $(is_in_list zstd $BUILD_TARGET_COMPOMENTS) ]]; then
-              ZSTD_PKG=$(check_and_download "zstd" "zstd-$COMPOMENTS_ZSTD_VERSION*.tar.gz" "https://github.com/indiff/zstd/releases/download/v$COMPOMENTS_ZSTD_VERSION/zstd-$COMPOMENTS_ZSTD_VERSION.tar.gz" "zstd-$COMPOMENTS_ZSTD_VERSION.tar.gz")
+              # https://github.com/indiff/zstd/releases/download/v$COMPOMENTS_ZSTD_VERSION/zstd-$COMPOMENTS_ZSTD_VERSION.tar.gz
+              # https://github.com/indiff/zstd/archive/refs/tags/v$COMPOMENTS_ZSTD_VERSION.tar.gz
+              ZSTD_PKG=$(check_and_download "zstd" "zstd-$COMPOMENTS_ZSTD_VERSION*.tar.gz" "https://github.com/indiff/zstd/archive/refs/tags/v$COMPOMENTS_ZSTD_VERSION.tar.gz" "zstd-$COMPOMENTS_ZSTD_VERSION.tar.gz")
+              
               if [[ $? -ne 0 ]]; then
                 echo -e "$ZSTD_PKG"
                 exit 1
