@@ -350,7 +350,7 @@ jobs:
           #git clone git://sourceware.org/git/binutils-gdb.git -b master binutils --depth=1
           BACKUP_URLS=("git://sourceware.org/git/binutils-gdb.git" "https://github.com/bminor/binutils-gdb.git")
           for URL in "${BACKUP_URLS[@]}"; do
-              git clone --filter=blob:none "$URL" -b master binutils --depth=1 && break
+              git clone "$URL" -b master binutils --depth=1 && break
           done
           sed -i '/^development=/s/true/false/' binutils/bfd/development.sh
           echo "Cloned binutils!"
@@ -358,7 +358,7 @@ jobs:
           # git clone git://gcc.gnu.org/git/gcc.git -b master gcc --depth=1
           BACKUP_URLS=("git://gcc.gnu.org/git/gcc.git" "https://github.com/gcc-mirror/gcc")
           for URL in "${BACKUP_URLS[@]}"; do
-              git clone --filter=blob:none "$URL" -b master gcc --depth=1 && break
+              git clone "$URL" -b master gcc --depth=1 && break
           done
 
           cd "${WORK_DIR}"
