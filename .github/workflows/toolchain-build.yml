@@ -8,6 +8,11 @@ on:
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
     inputs:
+      buildGlibc:
+        description: 'GCC build with internal glibc'
+        type: string
+        default: ""
+        required: false
       buildPrefix:
         description: 'GCC build prefix'
         type: string
@@ -36,6 +41,7 @@ jobs:
     outputs:
       GCC_BUILD_VERSION: ${{ steps.get.outputs.GCC_BUILD_VERSION }}
       GCC_BUILD_PREFIX: ${{ steps.get.outputs.GCC_BUILD_PREFIX }}
+      GCC_BUILD_GLIBC: ${{ steps.get.outputs.GCC_BUILD_GLIBC }}
     # https://docs.github.com/zh/actions/writing-workflows/choosing-what-your-workflow-does/passing-information-between-jobs#%E7%A4%BA%E4%BE%8B%E5%AE%9A%E4%B9%89%E4%BD%9C%E4%B8%9A%E7%9A%84%E8%BE%93%E5%87%BA  
     steps:
       - name: Get buildPrefix
@@ -48,6 +54,15 @@ jobs:
           export build_prefix="${{ github.event.inputs.buildPrefix }}"
           if [ "${{ github.event.inputs.buildPrefix }}" == "" ]; then build_prefix="/opt/gcc"; fi
           echo "GCC_BUILD_PREFIX=${build_prefix}" >> "$GITHUB_OUTPUT"
+          if [ "${{ github.event.inputs.buildGlibc }}" == "true" ]; then echo "GCC_BUILD_GLIBC=true" >> "$GITHUB_OUTPUT"; fi
+          day=$(date +%d)
+          if [ $((10#$day % 2)) -eq 0 ]; then
+            echo "今天是双数日"
+            echo "GCC_BUILD_GLIBC=true" >> "$GITHUB_OUTPUT";
+          else
+            echo "今天是单数日"
+          fi
+          
 
   build-arm64-tc:
     # skip
@@ -335,7 +350,7 @@ jobs:
           #git clone git://sourceware.org/git/binutils-gdb.git -b master binutils --depth=1
           BACKUP_URLS=("git://sourceware.org/git/binutils-gdb.git" "https://github.com/bminor/binutils-gdb.git")
           for URL in "${BACKUP_URLS[@]}"; do
-              git clone "$URL" -b master binutils --depth=1 && break
+              git clone --filter=blob:none "$URL" -b master binutils --depth=1 && break
           done
           sed -i '/^development=/s/true/false/' binutils/bfd/development.sh
           echo "Cloned binutils!"
@@ -343,7 +358,7 @@ jobs:
           # git clone git://gcc.gnu.org/git/gcc.git -b master gcc --depth=1
           BACKUP_URLS=("git://gcc.gnu.org/git/gcc.git" "https://github.com/gcc-mirror/gcc")
           for URL in "${BACKUP_URLS[@]}"; do
-              git clone "$URL" -b master gcc --depth=1 && break
+              git clone --filter=blob:none "$URL" -b master gcc --depth=1 && break
           done
 
           cd "${WORK_DIR}"
@@ -360,6 +375,7 @@ jobs:
           
           # --------- build zstd -----------------
           COMPOMENTS_ZSTD_VERSION=1.5.8
+          COMPOMENTS_INTERNAL_GLIBC_VERSION=2.41
           PREFIX_DIR="$PREFIX"
           PREFIX_BASE_NAME="$(basename "$PREFIX")"
           BUILD_STAGE1_LIBRARY_PREFIX="$WORK_DIR/stage1-$PREFIX_BASE_NAME-library"
@@ -499,6 +515,69 @@ jobs:
               fi
             fi
           }
+
+
+          # ======================= build internal glibc =======================
+          function build_glibc() {
+            INSTALL_PREFIX_PATH="$1"
+            REPOSITORY_MIRROR_URL_GNU="https://ftp.gnu.org/gnu"
+            # REPOSITORY_MIRROR_URL_GNU=http://mirrors.tencent.com/gnu
+            STAGE_CFLAGS=""
+            STAGE_LDFLAGS=""
+            if [[ "$INSTALL_PREFIX_PATH" == "$BUILD_STAGE1_LIBRARY_PREFIX" ]] || [[ "$INSTALL_PREFIX_PATH" == "$BUILD_STAGE1_TOOLS_PREFIX" ]]; then
+              STAGE_CONFIGURE_OPTIONS="--enable-static --enable-shared "
+              BUILD_BACKUP_PKG_CONFIG_PATH="$PKG_CONFIG_PATH"
+              if [[ "x$BUILD_BACKUP_PKG_CONFIG_PATH" == "x" ]]; then
+                export PKG_CONFIG_PATH="$BUILD_STAGE1_LIBRARY_PREFIX/lib64/pkgconfig:$BUILD_STAGE1_LIBRARY_PREFIX/lib/pkgconfig"
+              else
+                export PKG_CONFIG_PATH="$BUILD_STAGE1_LIBRARY_PREFIX/lib64/pkgconfig:$BUILD_STAGE1_LIBRARY_PREFIX/lib/pkgconfig:$BUILD_BACKUP_PKG_CONFIG_PATH"
+              fi
+              STAGE_CFLAGS="-fPIC -I$BUILD_STAGE1_LIBRARY_PREFIX/include "
+              STAGE_LDFLAGS="-L$BUILD_STAGE1_LIBRARY_PREFIX/lib64 -L$BUILD_STAGE1_LIBRARY_PREFIX/lib "
+            else
+              STAGE_CONFIGURE_OPTIONS="--enable-static --enable-shared "
+              STAGE_CFLAGS="-fPIC -I$INSTALL_PREFIX_PATH/include "
+              STAGE_LDFLAGS="-L$INSTALL_PREFIX_PATH/lib64 -L$INSTALL_PREFIX_PATH/lib "
+            fi
+
+            echo "$LDFLAGS" | grep -F '$ORIGIN/../lib64' || STAGE_LDFLAGS="$STAGE_LDFLAGS -Wl,-rpath=\$ORIGIN:\$ORIGIN/../lib64:\$ORIGIN/../lib"
+
+            GLIBC_PKG=$(check_and_download "glibc" "glibc-$COMPOMENTS_INTERNAL_GLIBC_VERSION*.tar.xz" "$REPOSITORY_MIRROR_URL_GNU/glibc/glibc-$COMPOMENTS_INTERNAL_GLIBC_VERSION.tar.xz")
+            if [[ $? -ne 0 ]]; then
+              echo -e "$GLIBC_PKG"
+              exit 1
+            fi
+            if [[ $BUILD_DOWNLOAD_ONLY -eq 0 ]]; then
+              find . -name "glibc-$COMPOMENTS_INTERNAL_GLIBC_VERSION*" -type d | xargs -r rm -rf
+              tar -axvf $GLIBC_PKG
+              GLIBC_DIR=$(ls -d glibc-$COMPOMENTS_INTERNAL_GLIBC_VERSION* | grep -v \.tar\.xz)
+              mkdir -p glibc_build_dir
+              cd glibc_build_dir
+              cleanup_configure_cache
+
+              BUILD_GLIBC_OPTIONS="$STAGE_CONFIGURE_OPTIONS --with-bugurl=$REPOSITORY_MIRROR_URL_GITHUB/owent-utils/bash-shell/issues"
+
+              GLIBC_LDFLAGS="$LDFLAGS -Wl,-rpath=\$ORIGIN:\$ORIGIN/../../lib64:\$ORIGIN/../../lib"
+
+              env LDFLAGS="${STAGE_LDFLAGS}${GLIBC_LDFLAGS//\$/\$\$}" PATH="$INSTALL_PREFIX_PATH/bin:$PATH" CFLAGS="${STAGE_CFLAGS}${CFLAGS}" CXXFLAGS="${STAGE_CFLAGS}${CXXFLAGS}" ./configure --prefix=$INSTALL_PREFIX_PATH/internal-runtime \
+                $BUILD_GLIBC_OPTIONS $BUILD_TARGET_CONF_OPTION
+
+              env LDFLAGS="${STAGE_LDFLAGS}${GLIBC_LDFLAGS//\$/\$\$}" PATH="$INSTALL_PREFIX_PATH/bin:$PATH" CFLAGS="${STAGE_CFLAGS}${CFLAGS}" CXXFLAGS="${STAGE_CFLAGS}${CXXFLAGS}" make $BUILD_THREAD_OPT O='$$$$O' ||
+                env LDFLAGS="${STAGE_LDFLAGS}${GLIBC_LDFLAGS//\$/\$\$}" PATH="$INSTALL_PREFIX_PATH/bin:$PATH" CFLAGS="${STAGE_CFLAGS}${CFLAGS}" CXXFLAGS="${STAGE_CFLAGS}${CXXFLAGS}" make O='$$$$O'
+              if [[ $? -ne 0 ]]; then
+                echo -e "\\033[31;1mError: Build glibc failed - make.\\033[39;49;0m"
+                exit 1
+              fi
+
+              env LDFLAGS="${STAGE_LDFLAGS}${GLIBC_LDFLAGS//\$/\$\$}" PATH="$INSTALL_PREFIX_PATH/bin:$PATH" CFLAGS="${STAGE_CFLAGS}${CFLAGS}" CXXFLAGS="${STAGE_CFLAGS}${CXXFLAGS}" make install $BUILD_THREAD_OPT O='$$$$O' ||
+                env LDFLAGS="${STAGE_LDFLAGS}${GLIBC_LDFLAGS//\$/\$\$}" PATH="$INSTALL_PREFIX_PATH/bin:$PATH" CFLAGS="${STAGE_CFLAGS}${CFLAGS}" CXXFLAGS="${STAGE_CFLAGS}${CXXFLAGS}" make install O='$$$$O'
+              if [[ $? -ne 0 ]] || [[ ! -e "$INSTALL_PREFIX_PATH/bin/ld" ]]; then
+                echo -e "\\033[31;1mError: Install glibc failed - install.\\033[39;49;0m"
+                exit 1
+              fi
+              cd "$WORKING_DIR"
+            fi
+          }
           # Prepare directories
           # bootstrap
           mkdir -p "$PREFIX_DIR/include"
@@ -506,6 +585,10 @@ jobs:
           mkdir -p "$PREFIX_DIR/lib64"
 
           build_zstd "$PREFIX_DIR"
+          if [ "${{ needs.before_build.outputs.GCC_BUILD_GLIBC }}" == "true" ]; then
+            build_glibc "$PREFIX_DIR"
+          fi
+          
           ls -lh "$PREFIX_DIR/lib"
           
           cd "${WORK_DIR}"
@@ -623,6 +706,7 @@ jobs:
           zname=/workspace/gcc-indiff-centos7-${{ needs.before_build.outputs.GCC_BUILD_VERSION }}-x86_64-$(date +'%Y%m%d_%H%M')
           zip -r -q -9 $zname.zip .
           mv $zname.zip $zname.xz
+          
           
           # free memory
           free -h
