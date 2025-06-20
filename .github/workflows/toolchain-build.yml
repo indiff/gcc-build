@@ -41,11 +41,16 @@ jobs:
     outputs:
       GCC_BUILD_VERSION: ${{ steps.get.outputs.GCC_BUILD_VERSION }}
       GCC_BUILD_PREFIX: ${{ steps.get.outputs.GCC_BUILD_PREFIX }}
+      GCC_BUILD_GLIBC: ${{ steps.get.outputs.GCC_BUILD_GLIBC }}
     # https://docs.github.com/zh/actions/writing-workflows/choosing-what-your-workflow-does/passing-information-between-jobs#%E7%A4%BA%E4%BE%8B%E5%AE%9A%E4%B9%89%E4%BD%9C%E4%B8%9A%E7%9A%84%E8%BE%93%E5%87%BA  
     steps:
       - name: Get buildPrefix
         id: get
         run: |
+          sudo apt-get install -y systemd language-pack-zh-hans language-pack-zh-hans-base locales tree
+          sudo locale-gen zh_CN.UTF-8; /usr/bin/localectl set-locale LANG=zh_CN.UTF-8 || true ; 
+          /usr/bin/timedatectl set-timezone Asia/Shanghai || true; 
+          /usr/bin/timedatectl set-ntp true || true;
           curl --max-time 10 -sLo ver "https://github.com/gcc-mirror/gcc/raw/refs/heads/master/gcc/BASE-VER"
           # curl --max-time 10 -sLo ver "https://gcc.gnu.org/git/?p=gcc.git;a=blob_plain;f=gcc/BASE-VER"
           export version=$(cat ver)
@@ -53,6 +58,14 @@ jobs:
           export build_prefix="${{ github.event.inputs.buildPrefix }}"
           if [ "${{ github.event.inputs.buildPrefix }}" == "" ]; then build_prefix="/opt/gcc"; fi
           echo "GCC_BUILD_PREFIX=${build_prefix}" >> "$GITHUB_OUTPUT"
+          if [ "${{ github.event.inputs.buildGlibc }}" == "true" ]; then echo "GCC_BUILD_GLIBC=true" >> "$GITHUB_OUTPUT"; fi
+          day=$(date +%d)
+          if [[ $((10#$day % 2)) -eq 0 ]]; then
+            echo "今天是双数日"
+            echo "GCC_BUILD_GLIBC=true" >> "$GITHUB_OUTPUT";
+          else
+            echo "今天是单数日"
+          fi
 
   build-arm64-tc:
     # skip
