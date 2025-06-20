@@ -41,7 +41,6 @@ jobs:
     outputs:
       GCC_BUILD_VERSION: ${{ steps.get.outputs.GCC_BUILD_VERSION }}
       GCC_BUILD_PREFIX: ${{ steps.get.outputs.GCC_BUILD_PREFIX }}
-      GCC_BUILD_GLIBC: ${{ steps.get.outputs.GCC_BUILD_GLIBC }}
     # https://docs.github.com/zh/actions/writing-workflows/choosing-what-your-workflow-does/passing-information-between-jobs#%E7%A4%BA%E4%BE%8B%E5%AE%9A%E4%B9%89%E4%BD%9C%E4%B8%9A%E7%9A%84%E8%BE%93%E5%87%BA  
     steps:
       - name: Get buildPrefix
@@ -54,15 +53,6 @@ jobs:
           export build_prefix="${{ github.event.inputs.buildPrefix }}"
           if [ "${{ github.event.inputs.buildPrefix }}" == "" ]; then build_prefix="/opt/gcc"; fi
           echo "GCC_BUILD_PREFIX=${build_prefix}" >> "$GITHUB_OUTPUT"
-          if [ "${{ github.event.inputs.buildGlibc }}" == "true" ]; then echo "GCC_BUILD_GLIBC=true" >> "$GITHUB_OUTPUT"; fi
-          day=$(date +%d)
-          if [ $((10#$day % 2)) -eq 0 ]; then
-            echo "今天是双数日"
-            echo "GCC_BUILD_GLIBC=true" >> "$GITHUB_OUTPUT";
-          else
-            echo "今天是单数日"
-          fi
-          
 
   build-arm64-tc:
     # skip
