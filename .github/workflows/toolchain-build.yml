@@ -402,6 +402,8 @@ jobs:
           make -j$(nproc)
           make install
 
+          cd "$WORKING_DIR"
+
           # check and download
           function check_and_download() {
             PKG_NAME="$1"
