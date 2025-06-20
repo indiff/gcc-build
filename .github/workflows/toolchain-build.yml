@@ -526,7 +526,6 @@ jobs:
           mkdir -p "$PREFIX_DIR/lib64"
 
           build_zstd "$PREFIX_DIR"
-          echo "build glibc"
           ls -lh "$PREFIX_DIR/lib"
           
           cd "${WORK_DIR}"
