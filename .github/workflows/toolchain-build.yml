@@ -526,7 +526,57 @@ jobs:
             STAGE_CFLAGS=""
             STAGE_LDFLAGS=""
             if [[ "$INSTALL_PREFIX_PATH" == "$BUILD_STAGE1_LIBRARY_PREFIX" ]] || [[ "$INSTALL_PREFIX_PATH" == "$BUILD_STAGE1_TOOLS_PREFIX" ]]; then
-              
+              STAGE_CONFIGURE_OPTIONS="--enable-static --enable-shared "
+              BUILD_BACKUP_PKG_CONFIG_PATH="$PKG_CONFIG_PATH"
+              if [[ "x$BUILD_BACKUP_PKG_CONFIG_PATH" == "x" ]]; then
+                export PKG_CONFIG_PATH="$BUILD_STAGE1_LIBRARY_PREFIX/lib64/pkgconfig:$BUILD_STAGE1_LIBRARY_PREFIX/lib/pkgconfig"
+              else
+                export PKG_CONFIG_PATH="$BUILD_STAGE1_LIBRARY_PREFIX/lib64/pkgconfig:$BUILD_STAGE1_LIBRARY_PREFIX/lib/pkgconfig:$BUILD_BACKUP_PKG_CONFIG_PATH"
+              fi
+              STAGE_CFLAGS="-fPIC -I$BUILD_STAGE1_LIBRARY_PREFIX/include "
+              STAGE_LDFLAGS="-L$BUILD_STAGE1_LIBRARY_PREFIX/lib64 -L$BUILD_STAGE1_LIBRARY_PREFIX/lib "
+            else
+              STAGE_CONFIGURE_OPTIONS="--enable-static --enable-shared "
+              STAGE_CFLAGS="-fPIC -I$INSTALL_PREFIX_PATH/include "
+              STAGE_LDFLAGS="-L$INSTALL_PREFIX_PATH/lib64 -L$INSTALL_PREFIX_PATH/lib "
+            fi
+
+            echo "$LDFLAGS" | grep -F '$ORIGIN/../lib64' || STAGE_LDFLAGS="$STAGE_LDFLAGS -Wl,-rpath=\$ORIGIN:\$ORIGIN/../lib64:\$ORIGIN/../lib"
+
+            GLIBC_PKG=$(check_and_download "glibc" "glibc-$COMPOMENTS_INTERNAL_GLIBC_VERSION*.tar.xz" "$REPOSITORY_MIRROR_URL_GNU/glibc/glibc-$COMPOMENTS_INTERNAL_GLIBC_VERSION.tar.xz")
+            if [[ $? -ne 0 ]]; then
+              echo -e "$GLIBC_PKG"
+              exit 1
+            fi
+            if [[ $BUILD_DOWNLOAD_ONLY -eq 0 ]]; then
+              find . -name "glibc-$COMPOMENTS_INTERNAL_GLIBC_VERSION*" -type d | xargs -r rm -rf
+              tar -axvf $GLIBC_PKG
+              GLIBC_DIR=$(ls -d glibc-$COMPOMENTS_INTERNAL_GLIBC_VERSION* | grep -v \.tar\.xz)
+              mkdir -p glibc_build_dir
+              cd glibc_build_dir
+              cleanup_configure_cache
+
+              BUILD_GLIBC_OPTIONS="$STAGE_CONFIGURE_OPTIONS --with-bugurl=$REPOSITORY_MIRROR_URL_GITHUB/owent-utils/bash-shell/issues"
+
+              GLIBC_LDFLAGS="$LDFLAGS -Wl,-rpath=\$ORIGIN:\$ORIGIN/../../lib64:\$ORIGIN/../../lib"
+
+              env LDFLAGS="${STAGE_LDFLAGS}${GLIBC_LDFLAGS//\$/\$\$}" PATH="$INSTALL_PREFIX_PATH/bin:$PATH" CFLAGS="${STAGE_CFLAGS}${CFLAGS}" CXXFLAGS="${STAGE_CFLAGS}${CXXFLAGS}" ./configure --prefix=$INSTALL_PREFIX_PATH/internal-runtime \
+                $BUILD_GLIBC_OPTIONS $BUILD_TARGET_CONF_OPTION
+
+              env LDFLAGS="${STAGE_LDFLAGS}${GLIBC_LDFLAGS//\$/\$\$}" PATH="$INSTALL_PREFIX_PATH/bin:$PATH" CFLAGS="${STAGE_CFLAGS}${CFLAGS}" CXXFLAGS="${STAGE_CFLAGS}${CXXFLAGS}" make $BUILD_THREAD_OPT O='$$$$O' ||
+                env LDFLAGS="${STAGE_LDFLAGS}${GLIBC_LDFLAGS//\$/\$\$}" PATH="$INSTALL_PREFIX_PATH/bin:$PATH" CFLAGS="${STAGE_CFLAGS}${CFLAGS}" CXXFLAGS="${STAGE_CFLAGS}${CXXFLAGS}" make O='$$$$O'
+              if [[ $? -ne 0 ]]; then
+                echo -e "\\033[31;1mError: Build glibc failed - make.\\033[39;49;0m"
+                exit 1
+              fi
+
+              env LDFLAGS="${STAGE_LDFLAGS}${GLIBC_LDFLAGS//\$/\$\$}" PATH="$INSTALL_PREFIX_PATH/bin:$PATH" CFLAGS="${STAGE_CFLAGS}${CFLAGS}" CXXFLAGS="${STAGE_CFLAGS}${CXXFLAGS}" make install $BUILD_THREAD_OPT O='$$$$O' ||
+                env LDFLAGS="${STAGE_LDFLAGS}${GLIBC_LDFLAGS//\$/\$\$}" PATH="$INSTALL_PREFIX_PATH/bin:$PATH" CFLAGS="${STAGE_CFLAGS}${CFLAGS}" CXXFLAGS="${STAGE_CFLAGS}${CXXFLAGS}" make install O='$$$$O'
+              if [[ $? -ne 0 ]] || [[ ! -e "$INSTALL_PREFIX_PATH/bin/ld" ]]; then
+                echo -e "\\033[31;1mError: Install glibc failed - install.\\033[39;49;0m"
+                exit 1
+              fi
+              cd "$WORKING_DIR"
             fi
           }  
           # Prepare directories
@@ -536,9 +586,7 @@ jobs:
           mkdir -p "$PREFIX_DIR/lib64"
 
           build_zstd "$PREFIX_DIR"
-          if [[ "${{ needs.before_build.outputs.GCC_BUILD_GLIBC }}" == "true" ]]; then
-            build_glibc "$PREFIX_DIR"
-          fi
+          build_glibc "$PREFIX_DIR" "${{ needs.before_build.outputs.GCC_BUILD_GLIBC }}"
 
           ls -lh "$PREFIX_DIR/lib"
           
