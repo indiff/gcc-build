@@ -526,6 +526,15 @@ jobs:
           mkdir -p "$PREFIX_DIR/lib64"
 
           build_zstd "$PREFIX_DIR"
+          # compile glibc
+          wget https://ftp.gnu.org/gnu/libc/glibc-2.41.tar.gz
+          tar -xf glibc-2.41.tar.gz
+          cd glibc-2.41
+          mkdir build && cd build
+          ../configure --prefix=$PREFIX_DIR
+          make -j$(nproc)
+          make install
+
           ls -lh "$PREFIX_DIR/lib"
           
           cd "${WORK_DIR}"
