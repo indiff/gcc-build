@@ -518,7 +518,7 @@ jobs:
               fi
             fi
           }
-          # ======================= build internal glibc =======================
+          # build internal glibc
           function build_glibc() {
             INSTALL_PREFIX_PATH="$1"
             REPOSITORY_MIRROR_URL_GNU="https://ftp.gnu.org/gnu"
@@ -578,7 +578,7 @@ jobs:
               fi
               cd "$WORKING_DIR"
             fi
-          }  
+          }
           # Prepare directories
           # bootstrap
           mkdir -p "$PREFIX_DIR/include"
@@ -586,8 +586,6 @@ jobs:
           mkdir -p "$PREFIX_DIR/lib64"
 
           build_zstd "$PREFIX_DIR"
-          build_glibc "$PREFIX_DIR"
-
           ls -lh "$PREFIX_DIR/lib"
           
           cd "${WORK_DIR}"
