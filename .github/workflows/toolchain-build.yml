@@ -8,6 +8,11 @@ on:
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
     inputs:
+      buildGlibc:
+        description: 'GCC build with internal glibc'
+        type: string
+        default: ""
+        required: false
       buildPrefix:
         description: 'GCC build prefix'
         type: string
