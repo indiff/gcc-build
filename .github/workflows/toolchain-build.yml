@@ -8,11 +8,6 @@ on:
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
     inputs:
-      buildGlibc:
-        description: 'GCC build with internal glibc'
-        type: string
-        default: ""
-        required: false
       buildPrefix:
         description: 'GCC build prefix'
         type: string
@@ -365,7 +360,6 @@ jobs:
           
           # --------- build zstd -----------------
           COMPOMENTS_ZSTD_VERSION=1.5.8
-          COMPOMENTS_INTERNAL_GLIBC_VERSION=2.41
           PREFIX_DIR="$PREFIX"
           PREFIX_BASE_NAME="$(basename "$PREFIX")"
           BUILD_STAGE1_LIBRARY_PREFIX="$WORK_DIR/stage1-$PREFIX_BASE_NAME-library"
@@ -505,7 +499,6 @@ jobs:
               fi
             fi
           }
-
           # Prepare directories
           # bootstrap
           mkdir -p "$PREFIX_DIR/include"
@@ -513,8 +506,6 @@ jobs:
           mkdir -p "$PREFIX_DIR/lib64"
 
           build_zstd "$PREFIX_DIR"
-
-          
           ls -lh "$PREFIX_DIR/lib"
           
           cd "${WORK_DIR}"
