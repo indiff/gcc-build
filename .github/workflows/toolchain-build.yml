@@ -526,9 +526,7 @@ jobs:
           mkdir -p "$PREFIX_DIR/lib64"
 
           build_zstd "$PREFIX_DIR"
-          if [[ "${{ needs.before_build.outputs.GCC_BUILD_GLIBC }}" == "true" ]]; then
-            echo "build glibc"
-          fi
+          echo "build glibc"
           ls -lh "$PREFIX_DIR/lib"
           
           cd "${WORK_DIR}"
