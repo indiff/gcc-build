@@ -586,7 +586,7 @@ jobs:
           mkdir -p "$PREFIX_DIR/lib64"
 
           build_zstd "$PREFIX_DIR"
-          build_glibc "$PREFIX_DIR" "${{ needs.before_build.outputs.GCC_BUILD_GLIBC }}"
+          build_glibc "$PREFIX_DIR"
 
           ls -lh "$PREFIX_DIR/lib"
           
