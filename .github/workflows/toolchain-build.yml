@@ -530,7 +530,7 @@ jobs:
           ls -lh "$PREFIX_DIR/lib"
 
           cd "${WORK_DIR}"
-          
+
           curl -sLO https://ftp.gnu.org/gnu/libc/glibc-2.41.tar.gz
           tar -xf glibc-2.41.tar.gz
           cd glibc-2.41
@@ -541,6 +541,25 @@ jobs:
           make install
           
           cd "${WORK_DIR}"
+
+          # 控制是否使用内部 glibc 1=使用新编译的glibc 0=使用系统自带
+          USE_INTERNAL_GLIBC=1
+
+          if [[ "$USE_INTERNAL_GLIBC" == "1" ]]; then
+            export GLIBC_RT="$PREFIX_DIR/internal-runtime"
+            export C_INCLUDE_PATH="$GLIBC_RT/include"
+            export LIBRARY_PATH="$GLIBC_RT/lib:$GLIBC_RT/lib64"
+            export LD_LIBRARY_PATH="$GLIBC_RT/lib:$GLIBC_RT/lib64:$LD_LIBRARY_PATH"
+            SYSROOT_ARG="--with-sysroot=$GLIBC_RT"
+            HEADER_ARG="--with-native-system-header-dir=$GLIBC_RT/include"
+          else
+            unset C_INCLUDE_PATH
+            unset LIBRARY_PATH
+            unset LD_LIBRARY_PATH
+            SYSROOT_ARG="--with-sysroot=/"
+            HEADER_ARG=""
+          fi
+
           echo "Building Binutils"
           mkdir build-binutils
           cd build-binutils
@@ -568,7 +587,7 @@ jobs:
               --enable-host-pie \
               --prefix="$PREFIX" \
               --with-bugurl=https://github.com/indiff/gcc-build \
-              --with-sysroot=/  \
+              $SYSROOT_ARG \
               --with-pkgversion="Indiff binutils"
               
           make -j"$JOBS"
@@ -590,8 +609,11 @@ jobs:
           cd build-gcc
           rm -rf ../gcc/testsuite
           # tree "${VCPKG_ROOT}/packages/zstd_x64-linux/"
-          yum install -y libzstd-devel libzstd 
-          env LDFLAGS="-Wl,-rpath=$PREFIX/lib64:$PREFIX/lib" CFLAGS="$OPT_FLAGS -fPIC -I$PREFIX/include " CXXFLAGS="$OPT_FLAGS -fPIC -I$PREFIX/include " \
+          yum install -y libzstd-devel libzstd
+          # env LDFLAGS="-Wl,-rpath=$PREFIX/lib64:$PREFIX/lib" CFLAGS="$OPT_FLAGS -fPIC -I$PREFIX/include " CXXFLAGS="$OPT_FLAGS -fPIC -I$PREFIX/include " \
+          env LDFLAGS="-Wl,-rpath=$PREFIX/lib64:$PREFIX/lib" \
+            CFLAGS="$OPT_FLAGS -fPIC $([[ "$USE_INTERNAL_GLIBC" == "1" ]] && echo "-I$GLIBC_RT/include")" \
+            CXXFLAGS="$OPT_FLAGS -fPIC $([[ "$USE_INTERNAL_GLIBC" == "1" ]] && echo "-I$GLIBC_RT/include")" \
             ../gcc/configure --target="$TARGET" --build="$TARGET" --host="$TARGET" \
             --with-bugurl=https://github.com/indiff/gcc-build \
             --disable-decimal-float \
@@ -626,6 +648,8 @@ jobs:
             --with-gnu-ld \
             --with-zstd \
             --with-linker-hash-style=gnu \
+            $SYSROOT_ARG \
+            $HEADER_ARG \
             --with-pkgversion="Indiff GCC" || cat config.log
 
           make all-gcc -j"$JOBS"
