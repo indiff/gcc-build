@@ -529,23 +529,19 @@ jobs:
 
           ls -lh "$PREFIX_DIR/lib"
 
-          cd "${WORK_DIR}"
-
-          curl -sLO https://ftp.gnu.org/gnu/libc/glibc-2.41.tar.gz
-          tar -xf glibc-2.41.tar.gz
-          cd glibc-2.41
-          mkdir build && cd build
-          GLIBC_LDFLAGS=" -Wl,-rpath=\$ORIGIN:\$ORIGIN/../../lib64:\$ORIGIN/../../lib"
-          ../configure --prefix=$PREFIX_DIR/internal-runtime --enable-static --enable-shared
-          make -j$(nproc)
-          make install
-          
-          cd "${WORK_DIR}"
-
           # 控制是否使用内部 glibc 1=使用新编译的glibc 0=使用系统自带
-          USE_INTERNAL_GLIBC=1
+          USE_INTERNAL_GLIBC=0
 
           if [[ "$USE_INTERNAL_GLIBC" == "1" ]]; then
+            cd "${WORK_DIR}"
+            curl -sLO https://ftp.gnu.org/gnu/libc/glibc-2.41.tar.gz
+            tar -xf glibc-2.41.tar.gz
+            cd glibc-2.41
+            mkdir build && cd build
+            GLIBC_LDFLAGS=" -Wl,-rpath=\$ORIGIN:\$ORIGIN/../../lib64:\$ORIGIN/../../lib"
+            ../configure --prefix=$PREFIX_DIR/internal-runtime --enable-static --enable-shared
+            make -j$(nproc)
+            make install
             export GLIBC_RT="$PREFIX_DIR/internal-runtime"
             export C_INCLUDE_PATH="$GLIBC_RT/include"
             export LIBRARY_PATH="$GLIBC_RT/lib:$GLIBC_RT/lib64"
@@ -560,6 +556,7 @@ jobs:
             HEADER_ARG=""
           fi
 
+          cd "${WORK_DIR}"
           echo "Building Binutils"
           mkdir build-binutils
           cd build-binutils
