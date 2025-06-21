@@ -394,15 +394,7 @@ jobs:
           rm -f /usr/bin/cmake
           ln -sf /opt/cmake/bin/cmake /usr/bin/cmake
 
-          curl -sLO https://ftp.gnu.org/gnu/libc/glibc-2.41.tar.gz
-          tar -xf glibc-2.41.tar.gz
-          cd glibc-2.41
-          mkdir build && cd build
-          ../configure --prefix=$PREFIX_DIR
-          make -j$(nproc)
-          make install
-
-          cd "$WORKING_DIR"
+          
 
           # check and download
           function check_and_download() {
@@ -536,6 +528,22 @@ jobs:
           build_zstd "$PREFIX_DIR"
 
           ls -lh "$PREFIX_DIR/lib"
+
+          cd "${WORK_DIR}"
+          curl -sLO https://ftp.gnu.org/gnu/libc/glibc-2.41.tar.gz
+          tar -xf glibc-2.41.tar.gz
+          cd glibc-2.41
+          mkdir build && cd build
+          GLIBC_LDFLAGS=" -Wl,-rpath=\$ORIGIN:\$ORIGIN/../../lib64:\$ORIGIN/../../lib"
+          env LDFLAGS="-L$PREFIX_DIR/internal-runtime/lib64 -L$PREFIX_DIR/internal-runtime/lib ${GLIBC_LDFLAGS//\$/\$\$}" PATH="$PREFIX_DIR/internal-runtime/bin:$PATH" \
+            CFLAGS="-fPIC -I$PREFIX_DIR/internal-runtime/include " CXXFLAGS="-fPIC -I$PREFIX_DIR/internal-runtime/include " \
+            ../configure --prefix=$PREFIX_DIR/internal-runtime --enable-static --enable-shared
+          env LDFLAGS="-L$PREFIX_DIR/internal-runtime/lib64 -L$PREFIX_DIR/internal-runtime/lib ${GLIBC_LDFLAGS//\$/\$\$}" PATH="$PREFIX_DIR/internal-runtime/bin:$PATH" \
+            CFLAGS="-fPIC -I$PREFIX_DIR/internal-runtime/include " CXXFLAGS="-fPIC -I$PREFIX_DIR/internal-runtime/include " \
+            make -j$(nproc)
+          env LDFLAGS="-L$PREFIX_DIR/internal-runtime/lib64 -L$PREFIX_DIR/internal-runtime/lib ${GLIBC_LDFLAGS//\$/\$\$}" PATH="$PREFIX_DIR/internal-runtime/bin:$PATH" \
+            CFLAGS="-fPIC -I$PREFIX_DIR/internal-runtime/include " CXXFLAGS="-fPIC -I$PREFIX_DIR/internal-runtime/include " \  
+            make install
           
           cd "${WORK_DIR}"
           echo "Building Binutils"
