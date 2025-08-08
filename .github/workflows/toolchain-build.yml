@@ -47,10 +47,26 @@ jobs:
       - name: Get buildPrefix
         id: get
         run: |
-          sudo apt-get install -y systemd language-pack-zh-hans language-pack-zh-hans-base locales tree
-          sudo locale-gen zh_CN.UTF-8; /usr/bin/localectl set-locale LANG=zh_CN.UTF-8 || true ; 
-          /usr/bin/timedatectl set-timezone Asia/Shanghai || true; 
-          /usr/bin/timedatectl set-ntp true || true;
+          set -eux
+          # 首先更新索引（带重试/修复）
+          sudo apt-get clean
+          sudo apt-get update -o Acquire::Retries=5 || sudo apt-get update --fix-missing
+          # 如仍失败，切到官方镜像再更新
+          if ! sudo apt-get update; then
+            sudo sed -i 's|azure.archive.ubuntu.com|archive.ubuntu.com|g' /etc/apt/sources.list
+            sudo sed -i 's|http://security.ubuntu.com|https://security.ubuntu.com|g' /etc/apt/sources.list
+            sudo apt-get update -o Acquire::Retries=5
+          fi
+          
+          # 安装所需包(systemd 已有，可不装）
+          sudo apt-get install -y --no-install-recommends language-pack-zh-hans language-pack-zh-hans-base locales tree
+
+          
+          sudo locale-gen zh_CN.UTF-8 || true
+          /usr/bin/localectl set-locale LANG=zh_CN.UTF-8 || true 
+          /usr/bin/timedatectl set-timezone Asia/Shanghai || true 
+          /usr/bin/timedatectl set-ntp true || true
+
           curl --max-time 10 -sLo ver "https://github.com/gcc-mirror/gcc/raw/refs/heads/master/gcc/BASE-VER"
           # curl --max-time 10 -sLo ver "https://gcc.gnu.org/git/?p=gcc.git;a=blob_plain;f=gcc/BASE-VER"
           export version=$(cat ver)
@@ -1149,4 +1165,4 @@ jobs:
       - name: Send telegram messages
         run: |
           curl -s -X POST "https://api.telegram.org/bot${{ env.BOT_TOKEN }}/sendMessage" -d chat_id="${{ env.CHAT_ID }}" -d "disable_web_page_preview=true" -d "parse_mode=html" -d text="It's $(date +%A) my dudes!"
-          curl -s -X POST "https://api.telegram.org/bot${{ env.BOT_TOKEN }}/sendMessage" -d chat_id="${{ env.CHAT_ID }}" -d "disable_web_page_preview=true" -d "parse_mode=html" -d text="The year is $(date +'%j' | awk '{printf "%.2f\n", $0 / 365.25 * 100}')% complete. Time is flying."
+          curl -s -X POST "https://api.telegram.org/bot${{ env.BOT_TOKEN }}/sendMessage" -d chat_id="${{ env.CHAT_ID }}" -d "disable_web_page_preview=true" -d "parse_mode=html" -d text="The year is $(date +'%j' | awk -v total_days="$(date +'%j' | awk -v total_days="$(date -d "$(date +%Y)-12-31" +%j)" '{printf "%.4f\n", $0 / total_days * 100}')% complete. Time is flying."
