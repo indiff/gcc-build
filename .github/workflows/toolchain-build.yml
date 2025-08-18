@@ -89,7 +89,7 @@ jobs:
     runs-on: ubuntu-24.04-arm
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
     - name: Set build date
       id: get-date
       run: |
@@ -126,6 +126,7 @@ jobs:
       with:
        name: aarch64-tarball
        path: |
+         *.xz
          *.zip
          gcc-version
 
@@ -136,7 +137,7 @@ jobs:
     needs: before_build
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
     - name: Set build date
       id: get-date
       run: |
@@ -201,8 +202,8 @@ jobs:
       - name: Free Disk-Space
         run: df -h && sudo apt-get clean && docker system prune -a -f && sudo rm -rf /usr/local/lib/android /usr/share/dotnet /opt/ghc && df -h && free -h
 
-      - name: Checkout v4
-        uses: actions/checkout@v4     
+      - name: Checkout v5
+        uses: actions/checkout@v5    
 
       - name: Create build script
         run: |
@@ -650,6 +651,7 @@ jobs:
             --enable-languages=c,c++,lto \
             --enable-threads=posix \
             --enable-libstdcxx-backtrace \
+            --enable-libatomic \
             --enable-offload-targets=nvptx-none \
             --without-cuda-driver --enable-offload-defaulted \
             --with-tune=generic \
@@ -668,9 +670,11 @@ jobs:
           make all-gcc -j"$JOBS"
           make all-target-libgcc -j"$JOBS"
           make all-target-libstdc++-v3 -j"$JOBS" 
+          make all-target-libatomic -j"$JOBS"
           make install-gcc -j"$JOBS"
           make install-target-libgcc -j"$JOBS"
           make install-target-libstdc++-v3 -j"$JOBS"
+          make install-target-libatomic -j"$JOBS"
           # make all -j"$JOBS"
           # make install -j"$JOBS"
           echo "Built GCC end!"
@@ -1106,7 +1110,7 @@ jobs:
       runs-on: ubuntu-latest
 
       steps:
-        - uses: actions/checkout@v4
+        - uses: actions/checkout@v5
         - name: Restoring artifacts
           uses: actions/download-artifact@main
           with:
@@ -1141,7 +1145,7 @@ jobs:
             echo "Commit Info: $commit_info"
             echo -e "## 你好$(date) gcc ${{ needs.before_build.outputs.GCC_BUILD_VERSION }}\n > $commit_info\n" > hello.md
 
-            # 查找打包文件：优先 *.xz，没有则找 *.zip
+            # 查找打包文件：优先 *.xz, 没有则找 *.zip
             pkgpath="$(find . -maxdepth 2 -type f -name '*centos7*.xz' | head -n 1)"
             if [[ -z "$pkgpath" ]]; then
               echo '未找到打包文件*.xz' >&2
@@ -1168,7 +1172,7 @@ jobs:
             sed -i "s/shitshit/${bname}/g" hello.md
             gh release create ${{ env.TAG_NAME }} -F hello.md "$pkgpath"
           env:
-            GITHUB_TOKEN: ${{ github.token }}  
+            GITHUB_TOKEN: ${{ github.token }}
 
   send-day:
     needs: [publish-release]
