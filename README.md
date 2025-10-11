@@ -41,10 +41,28 @@ Running this script is quite simple. We start by cloning this repository:
 ```bash
 git clone https://github.com/mvaisakh/gcc-build.git gcc-build
 ```
+
+### Building GCC
+
 ```bash
 ./build-gcc.sh -a <architechture>
 ```
 > As of now, I only support **arm**, **arm64** and **x86 (compiles for x86_64 only)**. This list is subject to change as I receive requests.
+
+### Building with LLD (Optional)
+
+After building GCC, you can optionally build and integrate LLD (LLVM Linker) into your toolchain:
+
+```bash
+./build-lld.sh -a <architechture>
+```
+
+This will:
+- Download and build LLVM's LLD linker
+- Install it into the same GCC toolchain directory (gcc-<arch>)
+- Create a symlink for easy usage with GCC
+
+The LLD linker can provide faster linking times compared to traditional GNU ld.
 
 > Keep in mind that this script contains just the bare minimum prerequisites.
 
