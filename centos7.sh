@@ -113,6 +113,8 @@ yum install -y \
     curl \
     zip
 
+
+
 # Install devtoolset-10 for newer GCC
 echo "[buildlogs-devtoolset-10-centos-x86_64]" > /etc/yum.repos.d/centos7-devtoolset-10.repo
 echo "name=devtoolset-10" >> /etc/yum.repos.d/centos7-devtoolset-10.repo
@@ -120,12 +122,24 @@ echo "baseurl=https://buildlogs.cdn.centos.org/c7-devtoolset-10.x86_64" >> /etc/
 echo "gpgcheck=0" >> /etc/yum.repos.d/centos7-devtoolset-10.repo
 echo "enabled=1" >> /etc/yum.repos.d/centos7-devtoolset-10.repo
 
+# Install llvm-toolset-14.0 for newer clang
+echo "[buildlogs-llvm-14-centos-x86_64]" > /etc/yum.repos.d/centos7-llvm-14.repo
+echo "name=llvm-14" >> /etc/yum.repos.d/centos7-llvm-14.repo
+echo "baseurl=https://buildlogs.cdn.centos.org/c7-llvm-toolset-14.0.x86_64" >> /etc/yum.repos.d/centos7-llvm-14.repo
+echo "gpgcheck=0" >> /etc/yum.repos.d/centos7-llvm-14.repo
+echo "enabled=1" >> /etc/yum.repos.d/centos7-llvm-14.repo
+
 yum -y update
 yum -y install devtoolset-10 --nogpgcheck
 
 # Enable devtoolset-10
 source /opt/rh/devtoolset-10/enable
 echo "source /opt/rh/devtoolset-10/enable" >> /etc/bashrc
+
+yum -y install llvm-toolset-14.0 --nogpgcheck --skip-broken
+
+source /opt/rh/llvm-toolset-14.0/enable
+scl enable llvm-toolset-14.0 'bash'
 
 # install cmake v4.1.1
 curl -sLo cmake3.tar.gz https://github.com/Kitware/CMake/releases/download/v4.1.1/cmake-4.1.1-linux-x86_64.tar.gz
@@ -138,9 +152,18 @@ ln -sf /opt/cmake/bin/cmake /usr/bin/cmake
 yum -y remove git
 yum -y install https://packages.endpointdev.com/rhel/7/os/x86_64/endpoint-repo.x86_64.rpm
 yum -y install git
+
+
+yum -y remove python36 python36-pip python36-devel python3 python3-pip python3-devel
+yum -y install yum-plugin-copr
+yum -y copr enable adrienverge/python37
+yum -y install python37 python37-devel python37-pip
+python3 --version
+          
 git --version
         
 # Verify installations
+clang -v
 gcc -v
 make -v
 cmake --version || true
