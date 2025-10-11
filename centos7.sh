@@ -123,11 +123,11 @@ echo "gpgcheck=0" >> /etc/yum.repos.d/centos7-devtoolset-10.repo
 echo "enabled=1" >> /etc/yum.repos.d/centos7-devtoolset-10.repo
 
 # Install llvm-toolset-14.0 for newer clang
-echo "[buildlogs-llvm-14-centos-x86_64]" > /etc/yum.repos.d/centos7-llvm-14.repo
-echo "name=llvm-14" >> /etc/yum.repos.d/centos7-llvm-14.repo
-echo "baseurl=https://buildlogs.cdn.centos.org/c7-llvm-toolset-14.0.x86_64" >> /etc/yum.repos.d/centos7-llvm-14.repo
-echo "gpgcheck=0" >> /etc/yum.repos.d/centos7-llvm-14.repo
-echo "enabled=1" >> /etc/yum.repos.d/centos7-llvm-14.repo
+echo "[buildlogs-llvm-13-centos-x86_64]" > /etc/yum.repos.d/centos7-llvm-13.repo
+echo "name=llvm-13" >> /etc/yum.repos.d/centos7-llvm-13.repo
+echo "baseurl=https://buildlogs.cdn.centos.org/c7-llvm-toolset-13.0.x86_64" >> /etc/yum.repos.d/centos7-llvm-13.repo
+echo "gpgcheck=0" >> /etc/yum.repos.d/centos7-llvm-13.repo
+echo "enabled=1" >> /etc/yum.repos.d/centos7-llvm-13.repo
 
 yum -y update
 yum -y install devtoolset-10 --nogpgcheck
@@ -136,10 +136,10 @@ yum -y install devtoolset-10 --nogpgcheck
 source /opt/rh/devtoolset-10/enable
 echo "source /opt/rh/devtoolset-10/enable" >> /etc/bashrc
 
-yum -y install llvm-toolset-14.0 --nogpgcheck --skip-broken
+yum -y install llvm-toolset-13.0 --nogpgcheck --skip-broken
+source /opt/rh/llvm-toolset-13.0/enable
+echo "source /opt/rh/llvm-toolset-13.0/enable" >> /etc/bashrc
 
-source /opt/rh/llvm-toolset-14.0/enable
-scl enable llvm-toolset-14.0 'bash'
 
 # install cmake v4.1.1
 curl -sLo cmake3.tar.gz https://github.com/Kitware/CMake/releases/download/v4.1.1/cmake-4.1.1-linux-x86_64.tar.gz
