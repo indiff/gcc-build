@@ -1114,7 +1114,7 @@ jobs:
           echo "Docker cache key: ${CACHE_KEY}"
 
       - name: Build and push Docker image
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: .
           file: ./Dockerfile
