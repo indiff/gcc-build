@@ -110,6 +110,7 @@ yum install -y \
     autoconf \
     automake \
     libtool \
+    curl \
     zip
 
 # Install devtoolset-10 for newer GCC
@@ -126,6 +127,19 @@ yum -y install devtoolset-10 --nogpgcheck
 source /opt/rh/devtoolset-10/enable
 echo "source /opt/rh/devtoolset-10/enable" >> /etc/bashrc
 
+# install cmake v4.1.1
+curl -sLo cmake3.tar.gz https://github.com/Kitware/CMake/releases/download/v4.1.1/cmake-4.1.1-linux-x86_64.tar.gz
+tar -xzf cmake3.tar.gz
+mv cmake-4.1.1-linux-x86_64 /opt/cmake
+rm -f /usr/bin/cmake
+ln -sf /opt/cmake/bin/cmake /usr/bin/cmake
+
+# update git
+yum -y remove git
+yum -y install https://packages.endpointdev.com/rhel/7/os/x86_64/endpoint-repo.x86_64.rpm
+yum -y install git
+git --version
+        
 # Verify installations
 gcc -v
 make -v
