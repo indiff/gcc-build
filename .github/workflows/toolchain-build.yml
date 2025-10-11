@@ -692,7 +692,7 @@ jobs:
 
     steps:
       - name: Checkout v4
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Create build script
         run: |
