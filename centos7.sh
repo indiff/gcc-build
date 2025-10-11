@@ -122,12 +122,7 @@ echo "baseurl=https://buildlogs.cdn.centos.org/c7-devtoolset-10.x86_64" >> /etc/
 echo "gpgcheck=0" >> /etc/yum.repos.d/centos7-devtoolset-10.repo
 echo "enabled=1" >> /etc/yum.repos.d/centos7-devtoolset-10.repo
 
-# Install llvm-toolset-14.0 for newer clang
-echo "[buildlogs-llvm-13-centos-x86_64]" > /etc/yum.repos.d/centos7-llvm-13.repo
-echo "name=llvm-13" >> /etc/yum.repos.d/centos7-llvm-13.repo
-echo "baseurl=https://buildlogs.cdn.centos.org/c7-llvm-toolset-13.0.x86_64" >> /etc/yum.repos.d/centos7-llvm-13.repo
-echo "gpgcheck=0" >> /etc/yum.repos.d/centos7-llvm-13.repo
-echo "enabled=1" >> /etc/yum.repos.d/centos7-llvm-13.repo
+
 
 yum -y update
 yum -y install devtoolset-10 --nogpgcheck
@@ -136,9 +131,17 @@ yum -y install devtoolset-10 --nogpgcheck
 source /opt/rh/devtoolset-10/enable
 echo "source /opt/rh/devtoolset-10/enable" >> /etc/bashrc
 
-yum -y install llvm-toolset-13.0 --nogpgcheck --skip-broken
+
+rm -f /etc/yum.repos.d/centos7-llvm.repo
+echo "[centos7-13-llvm]" > /etc/yum.repos.d/centos7-llvm.repo
+echo "name=CentOS-7 - llvm rh" >> /etc/yum.repos.d/centos7-llvm.repo
+echo "baseurl=https://buildlogs.cdn.centos.org/c7-llvm-toolset-13.0.x86_64/" >> /etc/yum.repos.d/centos7-llvm.repo
+echo "gpgcheck=0" >> /etc/yum.repos.d/centos7-llvm.repo
+echo "enabled=1" >> /etc/yum.repos.d/centos7-llvm.repo
+yum -y install llvm-toolset-13.0
+scl enable llvm-toolset-13.0 bash
 source /opt/rh/llvm-toolset-13.0/enable
-echo "source /opt/rh/llvm-toolset-13.0/enable" >> /etc/bashrc
+clang --version
 
 
 # install cmake v4.1.1
