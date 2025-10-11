@@ -21,6 +21,14 @@ while getopts a: flag; do
   fi
 done
 
+# Validate that architecture was provided
+if [ -z "${arch}" ]; then
+  echo "Error: Architecture argument is required"
+  echo "Usage: $0 -a <architecture>"
+  echo "Supported architectures: arm, arm64, x86"
+  exit 1
+fi
+
 # Let's keep this as is
 export WORK_DIR="$(pwd)"
 export PREFIX="${WORK_DIR}/gcc-${arch}"

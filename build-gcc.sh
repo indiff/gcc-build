@@ -18,6 +18,14 @@ while getopts a: flag; do
   esac
 done
 
+# Validate that architecture was provided
+if [ -z "${arch}" ]; then
+  echo "Error: Architecture argument is required"
+  echo "Usage: $0 -a <architecture>"
+  echo "Supported architectures: arm, arm64, x86"
+  exit 1
+fi
+
 # TODO: Better target handling
 case "${arch}" in
   "arm") TARGET="arm-eabi" ;;

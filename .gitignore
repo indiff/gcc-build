@@ -4,3 +4,4 @@ build-gcc/
 gcc/
 stdin.info
 gcc-*/
+llvm-project/
