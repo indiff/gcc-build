@@ -44,10 +44,16 @@ build_lld() {
   echo ">"
   echo "> Building LLD"
   echo ">"
+  # Use half of available cores
+  NPROC_HALF=$(($(nproc --all) / 2))
+  # Ensure at least 1 core is used
+  NPROC_HALF=$((NPROC_HALF > 0 ? NPROC_HALF : 1))
   mkdir -p "${WORK_DIR}/llvm-project/build"
   cd "${WORK_DIR}/llvm-project/build"
   export INSTALL_LLD_DIR="${WORK_DIR}/gcc-${arch}"
   cmake -G "Ninja" \
+    -DLLVM_ENABLE_RUNTIMES="libcxx;libcxxabi" \
+    -DCMAKE_BUILD_TYPE=Release \
     -DLLVM_ENABLE_PROJECTS=lld \
     -DCMAKE_INSTALL_PREFIX="$INSTALL_LLD_DIR" \
     -DLLVM_DEFAULT_TARGET_TRIPLE="$TARGET_CLANG" \
@@ -55,23 +61,24 @@ build_lld() {
     -DLLVM_TARGETS_TO_BUILD=$ARCH_CLANG \
     -DCMAKE_CXX_COMPILER="$(which clang++)" \
     -DCMAKE_C_COMPILER="$(which clang)" \
-    -DLLVM_OPTIMIZED_TABLEGEN=True \
+    -DLLVM_OPTIMIZED_TABLEGEN=ON \
+    -DLLVM_ENABLE_LIBXML2=OFF \
     -DLLVM_USE_LINKER=lld \
     -DLLVM_ENABLE_LTO=Full \
     -DCMAKE_BUILD_TYPE=Release \
-    -DLLVM_BUILD_RUNTIME=Off \
-    -DLLVM_INCLUDE_TESTS=Off \
-    -DLLVM_INCLUDE_EXAMPLES=Off \
-    -DLLVM_INCLUDE_BENCHMARKS=Off \
-    -DLLVM_ENABLE_MODULES=Off \
-    -DLLVM_ENABLE_BACKTRACES=Off \
-    -DLLVM_PARALLEL_COMPILE_JOBS="$(nproc --all)" \
-    -DLLVM_PARALLEL_LINK_JOBS="$(nproc --all)" \
-    -DBUILD_SHARED_LIBS=Off \
-    -DLLVM_INSTALL_TOOLCHAIN_ONLY=On \
+    -DLLVM_BUILD_RUNTIME=OFF \
+    -DLLVM_INCLUDE_TESTS=OFF \
+    -DLLVM_INCLUDE_EXAMPLES=OFF \
+    -DLLVM_INCLUDE_BENCHMARKS=OFF \
+    -DLLVM_ENABLE_MODULES=OFF \
+    -DLLVM_ENABLE_BACKTRACES=OFF \
+    -DLLVM_PARALLEL_COMPILE_JOBS="$(NPROC_HALF)" \
+    -DLLVM_PARALLEL_LINK_JOBS="$(NPROC_HALF)" \
+    -DBUILD_SHARED_LIBS=OFF \
+    -DLLVM_INSTALL_TOOLCHAIN_ONLY=ON \
     -DCMAKE_C_FLAGS="-O3" \
     -DCMAKE_CXX_FLAGS="-O3" \
-    -DLLVM_ENABLE_PIC=False \
+    -DLLVM_ENABLE_PIC=ON \
     "${WORK_DIR}"/llvm-project/llvm
   ninja -j$(nproc --all)
   ninja -j$(nproc --all) install
