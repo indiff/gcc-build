@@ -171,7 +171,11 @@ yum -y install python37 python37-devel python37-pip
 python3 --version
           
 git --version
-        
+
+# 创建符号链接
+ln -sf /opt/rh/llvm-toolset-13.0/root/bin/clang /usr/bin/clang
+ln -sf /opt/rh/llvm-toolset-13.0/root/bin/clang++ /usr/bin/clang++
+ln -sf /opt/rh/llvm-toolset-13.0/root/bin/llvm-config /usr/bin/llvm-config
 # Verify installations
 clang++ -v
 clang -v
