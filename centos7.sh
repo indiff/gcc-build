@@ -128,16 +128,6 @@ yum clean all
 source /opt/rh/devtoolset-10/enable
 echo "source /opt/rh/devtoolset-10/enable" >> /etc/bashrc
 
-
-rm -f /etc/yum.repos.d/centos7-llvm.repo
-echo "[centos7-7-llvm]" > /etc/yum.repos.d/centos7-llvm.repo
-echo "name=CentOS-7 - llvm rh" >> /etc/yum.repos.d/centos7-llvm.repo
-echo "baseurl=https://buildlogs.cdn.centos.org/c7-llvm-toolset-7.0.x86_64/" >> /etc/yum.repos.d/centos7-llvm.repo
-echo "gpgcheck=0" >> /etc/yum.repos.d/centos7-llvm.repo
-echo "enabled=1" >> /etc/yum.repos.d/centos7-llvm.repo
-yum -y install llvm-toolset-7.0
-yum clean all
-
 scl enable llvm-toolset-7.0 bash
 source /opt/rh/llvm-toolset-7.0/enable
 echo 'source /opt/rh/llvm-toolset-7.0/enable' >> /etc/bashrc
@@ -165,6 +155,7 @@ python3 --version
 git --version
         
 # Verify installations
+clang++ -v
 clang -v
 gcc -v
 make -v
