@@ -1,4 +1,4 @@
-FROM centos:7
+FROM centos/llvm-toolset-7-centos7:latest
 
 LABEL maintainer="indiff"
 LABEL description="CentOS 7 build environment for GCC and LLD compilation"
