@@ -114,14 +114,20 @@ yum install -y \
 yum clean all
 
 # Install devtoolset-10 for newer GCC
-echo "[buildlogs-devtoolset-10-centos-x86_64]" > /etc/yum.repos.d/centos7-devtoolset-10.repo
+echo "[buildlogs-devtoolset-centos-x86_64]" > /etc/yum.repos.d/centos7-devtoolset-10.repo
 echo "name=devtoolset-10" >> /etc/yum.repos.d/centos7-devtoolset-10.repo
 echo "baseurl=https://buildlogs.cdn.centos.org/c7-devtoolset-10.x86_64" >> /etc/yum.repos.d/centos7-devtoolset-10.repo
 echo "gpgcheck=0" >> /etc/yum.repos.d/centos7-devtoolset-10.repo
 echo "enabled=1" >> /etc/yum.repos.d/centos7-devtoolset-10.repo
 
+echo "[buildlogs-devtoolset9-centos-x86_64]" > /etc/yum.repos.d/centos7-devtoolset-10.repo
+echo "name=devtoolset-9" >> /etc/yum.repos.d/centos7-devtoolset-10.repo
+echo "baseurl=https://buildlogs.cdn.centos.org/c7-devtoolset-9.x86_64" >> /etc/yum.repos.d/centos7-devtoolset-10.repo
+echo "gpgcheck=0" >> /etc/yum.repos.d/centos7-devtoolset-10.repo
+echo "enabled=1" >> /etc/yum.repos.d/centos7-devtoolset-10.repo
+
 yum -y update
-yum -y install devtoolset-10 --nogpgcheck
+yum -y install devtoolset-9 devtoolset-10 --nogpgcheck
 yum clean all
 
 # Enable devtoolset-10
