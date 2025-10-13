@@ -72,16 +72,16 @@ build_lld() {
     -DLLVM_INCLUDE_BENCHMARKS=OFF \
     -DLLVM_ENABLE_MODULES=OFF \
     -DLLVM_ENABLE_BACKTRACES=OFF \
-    -DLLVM_PARALLEL_COMPILE_JOBS="$(NPROC_HALF)" \
-    -DLLVM_PARALLEL_LINK_JOBS="$(NPROC_HALF)" \
+    -DLLVM_PARALLEL_COMPILE_JOBS="$NPROC_HALF" \
+    -DLLVM_PARALLEL_LINK_JOBS="$NPROC_HALF" \
     -DBUILD_SHARED_LIBS=OFF \
     -DLLVM_INSTALL_TOOLCHAIN_ONLY=ON \
     -DCMAKE_C_FLAGS="-O3" \
     -DCMAKE_CXX_FLAGS="-O3" \
     -DLLVM_ENABLE_PIC=ON \
     "${WORK_DIR}"/llvm-project/llvm
-  ninja -j$(nproc --all)
-  ninja -j$(nproc --all) install
+  ninja -j$NPROC_HALF
+  ninja -j$NPROC_HALF install
   # Create proper symlinks
   cd "${INSTALL_LLD_DIR}"/bin
   ln -s lld ${TARGET_GCC}-ld.lld
