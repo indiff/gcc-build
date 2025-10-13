@@ -110,6 +110,7 @@ yum install -y \
     automake \
     libtool \
     curl \
+    file \
     zip
 yum clean all
 
