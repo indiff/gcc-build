@@ -131,8 +131,8 @@ yum -y install devtoolset-9 devtoolset-10 --nogpgcheck
 yum clean all
 
 # Enable devtoolset-10
-source /opt/rh/devtoolset-10/enable
-echo "source /opt/rh/devtoolset-10/enable" >> /etc/bashrc
+# source /opt/rh/devtoolset-10/enable
+# echo "source /opt/rh/devtoolset-10/enable" >> /etc/bashrc
 
 
 
@@ -175,7 +175,6 @@ git --version
 # Verify installations
 clang++ -v
 clang -v
-gcc -v
 make -v
 cmake --version || true
 ninja --version || true
