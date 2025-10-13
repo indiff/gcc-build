@@ -96,7 +96,6 @@ yum install -y \
     tar \
     git \
     tree \
-    python3 \
     ncurses-devel \
     expat-devel \
     pkgconfig \
@@ -113,16 +112,12 @@ yum install -y \
     curl \
     zip
 
-
-
 # Install devtoolset-10 for newer GCC
 echo "[buildlogs-devtoolset-10-centos-x86_64]" > /etc/yum.repos.d/centos7-devtoolset-10.repo
 echo "name=devtoolset-10" >> /etc/yum.repos.d/centos7-devtoolset-10.repo
 echo "baseurl=https://buildlogs.cdn.centos.org/c7-devtoolset-10.x86_64" >> /etc/yum.repos.d/centos7-devtoolset-10.repo
 echo "gpgcheck=0" >> /etc/yum.repos.d/centos7-devtoolset-10.repo
 echo "enabled=1" >> /etc/yum.repos.d/centos7-devtoolset-10.repo
-
-
 
 yum -y update
 yum -y install devtoolset-10 --nogpgcheck
@@ -141,7 +136,6 @@ echo "enabled=1" >> /etc/yum.repos.d/centos7-llvm.repo
 yum -y install llvm-toolset-13.0
 scl enable llvm-toolset-13.0 bash
 source /opt/rh/llvm-toolset-13.0/enable
-clang --version
 
 
 # install cmake v4.1.1
