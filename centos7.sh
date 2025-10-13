@@ -164,7 +164,7 @@ yum -y install https://packages.endpointdev.com/rhel/7/os/x86_64/endpoint-repo.x
 yum -y install git
 
 
-yum -y remove python36 python36-pip python36-devel python3 python3-pip python3-devel
+# yum -y remove python36 python36-pip python36-devel python3 python3-pip python3-devel
 yum -y install yum-plugin-copr
 yum -y copr enable adrienverge/python37
 yum -y install python37 python37-devel python37-pip
