@@ -53,8 +53,8 @@ build_lld() {
   export INSTALL_LLD_DIR="${WORK_DIR}/gcc-${arch}"
   cmake -G "Ninja" \
     -DLLVM_ENABLE_RUNTIMES="libcxx;libcxxabi;libunwind" \
+    -DLLVM_ENABLE_PROJECTS="clang;lld;compiler-rt" \
     -DCMAKE_BUILD_TYPE=Release \
-    -DLLVM_ENABLE_PROJECTS=lld \
     -DCMAKE_INSTALL_PREFIX="$INSTALL_LLD_DIR" \
     -DLLVM_DEFAULT_TARGET_TRIPLE="$TARGET_CLANG" \
     -DLLVM_TARGET_ARCH="X86" \
@@ -72,6 +72,7 @@ build_lld() {
     -DLLVM_INCLUDE_BENCHMARKS=OFF \
     -DLLVM_ENABLE_MODULES=OFF \
     -DLLVM_ENABLE_BACKTRACES=OFF \
+    -DLLVM_INCLUDE_BENCHMARKS=OFF \
     -DLLVM_PARALLEL_COMPILE_JOBS="$NPROC_HALF" \
     -DLLVM_PARALLEL_LINK_JOBS="$NPROC_HALF" \
     -DBUILD_SHARED_LIBS=OFF \
@@ -79,6 +80,9 @@ build_lld() {
     -DCMAKE_C_FLAGS="-O3" \
     -DCMAKE_CXX_FLAGS="-O3" \
     -DLLVM_ENABLE_PIC=ON \
+    -DLLVM_ENABLE_ZLIB=1 \
+    -DZLIB_LIBRARY="/opt/vcpkg/installed/x64-linux/lib/libz.a" \
+    -DZLIB_INCLUDE_DIR="/opt/vcpkg/installed/x64-linux/include" \
     "${WORK_DIR}"/llvm-project/llvm
   ninja -j$NPROC_HALF
   ninja -j$NPROC_HALF install
