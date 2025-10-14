@@ -172,7 +172,6 @@ python3 --version
 git --version
 
 # 创建符号链接
-CC=clang CXX=clang++ ./vcpkg install fmt
 rm -f /usr/bin/clang
 rm -f /usr/bin/clang++
 ln -sf /opt/rh/llvm-toolset-13.0/root/bin/clang /usr/bin/clang
