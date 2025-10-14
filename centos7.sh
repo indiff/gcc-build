@@ -184,4 +184,15 @@ make -v
 cmake --version || true
 ninja --version || true
 
+export CC=/opt/rh/llvm-toolset-13.0/root/usr/bin/clang
+export CXX=/opt/rh/llvm-toolset-13.0/root/usr/bin/clang++
+git clone --filter=blob:none --depth 1 https://github.com/microsoft/vcpkg.git /opt/vcpkg
+/opt/vcpkg/bootstrap-vcpkg.sh
+export VCPKG_ROOT=/opt/vcpkg
+export TRIPLET=x64-linux
+$VCPKG_ROOT/vcpkg install \
+            zlib \
+            lz4 \
+            zstd \
+            --triplet $TRIPLET --clean-after-build
 echo "CentOS 7 build environment setup completed successfully!"
