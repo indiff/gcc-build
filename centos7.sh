@@ -184,15 +184,15 @@ make -v
 cmake --version || true
 ninja --version || true
 
-export PATH=/opt/rh/llvm-toolset-13.0/root/usr/bin:/opt/rh/llvm-toolset-13.0/root/usr/sbin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
-export LD_LIBRARY_PATH=/opt/rh/llvm-toolset-13.0/root/usr/lib64
-git clone --filter=blob:none --depth 1 https://github.com/microsoft/vcpkg.git /opt/vcpkg
-/opt/vcpkg/bootstrap-vcpkg.sh
-export VCPKG_ROOT=/opt/vcpkg
-export TRIPLET=x64-linux
-CC=/usr/bin/clang CXX=/usr/bin/clang++ $VCPKG_ROOT/vcpkg install \
-            zlib \
-            lz4 \
-            zstd \
-            --triplet $TRIPLET --clean-after-build
+# export PATH=/opt/rh/llvm-toolset-13.0/root/usr/bin:/opt/rh/llvm-toolset-13.0/root/usr/sbin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+# export LD_LIBRARY_PATH=/opt/rh/llvm-toolset-13.0/root/usr/lib64
+# git clone --filter=blob:none --depth 1 https://github.com/microsoft/vcpkg.git /opt/vcpkg
+# /opt/vcpkg/bootstrap-vcpkg.sh
+# export VCPKG_ROOT=/opt/vcpkg
+# export TRIPLET=x64-linux
+# CC=/usr/bin/clang CXX=/usr/bin/clang++ $VCPKG_ROOT/vcpkg install \
+#             zlib \
+#             lz4 \
+#             zstd \
+#             --triplet $TRIPLET --clean-after-build
 echo "CentOS 7 build environment setup completed successfully!"
