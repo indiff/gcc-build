@@ -52,9 +52,6 @@ build_lld() {
   cd "${WORK_DIR}/llvm-project/build"
   export INSTALL_LLD_DIR="${WORK_DIR}/gcc-${arch}"
 
-  # -DLLVM_ENABLE_ZLIB=1 \
-  # -DZLIB_LIBRARY="/opt/vcpkg/installed/x64-linux/lib/libz.a" \
-  # -DZLIB_INCLUDE_DIR="/opt/vcpkg/installed/x64-linux/include" \
   cmake -G "Ninja" \
     -DLLVM_ENABLE_RUNTIMES="compiler-rt;libcxx;libcxxabi;libunwind" \
     -DLLVM_ENABLE_PROJECTS="clang;lld;compiler-rt" \
@@ -84,6 +81,9 @@ build_lld() {
     -DCMAKE_C_FLAGS="-O3" \
     -DCMAKE_CXX_FLAGS="-O3" \
     -DLLVM_ENABLE_PIC=ON \
+    -DLLVM_ENABLE_ZLIB=1 \
+    -DZLIB_LIBRARY="/opt/vcpkg/installed/x64-linux/lib/libz.a" \
+    -DZLIB_INCLUDE_DIR="/opt/vcpkg/installed/x64-linux/include" \
     "${WORK_DIR}"/llvm-project/llvm
   ninja -j$NPROC_HALF
   ninja -j$NPROC_HALF install
