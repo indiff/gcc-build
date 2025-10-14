@@ -36,7 +36,7 @@ download_resources() {
   echo "> Downloading LLVM for LLD"
   echo ">"
   cd "${WORK_DIR}"
-  git clone https://github.com/llvm/llvm-project.git -b main "${WORK_DIR}/llvm-project" --depth=1
+  git clone --filter=blob:none https://github.com/llvm/llvm-project.git -b main "${WORK_DIR}/llvm-project" --depth=1
 }
 
 build_lld() {
