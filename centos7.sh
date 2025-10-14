@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: GPL-3.0
 # CentOS 7 dependency installation and configuration script
 set -xe
-
+export gcc_indiff_centos7_url="https://github.com/indiff/gcc-build/releases/download/20250908_0934_16.0.0/gcc-indiff-centos7-16.0.0-x86_64-20250908_0931.xz"
 echo 'LANG=zh_CN.UTF-8' >> /etc/environment
 echo 'LANGUAGE=zh_CN.UTF-8' >> /etc/environment
 echo 'LC_ALL=zh_CN.UTF-8' >> /etc/environment
@@ -162,6 +162,20 @@ yum -y remove git
 yum -y install https://packages.endpointdev.com/rhel/7/os/x86_64/endpoint-repo.x86_64.rpm
 yum -y install git
 
+# build ninja 
+curl -sLo /opt/gcc-indiff.zip "${gcc_indiff_centos7_url}"
+unzip /opt/gcc-indiff.zip -d /opt/gcc-indiff
+git clone --filter=blob:none https://github.com/ninja-build/ninja.git --depth=1
+cd ninja
+cmake -Bbuild-cmake -DBUILD_TESTING=OFF -DCMAKE_EXE_LINKER_FLAGS="-static-libstdc++ -static-libgcc" -DCMAKE_BUILD_TYPE=release -DCMAKE_CXX_COMPILER=/opt/gcc-indiff/bin/g++
+cmake --build build-cmake
+rm -f /usr/bin/ninja
+cp build-cmake/ninja /usr/bin/ninja
+cd ..
+rm -rf ninja
+rm -rf /opt/gcc-indiff
+
+/usr/bin/ninja --version
 
 # yum -y remove python36 python36-pip python36-devel python3 python3-pip python3-devel
 # yum -y install yum-plugin-copr
@@ -184,17 +198,18 @@ make -v
 cmake --version || true
 ninja --version || true
 
-# export PATH=/opt/rh/llvm-toolset-13.0/root/usr/bin:/opt/rh/llvm-toolset-13.0/root/usr/sbin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
-# export LD_LIBRARY_PATH=/opt/rh/llvm-toolset-13.0/root/usr/lib64
-# git clone --filter=blob:none --depth 1 https://github.com/microsoft/vcpkg.git /opt/vcpkg
-# /opt/vcpkg/bootstrap-vcpkg.sh
-# export VCPKG_ROOT=/opt/vcpkg
-# export TRIPLET=x64-linux
-# export PATH=/opt/rh/llvm-toolset-13.0/root/usr/bin:/opt/rh/llvm-toolset-13.0/root/usr/sbin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
-# export LD_LIBRARY_PATH=/opt/rh/llvm-toolset-13.0/root/usr/lib64:$LD_LIBRARY_PATH
-# CC=clang CXX=clang++ $VCPKG_ROOT/vcpkg install \
-#             zlib \
-#             lz4 \
-#             zstd \
-#             --triplet $TRIPLET --clean-after-build
+export PATH=/opt/rh/llvm-toolset-13.0/root/usr/bin:/opt/rh/llvm-toolset-13.0/root/usr/sbin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+export LD_LIBRARY_PATH=/opt/rh/llvm-toolset-13.0/root/usr/lib64
+git clone --filter=blob:none --depth 1 https://github.com/microsoft/vcpkg.git /opt/vcpkg
+/opt/vcpkg/bootstrap-vcpkg.sh
+export VCPKG_ROOT=/opt/vcpkg
+export TRIPLET=x64-linux
+export PATH=/opt/rh/llvm-toolset-13.0/root/usr/bin:/opt/rh/llvm-toolset-13.0/root/usr/sbin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+export LD_LIBRARY_PATH=/opt/rh/llvm-toolset-13.0/root/usr/lib64:$LD_LIBRARY_PATH
+CC=clang CXX=clang++ $VCPKG_ROOT/vcpkg install \
+            zlib \
+            lz4 \
+            zstd \
+            --triplet $TRIPLET --clean-after-build
+            
 echo "CentOS 7 build environment setup completed successfully!"
