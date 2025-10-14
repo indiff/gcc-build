@@ -159,6 +159,11 @@ mv cmake-4.1.1-linux-x86_64 /opt/cmake
 rm -f /usr/bin/cmake
 ln -sf /opt/cmake/bin/cmake /usr/bin/cmake
 
+# install ninja
+curl -LO https://github.com/ninja-build/ninja/releases/download/v1.13.1/ninja-linux.zip
+unzip ninja-linux.zip -d /usr/local/bin
+chmod +x /usr/local/bin/ninja
+
 # update git
 yum -y remove git
 yum -y install https://packages.endpointdev.com/rhel/7/os/x86_64/endpoint-repo.x86_64.rpm
@@ -184,8 +189,6 @@ make -v
 cmake --version || true
 ninja --version || true
 
-export CC=/opt/rh/llvm-toolset-13.0/root/usr/bin/clang
-export CXX=/opt/rh/llvm-toolset-13.0/root/usr/bin/clang++
 git clone --filter=blob:none --depth 1 https://github.com/microsoft/vcpkg.git /opt/vcpkg
 /opt/vcpkg/bootstrap-vcpkg.sh
 export VCPKG_ROOT=/opt/vcpkg
