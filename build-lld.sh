@@ -52,7 +52,7 @@ build_lld() {
   cd "${WORK_DIR}/llvm-project/build"
   export INSTALL_LLD_DIR="${WORK_DIR}/gcc-${arch}"
   cmake -G "Ninja" \
-    -DLLVM_ENABLE_RUNTIMES="libcxx;libcxxabi;libunwind" \
+    -DLLVM_ENABLE_RUNTIMES="compiler-rt;libcxx;libcxxabi;libunwind" \
     -DLLVM_ENABLE_PROJECTS="clang;lld;compiler-rt" \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_INSTALL_PREFIX="$INSTALL_LLD_DIR" \
