@@ -85,7 +85,8 @@ build_lld() {
     -DZLIB_LIBRARY="/opt/vcpkg/installed/x64-linux/lib/libz.a" \
     -DZLIB_INCLUDE_DIR="/opt/vcpkg/installed/x64-linux/include" \
     "${WORK_DIR}"/llvm-project/llvm
-  ninja -j$NPROC_HALF
+  # 这里会消耗茫茫多内存，所以尝试先开启多进程编译，失败之后降级到单进程  
+  ninja -j$(nproc --all) || ninja -j$NPROC_HALF || ninja || echo "failed"
   ninja -j$NPROC_HALF install
   # Create proper symlinks
   cd "${INSTALL_LLD_DIR}"/bin
