@@ -57,6 +57,7 @@ build_lld() {
   # 使用 LLVM 的 libc++
   #   -DLLVM_PARALLEL_COMPILE_JOBS="$NPROC_HALF" \
   # -DLLVM_PARALLEL_LINK_JOBS="$NPROC_HALF" \
+  #     -DLLVM_ENABLE_LTO=Full \
   cmake -G "Ninja" \
     -DLLVM_ENABLE_RUNTIMES="compiler-rt;libcxx;libcxxabi;libunwind" \
     -DLLVM_ENABLE_PROJECTS="clang;lld;compiler-rt" \
@@ -71,7 +72,6 @@ build_lld() {
     -DLLVM_OPTIMIZED_TABLEGEN=ON \
     -DLLVM_ENABLE_LIBXML2=OFF \
     -DLLVM_USE_LINKER=lld \
-    -DLLVM_ENABLE_LTO=Full \
     -DCMAKE_BUILD_TYPE=Release \
     -DLLVM_BUILD_RUNTIME=OFF \
     -DLLVM_INCLUDE_TESTS=OFF \
