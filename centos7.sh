@@ -173,7 +173,7 @@ rm -f /usr/bin/ninja
 cp build-cmake/ninja /usr/bin/ninja
 cd ..
 rm -rf ninja
-rm -rf /opt/gcc-indiff
+# rm -rf /opt/gcc-indiff
 
 /usr/bin/ninja --version
 
