@@ -52,8 +52,11 @@ build_lld() {
   cd "${WORK_DIR}/llvm-project/build"
   export INSTALL_LLD_DIR="${WORK_DIR}/gcc-${arch}"
 
-    # -DCMAKE_CXX_COMPILER="$(which clang++)" \
-    # -DCMAKE_C_COMPILER="$(which clang)" \
+  # -DCMAKE_CXX_COMPILER="$(which clang++)" \
+  # -DCMAKE_C_COMPILER="$(which clang)" \
+  # 使用 LLVM 的 libc++
+  #   -DLLVM_PARALLEL_COMPILE_JOBS="$NPROC_HALF" \
+  # -DLLVM_PARALLEL_LINK_JOBS="$NPROC_HALF" \
   cmake -G "Ninja" \
     -DLLVM_ENABLE_RUNTIMES="compiler-rt;libcxx;libcxxabi;libunwind" \
     -DLLVM_ENABLE_PROJECTS="clang;lld;compiler-rt" \
@@ -62,6 +65,7 @@ build_lld() {
     -DLLVM_DEFAULT_TARGET_TRIPLE="$TARGET_CLANG" \
     -DLLVM_TARGET_ARCH="X86" \
     -DLLVM_TARGETS_TO_BUILD=$ARCH_CLANG \
+    -DLLVM_ENABLE_LIBCXX=ON \
     -DCMAKE_CXX_COMPILER="/opt/gcc-indiff/bin/g++" \
     -DCMAKE_C_COMPILER="/opt/gcc-indiff/bin/gcc" \
     -DLLVM_OPTIMIZED_TABLEGEN=ON \
@@ -76,8 +80,6 @@ build_lld() {
     -DLLVM_ENABLE_MODULES=OFF \
     -DLLVM_ENABLE_BACKTRACES=OFF \
     -DLLVM_INCLUDE_BENCHMARKS=OFF \
-    -DLLVM_PARALLEL_COMPILE_JOBS="$NPROC_HALF" \
-    -DLLVM_PARALLEL_LINK_JOBS="$NPROC_HALF" \
     -DBUILD_SHARED_LIBS=OFF \
     -DLLVM_INSTALL_TOOLCHAIN_ONLY=ON \
     -DCMAKE_C_FLAGS="-O3" \
