@@ -52,6 +52,8 @@ build_lld() {
   cd "${WORK_DIR}/llvm-project/build"
   export INSTALL_LLD_DIR="${WORK_DIR}/gcc-${arch}"
 
+    # -DCMAKE_CXX_COMPILER="$(which clang++)" \
+    # -DCMAKE_C_COMPILER="$(which clang)" \
   cmake -G "Ninja" \
     -DLLVM_ENABLE_RUNTIMES="compiler-rt;libcxx;libcxxabi;libunwind" \
     -DLLVM_ENABLE_PROJECTS="clang;lld;compiler-rt" \
@@ -60,8 +62,8 @@ build_lld() {
     -DLLVM_DEFAULT_TARGET_TRIPLE="$TARGET_CLANG" \
     -DLLVM_TARGET_ARCH="X86" \
     -DLLVM_TARGETS_TO_BUILD=$ARCH_CLANG \
-    -DCMAKE_CXX_COMPILER="$(which clang++)" \
-    -DCMAKE_C_COMPILER="$(which clang)" \
+    -DCMAKE_CXX_COMPILER="/opt/gcc-indiff/bin/g++" \
+    -DCMAKE_C_COMPILER="/opt/gcc-indiff/bin/gcc" \
     -DLLVM_OPTIMIZED_TABLEGEN=ON \
     -DLLVM_ENABLE_LIBXML2=OFF \
     -DLLVM_USE_LINKER=lld \
