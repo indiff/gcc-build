@@ -53,12 +53,13 @@ build_lld() {
   export INSTALL_LLD_DIR="${WORK_DIR}/gcc-${arch}"
   export LD_LIBRARY_PATH=/opt/indiff-gcc/lib:/opt/indiff-gcc/lib64:$LD_LIBRARY_PATH
   export PATH=/opt/indiff-gcc/bin:$PATH
-  # -DCMAKE_CXX_COMPILER="$(which clang++)" \
-  # -DCMAKE_C_COMPILER="$(which clang)" \
+  
   # 使用 LLVM 的 libc++
   #   -DLLVM_PARALLEL_COMPILE_JOBS="$NPROC_HALF" \
   # -DLLVM_PARALLEL_LINK_JOBS="$NPROC_HALF" \
-  #     -DLLVM_ENABLE_LTO=Full \
+  # #     -DLLVM_ENABLE_LTO=Full \
+  # -DCMAKE_CXX_COMPILER="/opt/gcc-indiff/bin/g++" \
+  #   -DCMAKE_C_COMPILER="/opt/gcc-indiff/bin/gcc" \
   cmake -G "Ninja" \
     -DLLVM_ENABLE_RUNTIMES="compiler-rt;libcxx;libcxxabi;libunwind" \
     -DLLVM_ENABLE_PROJECTS="clang;lld;compiler-rt" \
@@ -68,8 +69,9 @@ build_lld() {
     -DLLVM_TARGET_ARCH="X86" \
     -DLLVM_TARGETS_TO_BUILD=$ARCH_CLANG \
     -DLLVM_ENABLE_LIBCXX=ON \
-    -DCMAKE_CXX_COMPILER="/opt/gcc-indiff/bin/g++" \
-    -DCMAKE_C_COMPILER="/opt/gcc-indiff/bin/gcc" \
+    -DCMAKE_CXX_COMPILER="$(which clang++)" \
+    -DCMAKE_C_COMPILER="$(which clang)" \
+    -DLLVM_ENABLE_LTO=Full \
     -DLLVM_OPTIMIZED_TABLEGEN=ON \
     -DLLVM_ENABLE_LIBXML2=OFF \
     -DLLVM_USE_LINKER=lld \
