@@ -51,7 +51,8 @@ build_lld() {
   mkdir -p "${WORK_DIR}/llvm-project/build"
   cd "${WORK_DIR}/llvm-project/build"
   export INSTALL_LLD_DIR="${WORK_DIR}/gcc-${arch}"
-
+  export LD_LIBRARY_PATH=/opt/indiff-gcc/lib:/opt/indiff-gcc/lib64:$LD_LIBRARY_PATH
+  export PATH=/opt/indiff-gcc/bin:$PATH
   # -DCMAKE_CXX_COMPILER="$(which clang++)" \
   # -DCMAKE_C_COMPILER="$(which clang)" \
   # 使用 LLVM 的 libc++
