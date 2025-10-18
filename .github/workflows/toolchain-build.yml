@@ -384,6 +384,8 @@ jobs:
           unzip /opt/gcc-indiff.zip -d /opt/mygcc
           export CC=/opt/mygcc/bin/gcc 
           export CXX=/opt/mygcc/bin/g++
+          export LD_LIBRARY_PATH=/opt/mygcc/lib:/opt/mygcc/lib64:$LD_LIBRARY_PATH
+          export PATH=/opt/mygcc/bin:$PATH
 
           # check and download
           function check_and_download() {
