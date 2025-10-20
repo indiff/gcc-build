@@ -282,7 +282,7 @@ jobs:
           yum install -y pcre-devel zlib-devel make git wget sed perl-IPC-Cmd GeoIP GeoIP-devel zip systemd autoconf automake libtool zstd-devel
           yum install -y perl-Test-Simple perl-FindBin perl-IPC-Cmd perl-Text-Template perl-File-Compare perl-File-Copy perl-Data-Dumper
           yum install -y llvm llvm-devel clang clang-devel libstdc++-devel glibc-devel tree python3
-          yum install -y perl gawk perl-Pod-Perldoc file
+          yum install -y perl gawk perl-Pod-Perldoc file elfutils-devel
           which pod2man
 
 
@@ -561,6 +561,7 @@ jobs:
               --disable-gdb \
               --disable-nls \
               --disable-werror \
+              --without-debuginfod \
               --enable-ld \
               --enable-gold \
               --enable-deterministic-archives=no \
