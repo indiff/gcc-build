@@ -39,6 +39,22 @@ download_resources() {
   git clone --filter=blob:none https://github.com/llvm/llvm-project.git -b main "${WORK_DIR}/llvm-project" --depth=1
 }
 
+
+  # helper: free memory and drop caches safely (ignore failures under set -e)
+free_memory_and_cache() {
+    echo ">"
+    echo "> Freeing memory and dropping caches..."
+    echo ">"
+    sync || true
+    if [ -w /proc/sys/vm/drop_caches ]; then
+      echo 3 > /proc/sys/vm/drop_caches || true
+    else
+      # try sudo without password; ignore errors
+      sh -c 'echo 3 > /proc/sys/vm/drop_caches' 2>/dev/null || true
+    fi
+}
+  
+
 build_lld() {
   cd "${WORK_DIR}"
   echo ">"
@@ -93,7 +109,19 @@ build_lld() {
     -DZLIB_INCLUDE_DIR="/opt/vcpkg/installed/x64-linux/include" \
     "${WORK_DIR}"/llvm-project/llvm
   # 这里会消耗茫茫多内存，所以尝试先开启多进程编译，失败之后降级到单进程  
-  ninja -j$(nproc --all) || ninja -j$NPROC_HALF || ninja || echo "failed"
+  # ninja -j$(nproc --all) || ninja -j$NPROC_HALF || ninja || echo "failed"
+
+   # 这里会消耗茫茫多内存，所以尝试先开启多进程编译，失败之后降级到单进程
+  # 按需求：降级一次 -> 释放一次内存和缓存 -> 再降级一次
+  if ! ninja -j"$(nproc --all)"; then
+    echo "> First attempt failed. Retrying with $NPROC_HALF jobs..."
+    if ! ninja -j"$NPROC_HALF"; then
+      free_memory_and_cache
+      echo "> Second attempt failed. Retrying with 1 job..."
+      ninja -j"$NPROC_HALF" || ninja -j1 || echo "failed"
+    fi
+  fi
+  
   ninja -j$NPROC_HALF install
   # Create proper symlinks
   cd "${INSTALL_LLD_DIR}"/bin
