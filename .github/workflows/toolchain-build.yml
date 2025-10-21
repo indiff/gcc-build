@@ -600,6 +600,8 @@ jobs:
           # tree "${VCPKG_ROOT}/packages/zstd_x64-linux/"
           yum install -y libzstd-devel libzstd
           # env LDFLAGS="-Wl,-rpath=$PREFIX/lib64:$PREFIX/lib" CFLAGS="$OPT_FLAGS -fPIC -I$PREFIX/include " CXXFLAGS="$OPT_FLAGS -fPIC -I$PREFIX/include " \
+          export OPT_FLAGS=" -lrt -lpthread -ldl -lm "
+          
           env CC=/opt/mygcc/bin/gcc CXX=/opt/mygcc/bin/g++ LDFLAGS="-L/opt/mygcc/lib64 -Wl,-rpath=$PREFIX/lib64:$PREFIX/lib" \
             CFLAGS="$OPT_FLAGS -fPIC $([[ "$USE_INTERNAL_GLIBC" == "1" ]] && echo "-I$GLIBC_RT/include")" \
             CXXFLAGS="$OPT_FLAGS -fPIC $([[ "$USE_INTERNAL_GLIBC" == "1" ]] && echo "-I$GLIBC_RT/include")" \
@@ -614,6 +616,7 @@ jobs:
             --disable-libquadmath \
             --disable-multilib \
             --disable-libunwind-exceptions \
+            --disable-libjava-multilib  \
             --enable-__cxa_atexit \
             --enable-shared \
             --enable-static \
@@ -628,6 +631,18 @@ jobs:
             --enable-libstdcxx-backtrace \
             --enable-libatomic \
             --enable-offload-targets=nvptx-none \
+            --enable-build-with-cxx  \
+            --enable-checking=release  \
+            --enable-gold  \
+            --enable-ld  \
+            --enable-libada  \
+            --enable-lto  \
+            --enable-objc-gc  \
+            --enable-gprofng  \
+            --enable-vtable-verify  \
+            --enable-linker-build-id  \
+            --enable-rpath  \
+            --disable-multilib  \
             --without-cuda-driver --enable-offload-defaulted \
             --with-tune=generic \
             --with-arch_32=x86-64 \
