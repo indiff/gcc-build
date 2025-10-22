@@ -282,8 +282,9 @@ jobs:
           yum install -y pcre-devel zlib-devel make git wget sed perl-IPC-Cmd GeoIP GeoIP-devel zip systemd autoconf automake libtool zstd-devel
           yum install -y perl-Test-Simple perl-FindBin perl-IPC-Cmd perl-Text-Template perl-File-Compare perl-File-Copy perl-Data-Dumper
           yum install -y llvm llvm-devel clang clang-devel libstdc++-devel glibc-devel tree python3
-          yum install -y perl gawk perl-Pod-Perldoc file elfutils-devel
+          yum install -y perl gawk perl-Pod-Perldoc file elfutils-devel gawk sed grep 
           which pod2man
+          which grep awk sed
 
 
           echo "[buildlogs-devtoolset-10-centos-x86_64]" > /etc/yum.repos.d/centos7-devtoolset-10.repo
