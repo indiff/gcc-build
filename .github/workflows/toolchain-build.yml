@@ -297,6 +297,7 @@ jobs:
           scl enable devtoolset-10 bash
           source /opt/rh/devtoolset-10/enable
           gcc -v
+          g++ -v
           make -v
           
           free -h
@@ -380,13 +381,14 @@ jobs:
           mv cmake-3.31.6-linux-x86_64 /opt/cmake
           rm -f /usr/bin/cmake
           ln -sf /opt/cmake/bin/cmake /usr/bin/cmake
+          
           # install gcc
-          curl -sLo /opt/gcc-indiff.zip "${{ env.gcc_indiff_centos7_url }}"
-          unzip /opt/gcc-indiff.zip -d /opt/mygcc
-          export CC=/opt/mygcc/bin/gcc 
-          export CXX=/opt/mygcc/bin/g++
-          export LD_LIBRARY_PATH=/opt/mygcc/lib:/opt/mygcc/lib64:$LD_LIBRARY_PATH
-          export PATH=/opt/mygcc/bin:$PATH
+          # curl -sLo /opt/gcc-indiff.zip "${{ env.gcc_indiff_centos7_url }}"
+          # unzip /opt/gcc-indiff.zip -d /opt/mygcc
+          # export CC=/opt/mygcc/bin/gcc 
+          # export CXX=/opt/mygcc/bin/g++
+          # export LD_LIBRARY_PATH=/opt/mygcc/lib:/opt/mygcc/lib64:$LD_LIBRARY_PATH
+          # export PATH=/opt/mygcc/bin:$PATH
 
           # check and download
           function check_and_download() {
