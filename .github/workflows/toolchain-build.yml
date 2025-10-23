@@ -670,6 +670,8 @@ jobs:
           make all-target-libatomic -j"$JOBS"
           make install-gcc -j"$JOBS"
           make install-target-libgcc -j"$JOBS"
+          sed -i 's/Link tests are not allowed after GCC_NO_EXECUTABLES/Link tests are not allowed after GCC_NO_EXECUTABLES  $LINENO/g' ../gcc/libstdc++-v3/configure
+          grep -n 'Link tests are not allowed after GCC_NO_EXECUTABLES' ../gcc/libstdc++-v3/configure
           make install-target-libstdc++-v3 -j"$JOBS"
           make install-target-libatomic -j"$JOBS"
           # make all -j"$JOBS"
