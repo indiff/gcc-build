@@ -383,12 +383,12 @@ jobs:
           ln -sf /opt/cmake/bin/cmake /usr/bin/cmake
           
           # install gcc
-          # curl -sLo /opt/gcc-indiff.zip "${{ env.gcc_indiff_centos7_url }}"
-          # unzip /opt/gcc-indiff.zip -d /opt/mygcc
-          # export CC=/opt/mygcc/bin/gcc 
-          # export CXX=/opt/mygcc/bin/g++
-          # export LD_LIBRARY_PATH=/opt/mygcc/lib:/opt/mygcc/lib64:$LD_LIBRARY_PATH
-          # export PATH=/opt/mygcc/bin:$PATH
+          curl -sLo /opt/gcc-indiff.zip "${{ env.gcc_indiff_centos7_url }}"
+          unzip /opt/gcc-indiff.zip -d /opt/mygcc
+          export CC=/opt/mygcc/bin/gcc 
+          export CXX=/opt/mygcc/bin/g++
+          export LD_LIBRARY_PATH=/opt/mygcc/lib:/opt/mygcc/lib64:$LD_LIBRARY_PATH
+          export PATH=/opt/mygcc/bin:$PATH
 
           # check and download
           function check_and_download() {
@@ -556,8 +556,8 @@ jobs:
           cd build-binutils
           # --target="$TARGET"
           TARGET="x86_64-redhat-linux-gnu"
-          # CC=/opt/mygcc/bin/gcc CXX=/opt/mygcc/bin/g++ 
-          env CFLAGS="$OPT_FLAGS" CXXFLAGS="$OPT_FLAGS" \
+          # 
+          env CC=/opt/mygcc/bin/gcc CXX=/opt/mygcc/bin/g++ CFLAGS="$OPT_FLAGS" CXXFLAGS="$OPT_FLAGS" \
               ../binutils/configure --target="$TARGET" --build="$TARGET" --host="$TARGET" \
               --program-prefix= \
               --disable-dependency-tracking \
@@ -604,9 +604,9 @@ jobs:
           # tree "${VCPKG_ROOT}/packages/zstd_x64-linux/"
           yum install -y libzstd-devel libzstd
           # env LDFLAGS="-Wl,-rpath=$PREFIX/lib64:$PREFIX/lib" CFLAGS="$OPT_FLAGS -fPIC -I$PREFIX/include " CXXFLAGS="$OPT_FLAGS -fPIC -I$PREFIX/include " \
-          export OPT_FLAGS=" -lrt -lpthread -ldl -lm "
-          # CC=/opt/mygcc/bin/gcc CXX=/opt/mygcc/bin/g++ 
-          env LDFLAGS="-L/opt/mygcc/lib64 -Wl,-rpath=$PREFIX/lib64:$PREFIX/lib" \
+          export OPT_FLAGS=" -lrt -lpthread -ldl -lm -lzstd  "
+          # 
+          env CC=/opt/mygcc/bin/gcc CXX=/opt/mygcc/bin/g++ LDFLAGS="-L/opt/mygcc/lib64 -Wl,-rpath=$PREFIX/lib64:$PREFIX/lib" \
             CFLAGS="$OPT_FLAGS -fPIC $([[ "$USE_INTERNAL_GLIBC" == "1" ]] && echo "-I$GLIBC_RT/include")" \
             CXXFLAGS="$OPT_FLAGS -fPIC $([[ "$USE_INTERNAL_GLIBC" == "1" ]] && echo "-I$GLIBC_RT/include")" \
             ../gcc/configure --target="$TARGET" --build="$TARGET" --host="$TARGET" \
@@ -659,6 +659,7 @@ jobs:
             --with-linker-hash-style=gnu \
             $SYSROOT_ARG \
             $HEADER_ARG \
+            --with-ld=/opt/mygcc/bin/ld \
             --with-pkgversion="Indiff GCC" || cat config.log
 
           #  dump Makefile
@@ -666,15 +667,18 @@ jobs:
           
           make all-gcc -j"$JOBS"
           make all-target-libgcc -j"$JOBS"
-          make all-target-libstdc++-v3 -j"$JOBS" 
-          make all-target-libatomic -j"$JOBS"
-          make install-gcc -j"$JOBS"
-          make install-target-libgcc -j"$JOBS"
-          # sed -i 's/Link tests are not allowed after GCC_NO_EXECUTABLES/Link tests are not allowed after GCC_NO_EXECUTABLES  $LINENO/g' ../gcc/libstdc++-v3/configure
-          # grep -n 'Link tests are not allowed after GCC_NO_EXECUTABLES' ../gcc/libstdc++-v3/configure
           # 重要顺序问题解决 libstdc++-v3 编译问题
+          make all-target-libatomic -j"$JOBS"
+          make all-target-libstdc++-v3 -j"$JOBS" 
+          make install-target-libgcc -j"$JOBS"
           make install-target-libatomic -j"$JOBS"
           make install-target-libstdc++-v3 -j"$JOBS"
+          make install-gcc -j"$JOBS"
+          
+          # sed -i 's/Link tests are not allowed after GCC_NO_EXECUTABLES/Link tests are not allowed after GCC_NO_EXECUTABLES  $LINENO/g' ../gcc/libstdc++-v3/configure
+          # grep -n 'Link tests are not allowed after GCC_NO_EXECUTABLES' ../gcc/libstdc++-v3/configure
+          
+          
           
           # make all -j"$JOBS"
           # make install -j"$JOBS"
