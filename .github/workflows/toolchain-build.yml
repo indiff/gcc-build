@@ -670,10 +670,12 @@ jobs:
           make all-target-libatomic -j"$JOBS"
           make install-gcc -j"$JOBS"
           make install-target-libgcc -j"$JOBS"
-          sed -i 's/Link tests are not allowed after GCC_NO_EXECUTABLES/Link tests are not allowed after GCC_NO_EXECUTABLES  $LINENO/g' ../gcc/libstdc++-v3/configure
-          grep -n 'Link tests are not allowed after GCC_NO_EXECUTABLES' ../gcc/libstdc++-v3/configure
-          make install-target-libstdc++-v3 -j"$JOBS"
+          # sed -i 's/Link tests are not allowed after GCC_NO_EXECUTABLES/Link tests are not allowed after GCC_NO_EXECUTABLES  $LINENO/g' ../gcc/libstdc++-v3/configure
+          # grep -n 'Link tests are not allowed after GCC_NO_EXECUTABLES' ../gcc/libstdc++-v3/configure
+          # 重要顺序问题解决 libstdc++-v3 编译问题
           make install-target-libatomic -j"$JOBS"
+          make install-target-libstdc++-v3 -j"$JOBS"
+          
           # make all -j"$JOBS"
           # make install -j"$JOBS"
           echo "Built GCC end!"
@@ -1180,7 +1182,7 @@ jobs:
 
   publish-release:
       #  build-in-centos6 can not buildss
-      needs: [before_build,build-in-centos7,build-lld-centos7] # build-arm64-tc,build-x86-tc,build-in-centos6
+      needs: [before_build,build-in-centos7] # build-arm64-tc,build-x86-tc,build-in-centos6  ,build-lld-centos7
       runs-on: ubuntu-latest
 
       steps:
