@@ -76,9 +76,11 @@ build_lld() {
   # #     -DLLVM_ENABLE_LTO=Full \
   # -DCMAKE_CXX_COMPILER="/opt/gcc-indiff/bin/g++" \
   #   -DCMAKE_C_COMPILER="/opt/gcc-indiff/bin/gcc" \
+  # clang
+  # -DLLVM_ENABLE_RUNTIMES="compiler-rt;libcxx;libcxxabi;
+  # -DLLVM_ENABLE_PROJECTS="clang;lld;compiler-rt" \
   cmake -G "Ninja" \
-    -DLLVM_ENABLE_RUNTIMES="compiler-rt;libcxx;libcxxabi;libunwind" \
-    -DLLVM_ENABLE_PROJECTS="clang;lld;compiler-rt" \
+    -DLLVM_ENABLE_PROJECTS="lld" \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_INSTALL_PREFIX="$INSTALL_LLD_DIR" \
     -DLLVM_DEFAULT_TARGET_TRIPLE="$TARGET_CLANG" \
