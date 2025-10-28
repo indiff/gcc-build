@@ -1167,7 +1167,7 @@ jobs:
             -v ${{ github.workspace }}:/workspace \
             -w /workspace \
             ghcr.io/${{ github.repository_owner }}/gcc-build-centos7:latest \
-            /bin/bash -c "source /opt/rh/llvm-toolset-13.0/enable && chmod +x ./build-llvm.sh && ./build-llvm.sh -a x86"
+            /bin/bash -c "source /opt/rh/llvm-toolset-13.0/enable && chmod +x ./build-lld.sh && ./build-lld.sh -a x86"
 
       - name: Package LLD
         run: |
