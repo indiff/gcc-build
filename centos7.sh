@@ -109,6 +109,7 @@ yum install -y \
     libtool \
     curl \
     file \
+    unzip \
     zip
 yum clean all
 
@@ -135,6 +136,7 @@ yum clean all
 # echo "source /opt/rh/devtoolset-10/enable" >> /etc/bashrc
 
 # install mygcc
+mkdir /opt/mygcc
 curl -sLo /opt/mygcc.zip "${gcc_indiff_centos7_url}"
 unzip /opt/mygcc.zip -d /opt/mygcc
 
