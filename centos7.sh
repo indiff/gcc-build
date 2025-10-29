@@ -138,7 +138,8 @@ yum clean all
 curl -sLo /opt/gcc-indiff.zip "${gcc_indiff_centos7_url}"
 unzip /opt/gcc-indiff.zip -d /opt/gcc-indiff
 
-export LD_LIBRARY_PATH=/opt/gcc-indiff/lib:/opt/gcc-indiff/lib64:$LD_LIBRARY_PATH
+export LD_LIBRARY_PATH=""
+LD_LIBRARY_PATH=/opt/gcc-indiff/lib:/opt/gcc-indiff/lib64:$LD_LIBRARY_PATH
 
 
 rm -f /etc/yum.repos.d/centos7-llvm.repo
