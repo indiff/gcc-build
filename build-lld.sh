@@ -92,7 +92,6 @@ build_lld() {
     -DLLVM_ENABLE_LTO=Full \
     -DLLVM_OPTIMIZED_TABLEGEN=ON \
     -DLLVM_ENABLE_LIBXML2=OFF \
-    -DLLVM_USE_LINKER=lld \
     -DCMAKE_BUILD_TYPE=Release \
     -DLLVM_BUILD_RUNTIME=OFF \
     -DLLVM_INCLUDE_TESTS=OFF \
@@ -103,8 +102,26 @@ build_lld() {
     -DLLVM_INCLUDE_BENCHMARKS=OFF \
     -DBUILD_SHARED_LIBS=OFF \
     -DLLVM_INSTALL_TOOLCHAIN_ONLY=ON \
-    -DCMAKE_C_FLAGS="-O3" \
-    -DCMAKE_CXX_FLAGS="-O3" \
+    -DLLVM_USE_LINKER=gold \
+    -DLLVM_PARALLEL_LINK_JOBS=2 \
+    -DCMAKE_EXE_LINKER_FLAGS="\
+    -fuse-ld=gold \
+    -Wl,--threads \
+    -Wl,--as-needed \
+    -Wl,--gc-sections \
+    -Wl,--no-keep-memory \
+    -Wl,--reduce-memory-overheads \
+    -Wl,--no-undefined \
+    -Wl,--warn-common \
+    -Wl,--detect-odr-violations" \
+    -DCMAKE_SHARED_LINKER_FLAGS="\
+    -fuse-ld=gold \
+    -Wl,--no-keep-memory \
+    -Wl,--as-needed \
+    -Wl,--gc-sections \
+    -Wl,--warn-common" \
+    -DCMAKE_C_FLAGS="-O3 -DNDEBUG" \
+    -DCMAKE_CXX_FLAGS="-O3 -DNDEBUG" \
     -DLLVM_ENABLE_PIC=ON \
     -DLLVM_ENABLE_ZLIB=1 \
     -DZLIB_LIBRARY="/opt/vcpkg/installed/x64-linux/lib/libz.a" \
