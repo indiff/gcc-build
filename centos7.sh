@@ -119,15 +119,16 @@ yum clean all
 # echo "gpgcheck=0" >> /etc/yum.repos.d/centos7-devtoolset-10.repo
 # echo "enabled=1" >> /etc/yum.repos.d/centos7-devtoolset-10.repo
 
-# echo "[buildlogs-devtoolset9-centos-x86_64]" > /etc/yum.repos.d/centos7-devtoolset-10.repo
-# echo "name=devtoolset-9" >> /etc/yum.repos.d/centos7-devtoolset-10.repo
-# echo "baseurl=https://buildlogs.cdn.centos.org/c7-devtoolset-9.x86_64" >> /etc/yum.repos.d/centos7-devtoolset-10.repo
-# echo "gpgcheck=0" >> /etc/yum.repos.d/centos7-devtoolset-10.repo
-# echo "enabled=1" >> /etc/yum.repos.d/centos7-devtoolset-10.repo
+echo "[buildlogs-devtoolset9-centos-x86_64]" > /etc/yum.repos.d/centos7-devtoolset-10.repo
+echo "name=devtoolset-9" >> /etc/yum.repos.d/centos7-devtoolset-10.repo
+echo "baseurl=https://buildlogs.cdn.centos.org/c7-devtoolset-9.x86_64" >> /etc/yum.repos.d/centos7-devtoolset-10.repo
+echo "gpgcheck=0" >> /etc/yum.repos.d/centos7-devtoolset-10.repo
+echo "enabled=1" >> /etc/yum.repos.d/centos7-devtoolset-10.repo
 
-# yum -y update
-# yum -y install devtoolset-9 devtoolset-10 --nogpgcheck
-# yum clean all
+yum -y update
+# devtoolset-10 
+yum -y install devtoolset-9 --nogpgcheck
+yum clean all
 
 # Enable devtoolset-10
 # source /opt/rh/devtoolset-10/enable
@@ -203,7 +204,7 @@ cmake --version || true
 ninja --version || true
 
 export PATH=/opt/rh/llvm-toolset-13.0/root/usr/bin:/opt/rh/llvm-toolset-13.0/root/usr/sbin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
-export LD_LIBRARY_PATH=/opt/rh/llvm-toolset-13.0/root/usr/lib64:/opt/gcc-indiff/lib:/opt/gcc-indiff/lib64:$LD_LIBRARY_PATH
+export LD_LIBRARY_PATH=/opt/rh/llvm-toolset-13.0/root/usr/lib64:/opt/gcc-indiff/lib:/opt/gcc-indiff/lib64:/opt/rh/devtoolset-9/root/usr/lib64:$LD_LIBRARY_PATH
 git clone --filter=blob:none --depth 1 https://github.com/microsoft/vcpkg.git /opt/vcpkg
 /opt/vcpkg/bootstrap-vcpkg.sh
 export VCPKG_ROOT=/opt/vcpkg
