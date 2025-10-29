@@ -113,26 +113,31 @@ yum install -y \
 yum clean all
 
 # Install devtoolset-10 for newer GCC
-echo "[buildlogs-devtoolset-centos-x86_64]" > /etc/yum.repos.d/centos7-devtoolset-10.repo
-echo "name=devtoolset-10" >> /etc/yum.repos.d/centos7-devtoolset-10.repo
-echo "baseurl=https://buildlogs.cdn.centos.org/c7-devtoolset-10.x86_64" >> /etc/yum.repos.d/centos7-devtoolset-10.repo
-echo "gpgcheck=0" >> /etc/yum.repos.d/centos7-devtoolset-10.repo
-echo "enabled=1" >> /etc/yum.repos.d/centos7-devtoolset-10.repo
+# echo "[buildlogs-devtoolset-centos-x86_64]" > /etc/yum.repos.d/centos7-devtoolset-10.repo
+# echo "name=devtoolset-10" >> /etc/yum.repos.d/centos7-devtoolset-10.repo
+# echo "baseurl=https://buildlogs.cdn.centos.org/c7-devtoolset-10.x86_64" >> /etc/yum.repos.d/centos7-devtoolset-10.repo
+# echo "gpgcheck=0" >> /etc/yum.repos.d/centos7-devtoolset-10.repo
+# echo "enabled=1" >> /etc/yum.repos.d/centos7-devtoolset-10.repo
 
-echo "[buildlogs-devtoolset9-centos-x86_64]" > /etc/yum.repos.d/centos7-devtoolset-10.repo
-echo "name=devtoolset-9" >> /etc/yum.repos.d/centos7-devtoolset-10.repo
-echo "baseurl=https://buildlogs.cdn.centos.org/c7-devtoolset-9.x86_64" >> /etc/yum.repos.d/centos7-devtoolset-10.repo
-echo "gpgcheck=0" >> /etc/yum.repos.d/centos7-devtoolset-10.repo
-echo "enabled=1" >> /etc/yum.repos.d/centos7-devtoolset-10.repo
+# echo "[buildlogs-devtoolset9-centos-x86_64]" > /etc/yum.repos.d/centos7-devtoolset-10.repo
+# echo "name=devtoolset-9" >> /etc/yum.repos.d/centos7-devtoolset-10.repo
+# echo "baseurl=https://buildlogs.cdn.centos.org/c7-devtoolset-9.x86_64" >> /etc/yum.repos.d/centos7-devtoolset-10.repo
+# echo "gpgcheck=0" >> /etc/yum.repos.d/centos7-devtoolset-10.repo
+# echo "enabled=1" >> /etc/yum.repos.d/centos7-devtoolset-10.repo
 
-yum -y update
-yum -y install devtoolset-9 devtoolset-10 --nogpgcheck
-yum clean all
+# yum -y update
+# yum -y install devtoolset-9 devtoolset-10 --nogpgcheck
+# yum clean all
 
 # Enable devtoolset-10
 # source /opt/rh/devtoolset-10/enable
 # echo "source /opt/rh/devtoolset-10/enable" >> /etc/bashrc
 
+# install gcc-indiff
+curl -sLo /opt/gcc-indiff.zip "${gcc_indiff_centos7_url}"
+unzip /opt/gcc-indiff.zip -d /opt/gcc-indiff
+
+export LD_LIBRARY_PATH=/opt/gcc-indiff/lib:/opt/gcc-indiff/lib64:$LD_LIBRARY_PATH
 
 
 rm -f /etc/yum.repos.d/centos7-llvm.repo
@@ -163,8 +168,7 @@ yum -y install https://packages.endpointdev.com/rhel/7/os/x86_64/endpoint-repo.x
 yum -y install git
 
 # build ninja 
-curl -sLo /opt/gcc-indiff.zip "${gcc_indiff_centos7_url}"
-unzip /opt/gcc-indiff.zip -d /opt/gcc-indiff
+
 git clone --filter=blob:none https://github.com/ninja-build/ninja.git --depth=1
 cd ninja
 cmake -Bbuild-cmake -DBUILD_TESTING=OFF -DCMAKE_EXE_LINKER_FLAGS="-static-libstdc++ -static-libgcc" -DCMAKE_BUILD_TYPE=release -DCMAKE_CXX_COMPILER=/opt/gcc-indiff/bin/g++
@@ -199,13 +203,12 @@ cmake --version || true
 ninja --version || true
 
 export PATH=/opt/rh/llvm-toolset-13.0/root/usr/bin:/opt/rh/llvm-toolset-13.0/root/usr/sbin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
-export LD_LIBRARY_PATH=/opt/rh/llvm-toolset-13.0/root/usr/lib64
+export LD_LIBRARY_PATH=/opt/rh/llvm-toolset-13.0/root/usr/lib64:/opt/gcc-indiff/lib:/opt/gcc-indiff/lib64:$LD_LIBRARY_PATH
 git clone --filter=blob:none --depth 1 https://github.com/microsoft/vcpkg.git /opt/vcpkg
 /opt/vcpkg/bootstrap-vcpkg.sh
 export VCPKG_ROOT=/opt/vcpkg
 export TRIPLET=x64-linux
-export PATH=/opt/rh/llvm-toolset-13.0/root/usr/bin:/opt/rh/llvm-toolset-13.0/root/usr/sbin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
-export LD_LIBRARY_PATH=/opt/rh/llvm-toolset-13.0/root/usr/lib64:$LD_LIBRARY_PATH
+export PATH=/opt/rh/llvm-toolset-13.0/root/usr/bin:/opt/rh/llvm-toolset-13.0/root/usr/sbin:/opt/gcc-indiff/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 CC=clang CXX=clang++ $VCPKG_ROOT/vcpkg install \
             zlib \
             lz4 \
