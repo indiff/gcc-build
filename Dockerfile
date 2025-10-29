@@ -13,7 +13,7 @@ RUN chmod +x /tmp/centos7.sh && \
 
 
 ENV PATH=/opt/rh/llvm-toolset-13.0/root/usr/bin:$PATH
-ENV LD_LIBRARY_PATH=/opt/rh/llvm-toolset-13.0/root/usr/lib64:/opt/gcc-indiff/lib:/opt/gcc-indiff/lib64:/opt/rh/devtoolset-9/root/usr/lib64:$LD_LIBRARY_PATH
+ENV LD_LIBRARY_PATH=/opt/rh/llvm-toolset-13.0/root/usr/lib64:/opt/mygcc/lib:/opt/mygcc/lib64:$LD_LIBRARY_PATH
 ENV CC=/opt/rh/llvm-toolset-13.0/root/usr/bin/clang
 ENV CXX=/opt/rh/llvm-toolset-13.0/root/usr/bin/clang++
 
