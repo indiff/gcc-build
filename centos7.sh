@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: GPL-3.0
 # CentOS 7 dependency installation and configuration script
 set -xe
-export gcc_indiff_centos7_url="https://github.com/indiff/gcc-build/releases/download/20250908_0934_16.0.0/mygcc-centos7-16.0.0-x86_64-20250908_0931.xz"
+export gcc_indiff_centos7_url="https://github.com/indiff/gcc-build/releases/download/20251028_1004_16.0.0/gcc-indiff-centos7-16.0.0-x86_64-20251028_1001.xz"
 echo 'LANG=zh_CN.UTF-8' >> /etc/environment
 echo 'LANGUAGE=zh_CN.UTF-8' >> /etc/environment
 echo 'LC_ALL=zh_CN.UTF-8' >> /etc/environment
@@ -137,8 +137,9 @@ yum clean all
 
 # install mygcc
 mkdir /opt/mygcc
-curl -sLo /opt/mygcc.zip "${gcc_indiff_centos7_url}"
-unzip /opt/mygcc.zip -d /opt/mygcc
+curl -sLo mygcc.zip "${gcc_indiff_centos7_url}"
+unzip mygcc.zip -d /opt/mygcc
+rm -f mygcc.zip
 
 export LD_LIBRARY_PATH=""
 LD_LIBRARY_PATH=/opt/mygcc/lib:/opt/mygcc/lib64:$LD_LIBRARY_PATH
