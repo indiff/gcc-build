@@ -67,15 +67,16 @@ build_lld() {
   mkdir -p "${WORK_DIR}/llvm-project/build"
   cd "${WORK_DIR}/llvm-project/build"
   export INSTALL_LLD_DIR="${WORK_DIR}/gcc-${arch}"
-  export LD_LIBRARY_PATH=/opt/indiff-gcc/lib:/opt/indiff-gcc/lib64:$LD_LIBRARY_PATH
-  export PATH=/opt/indiff-gcc/bin:$PATH
+  export LD_LIBRARY_PATH=/opt/mygcc/lib:/opt/mygcc/lib64:$LD_LIBRARY_PATH
+  export PATH=/opt/mygcc/bin:$PATH
   
   # 使用 LLVM 的 libc++
   #   -DLLVM_PARALLEL_COMPILE_JOBS="$NPROC_HALF" \
   # -DLLVM_PARALLEL_LINK_JOBS="$NPROC_HALF" \
   # #     -DLLVM_ENABLE_LTO=Full \
-  # -DCMAKE_CXX_COMPILER="/opt/gcc-indiff/bin/g++" \
-  #   -DCMAKE_C_COMPILER="/opt/gcc-indiff/bin/gcc" \
+  
+  # -DCMAKE_CXX_COMPILER="$(which clang++)" \
+  # -DCMAKE_C_COMPILER="$(which clang)" \
   # clang
   # -DLLVM_ENABLE_RUNTIMES="compiler-rt;libcxx;libcxxabi;
   # -DLLVM_ENABLE_PROJECTS="clang;lld;compiler-rt" \
@@ -88,8 +89,8 @@ build_lld() {
     -DLLVM_TARGET_ARCH="X86" \
     -DLLVM_TARGETS_TO_BUILD=$ARCH_CLANG \
     -DLLVM_ENABLE_LIBCXX=ON \
-    -DCMAKE_CXX_COMPILER="$(which clang++)" \
-    -DCMAKE_C_COMPILER="$(which clang)" \
+    -DCMAKE_CXX_COMPILER="/opt/mygcc/bin/g++" \
+    -DCMAKE_C_COMPILER="/opt/mygcc/bin/gcc" \
     -DLLVM_ENABLE_LTO=Full \
     -DLLVM_OPTIMIZED_TABLEGEN=ON \
     -DLLVM_ENABLE_LIBXML2=OFF \
@@ -105,7 +106,8 @@ build_lld() {
     -DLLVM_ENABLE_BACKTRACES=OFF \
     -DBUILD_SHARED_LIBS=OFF \
     -DLLVM_INSTALL_TOOLCHAIN_ONLY=ON \
-    -DCMAKE_LINKER=/opt/gcc-indiff/bin/ld.gold \
+    -DLLVM_USE_LINKER=gold \
+    -DCMAKE_LINKER=/opt/mygcc/bin/ld.gold \
     -DLLVM_PARALLEL_LINK_JOBS=2 \
     -DCMAKE_EXE_LINKER_FLAGS="\
     -Wl,--as-needed \
