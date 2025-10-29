@@ -79,6 +79,7 @@ build_lld() {
   # clang
   # -DLLVM_ENABLE_RUNTIMES="compiler-rt;libcxx;libcxxabi;
   # -DLLVM_ENABLE_PROJECTS="clang;lld;compiler-rt" \
+  #     -DLLVM_USE_LINKER=gold \
   cmake -G "Ninja" \
     -DLLVM_ENABLE_PROJECTS="lld" \
     -DCMAKE_BUILD_TYPE=Release \
@@ -102,24 +103,21 @@ build_lld() {
     -DLLVM_INCLUDE_BENCHMARKS=OFF \
     -DBUILD_SHARED_LIBS=OFF \
     -DLLVM_INSTALL_TOOLCHAIN_ONLY=ON \
-    -DLLVM_USE_LINKER=gold \
+    -DCMAKE_LINKER=/opt/gcc-indiff/bin/ld.gold \
     -DLLVM_PARALLEL_LINK_JOBS=2 \
     -DCMAKE_EXE_LINKER_FLAGS="\
-    -fuse-ld=gold \
     -Wl,--threads \
     -Wl,--as-needed \
     -Wl,--gc-sections \
-    -Wl,--no-keep-memory \
-    -Wl,--reduce-memory-overheads \
-    -Wl,--no-undefined \
-    -Wl,--warn-common \
-    -Wl,--detect-odr-violations" \
+    -Wl,--no-keep-memory " \
     -DCMAKE_SHARED_LINKER_FLAGS="\
-    -fuse-ld=gold \
-    -Wl,--no-keep-memory \
+    -Wl,--threads \
     -Wl,--as-needed \
     -Wl,--gc-sections \
-    -Wl,--warn-common" \
+    -Wl,--no-keep-memory " \
+    -DCMAKE_MODULE_LINKER_FLAGS="\
+    -Wl,--as-needed \
+    -Wl,--no-keep-memory " \
     -DCMAKE_C_FLAGS="-O3 -DNDEBUG" \
     -DCMAKE_CXX_FLAGS="-O3 -DNDEBUG" \
     -DLLVM_ENABLE_PIC=ON \
