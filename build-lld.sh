@@ -73,7 +73,9 @@ build_lld() {
   # 使用 LLVM 的 libc++
   #   -DLLVM_PARALLEL_COMPILE_JOBS="$NPROC_HALF" \
   # -DLLVM_PARALLEL_LINK_JOBS="$NPROC_HALF" \
-  # #     -DLLVM_ENABLE_LTO=Full \
+  # clang use follow, gcc no
+  # -DLLVM_ENABLE_LTO=Full \
+
   
   # -DCMAKE_CXX_COMPILER="$(which clang++)" \
   # -DCMAKE_C_COMPILER="$(which clang)" \
@@ -91,7 +93,6 @@ build_lld() {
     -DLLVM_ENABLE_LIBCXX=ON \
     -DCMAKE_CXX_COMPILER="/opt/mygcc/bin/g++" \
     -DCMAKE_C_COMPILER="/opt/mygcc/bin/gcc" \
-    -DLLVM_ENABLE_LTO=Full \
     -DLLVM_OPTIMIZED_TABLEGEN=ON \
     -DLLVM_ENABLE_LIBXML2=OFF \
     -DCMAKE_BUILD_TYPE=Release \
