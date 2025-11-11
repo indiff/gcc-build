@@ -70,7 +70,7 @@ build_lld() {
   export LD_LIBRARY_PATH=/opt/mygcc/lib:/opt/mygcc/lib64:$LD_LIBRARY_PATH
   export PATH=/opt/mygcc/bin:$PATH
   
-  # ä½¿ç”¨ LLVM çš„ libc++
+  # Ê¹ÓÃ LLVM µÄ libc++
   #   -DLLVM_PARALLEL_COMPILE_JOBS="$NPROC_HALF" \
   # -DLLVM_PARALLEL_LINK_JOBS="$NPROC_HALF" \
   # clang use follow, gcc no
@@ -128,11 +128,11 @@ build_lld() {
     -DZLIB_LIBRARY="/opt/vcpkg/installed/x64-linux/lib/libz.a" \
     -DZLIB_INCLUDE_DIR="/opt/vcpkg/installed/x64-linux/include" \
     "${WORK_DIR}"/llvm-project/llvm
-  # è¿™é‡Œä¼šæ¶ˆè€—èŒ«èŒ«å¤šå†…å­˜ï¼Œæ‰€ä»¥å°è¯•å…ˆå¼€å¯å¤šè¿›ç¨‹ç¼–è¯‘ï¼Œå¤±è´¥ä¹‹åŽé™çº§åˆ°å•è¿›ç¨‹  
+  # ÕâÀï»áÏûºÄÃ£Ã£¶àÄÚ´æ£¬ËùÒÔ³¢ÊÔÏÈ¿ªÆô¶à½ø³Ì±àÒë£¬Ê§°ÜÖ®ºó½µ¼¶µ½µ¥½ø³Ì  
   # ninja -j$(nproc --all) || ninja -j$NPROC_HALF || ninja || echo "failed"
 
-   # è¿™é‡Œä¼šæ¶ˆè€—èŒ«èŒ«å¤šå†…å­˜ï¼Œæ‰€ä»¥å°è¯•å…ˆå¼€å¯å¤šè¿›ç¨‹ç¼–è¯‘ï¼Œå¤±è´¥ä¹‹åŽé™çº§åˆ°å•è¿›ç¨‹
-  # æŒ‰éœ€æ±‚ï¼šé™çº§ä¸€æ¬¡ -> é‡Šæ”¾ä¸€æ¬¡å†…å­˜å’Œç¼“å­˜ -> å†é™çº§ä¸€æ¬¡
+   # ÕâÀï»áÏûºÄÃ£Ã£¶àÄÚ´æ£¬ËùÒÔ³¢ÊÔÏÈ¿ªÆô¶à½ø³Ì±àÒë£¬Ê§°ÜÖ®ºó½µ¼¶µ½µ¥½ø³Ì
+  # °´ÐèÇó£º½µ¼¶Ò»´Î -> ÊÍ·ÅÒ»´ÎÄÚ´æºÍ»º´æ -> ÔÙ½µ¼¶Ò»´Î
   if ! ninja -j"$(nproc --all)"; then
     echo "> First attempt failed. Retrying with $NPROC_HALF jobs..."
     if ! ninja -j"$NPROC_HALF"; then

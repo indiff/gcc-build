@@ -48,17 +48,17 @@ jobs:
         id: get
         run: |
           set -eux
-          # é¦–å…ˆæ›´æ–°ç´¢å¼•ï¼ˆå¸¦é‡è¯•/ä¿®å¤ï¼‰
+          # Ê×ÏÈ¸üĞÂË÷Òı£¨´øÖØÊÔ/ĞŞ¸´£©
           sudo apt-get clean
           sudo apt-get update -o Acquire::Retries=5 || sudo apt-get update --fix-missing
-          # å¦‚ä»å¤±è´¥ï¼Œåˆ‡åˆ°å®˜æ–¹é•œåƒå†æ›´æ–°
+          # ÈçÈÔÊ§°Ü£¬ÇĞµ½¹Ù·½¾µÏñÔÙ¸üĞÂ
           if ! sudo apt-get update; then
             sudo sed -i 's|azure.archive.ubuntu.com|archive.ubuntu.com|g' /etc/apt/sources.list
             sudo sed -i 's|http://security.ubuntu.com|https://security.ubuntu.com|g' /etc/apt/sources.list
             sudo apt-get update -o Acquire::Retries=5
           fi
 
-          # å®‰è£…æ‰€éœ€åŒ…(systemd å·²æœ‰ï¼Œå¯ä¸è£…ï¼‰
+          # °²×°ËùĞè°ü(systemd ÒÑÓĞ£¬¿É²»×°£©
           sudo apt-get install -y --no-install-recommends language-pack-zh-hans language-pack-zh-hans-base locales tree
 
           
@@ -77,10 +77,10 @@ jobs:
           if [ "${{ github.event.inputs.buildGlibc }}" == "true" ]; then echo "GCC_BUILD_GLIBC=true" >> "$GITHUB_OUTPUT"; fi
           day=$(date +%d)
           if [[ $((10#$day % 2)) -eq 0 ]]; then
-            echo "ä»Šå¤©æ˜¯åŒæ•°æ—¥"
+            echo "½ñÌìÊÇË«ÊıÈÕ"
             echo "GCC_BUILD_GLIBC=true" >> "$GITHUB_OUTPUT";
           else
-            echo "ä»Šå¤©æ˜¯å•æ•°æ—¥"
+            echo "½ñÌìÊÇµ¥ÊıÈÕ"
           fi
 
   build-arm64-tc:
@@ -155,7 +155,7 @@ jobs:
         sudo add-apt-repository ppa:ubuntu-toolchain-r/test
         sudo apt update
         sudo apt upgrade
-        # ç¤ºä¾‹å®‰è£…GCC 14
+        # Ê¾Àı°²×°GCC 14
         sudo apt install gcc-14
         sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-14 14
         gcc --version
@@ -196,7 +196,7 @@ jobs:
   build-in-centos7:
     runs-on: ubuntu-latest
     needs: before_build
-    timeout-minutes: 360 # è®¾ç½®è¶…æ—¶æ—¶é—´ä¸º6å°æ—¶
+    timeout-minutes: 360 # ÉèÖÃ³¬Ê±Ê±¼äÎª6Ğ¡Ê±
 
     steps:
       - name: Free Disk-Space
@@ -218,7 +218,7 @@ jobs:
           # curl -o /etc/yum.repos.d/CentOS-Base.repo https://mirrors.aliyun.com/repo/Centos-7.repo
           # curl -o /etc/yum.repos.d/epel.repo https://mirrors.aliyun.com/repo/epel-7.repo
 
-          # å®šä¹‰é•œåƒåˆ—è¡¨  "http://mirrors.aliyun.com/centos-vault/7.9.2009"
+          # ¶¨Òå¾µÏñÁĞ±í  "http://mirrors.aliyun.com/centos-vault/7.9.2009"
           MIRRORS=(
               "http://mirror.rackspace.com/centos-vault/7.9.2009"
               "https://mirror.nsc.liu.se/centos-store/7.9.2009"
@@ -227,27 +227,27 @@ jobs:
               "https://vault.centos.org/7.9.2009"
           )
 
-          # åˆå§‹åŒ–å˜é‡
+          # ³õÊ¼»¯±äÁ¿
           FASTEST_MIRROR=""
           FASTEST_TIME=99999
 
           echo "Testing mirror response times..."
 
-          # æµ‹è¯•æ¯ä¸ªé•œåƒçš„å“åº”æ—¶é—´
+          # ²âÊÔÃ¿¸ö¾µÏñµÄÏìÓ¦Ê±¼ä
           for MIRROR in "${MIRRORS[@]}"; do
               echo -n "Testing $MIRROR ... "
-              # ä½¿ç”¨ curl æµ‹è¯•å“åº”æ—¶é—´
+              # Ê¹ÓÃ curl ²âÊÔÏìÓ¦Ê±¼ä
               TIME=$(curl -o /dev/null -s -w "%{time_total}\n" "$MIRROR")
               echo "$TIME seconds"
 
-              # æ¯”è¾ƒå“åº”æ—¶é—´ï¼Œè®°å½•æœ€å¿«çš„é•œåƒ
+              # ±È½ÏÏìÓ¦Ê±¼ä£¬¼ÇÂ¼×î¿ìµÄ¾µÏñ
               if (( $(echo "$TIME < $FASTEST_TIME" | bc -l) )); then
                   FASTEST_TIME=$TIME
                   FASTEST_MIRROR=$MIRROR
               fi
           done
 
-          # è¾“å‡ºæœ€å¿«çš„é•œåƒ
+          # Êä³ö×î¿ìµÄ¾µÏñ
           echo "-----------------------------------"
           echo "Fastest mirror: $FASTEST_MIRROR"
           echo "Response time: $FASTEST_TIME seconds"
@@ -523,7 +523,7 @@ jobs:
 
           ls -lh "$PREFIX_DIR/lib"
 
-          # æ§åˆ¶æ˜¯å¦ä½¿ç”¨å†…éƒ¨ glibc 1=ä½¿ç”¨æ–°ç¼–è¯‘çš„glibc 0=ä½¿ç”¨ç³»ç»Ÿè‡ªå¸¦
+          # ¿ØÖÆÊÇ·ñÊ¹ÓÃÄÚ²¿ glibc 1=Ê¹ÓÃĞÂ±àÒëµÄglibc 0=Ê¹ÓÃÏµÍ³×Ô´ø
           USE_INTERNAL_GLIBC=0
 
           if [[ "$USE_INTERNAL_GLIBC" == "1" ]]; then
@@ -666,7 +666,7 @@ jobs:
           
           make all-gcc -j"$JOBS"
           make all-target-libgcc -j"$JOBS"
-          # é‡è¦é¡ºåºé—®é¢˜è§£å†³ libstdc++-v3 ç¼–è¯‘é—®é¢˜
+          # ÖØÒªË³ĞòÎÊÌâ½â¾ö libstdc++-v3 ±àÒëÎÊÌâ
           make all-target-libatomic -j"$JOBS"
           make all-target-libstdc++-v3 -j"$JOBS" 
           make install-target-libgcc -j"$JOBS"
@@ -738,7 +738,7 @@ jobs:
           echo 'LC_ALL=zh_CN.UTF-8' >> /etc/environment
           echo 'LC_CTYPE=zh_CN.UTF-8' >> /etc/environment
           
-          # å®šä¹‰é•œåƒåˆ—è¡¨  "http://mirrors.aliyun.com/centos-vault/7.9.2009"
+          # ¶¨Òå¾µÏñÁĞ±í  "http://mirrors.aliyun.com/centos-vault/7.9.2009"
           MIRRORS=(
               "http://mirror.rackspace.com/centos-vault/6.10/"
               "https://mirror.nsc.liu.se/centos-store/6.10/"
@@ -773,9 +773,9 @@ jobs:
           source /opt/rh/devtoolset-9/enable
           gcc -v
           make -v
-          # ç¡®ä¿ç³»ç»Ÿå·²å®‰è£…æ‰€éœ€çš„ä¾èµ–å·¥å…·å’Œåº“
+          # È·±£ÏµÍ³ÒÑ°²×°ËùĞèµÄÒÀÀµ¹¤¾ßºÍ¿â
           yum install -y gettext-devel openssl-devel perl-CPAN perl-devel zlib-devel
-          # å®‰è£…æœ€æ–°ç‰ˆæœ¬çš„ Git
+          # °²×°×îĞÂ°æ±¾µÄ Git
 
           export WORK_DIR="$PWD"
           # Declare the number of jobs to run simultaneously
@@ -1222,29 +1222,29 @@ jobs:
         - name: Create Release
           run: |
             set -xe
-            # ä½¿ç”¨ GitHub API è·å–æœ€åä¸€æ¬¡æäº¤ä¿¡æ¯
+            # Ê¹ÓÃ GitHub API »ñÈ¡×îºóÒ»´ÎÌá½»ĞÅÏ¢
             commit_info=$(curl -s -H "Authorization: Bearer $GITHUB_TOKEN" \
             -H "Accept: application/vnd.github.v3+json" \
             https://api.github.com/repos/gcc-mirror/gcc/commits \
             | jq -r '.[0] | "\(.commit.author.name) \(.commit.message) \(.commit.author.date)"')
-            # è¾“å‡ºå˜é‡
+            # Êä³ö±äÁ¿
             echo "Commit Info: $commit_info"
-            echo -e "## ä½ å¥½$(date) gcc ${{ needs.before_build.outputs.GCC_BUILD_VERSION }}\n > $commit_info\n" > hello.md
+            echo -e "## ÄãºÃ$(date) gcc ${{ needs.before_build.outputs.GCC_BUILD_VERSION }}\n > $commit_info\n" > hello.md
 
-            # æŸ¥æ‰¾æ‰“åŒ…æ–‡ä»¶ï¼šä¼˜å…ˆ *.xz, æ²¡æœ‰åˆ™æ‰¾ *.zip
+            # ²éÕÒ´ò°üÎÄ¼ş£ºÓÅÏÈ *.xz, Ã»ÓĞÔòÕÒ *.zip
             gcc_pkgpath="$(find . -maxdepth 2 -type f -name '*centos7*.xz' | grep -v lld | head -n 1)"
             if [[ -z "$gcc_pkgpath" ]]; then
-              echo 'æœªæ‰¾åˆ°GCCæ‰“åŒ…æ–‡ä»¶*.xz' >&2
+              echo 'Î´ÕÒµ½GCC´ò°üÎÄ¼ş*.xz' >&2
 
               gcc_pkgpath="$(find . -maxdepth 2 -type f -name '*centos7*.zip' | grep -v lld | head -n 1)"
               if [[ -z "$gcc_pkgpath" ]]; then
-                echo 'æœªæ‰¾åˆ°GCCæ‰“åŒ…æ–‡ä»¶*.zip' >&2
+                echo 'Î´ÕÒµ½GCC´ò°üÎÄ¼ş*.zip' >&2
                 exit 1
               fi
             fi
             gcc_bname="$(basename "$gcc_pkgpath")"
 
-            # æŸ¥æ‰¾LLDæ‰“åŒ…æ–‡ä»¶
+            # ²éÕÒLLD´ò°üÎÄ¼ş
             lld_pkgpath="$(find . -maxdepth 2 -type f -name 'lld-*centos7*.xz' | head -n 1)"
             if [[ -z "$lld_pkgpath" ]]; then
               lld_pkgpath="$(find . -maxdepth 2 -type f -name 'lld-*centos7*.zip' | head -n 1)"
