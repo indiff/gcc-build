@@ -519,6 +519,15 @@ jobs:
           mkdir -p "$PREFIX_DIR/lib"
           mkdir -p "$PREFIX_DIR/lib64"
 
+          yum remove -y autoconf
+          wget https://ftp.gnu.org/gnu/autoconf/autoconf-2.71.tar.gz
+          tar -xzf autoconf-2.71.tar.gz
+          cd autoconf-2.71
+          ./configure --prefix=/usr
+          make -j$(nproc)
+          make install
+          cd ..
+
           # insatll autoconf
           git clone --depth=1 https://git.savannah.gnu.org/git/autoconf.git
           cd autoconf
