@@ -283,6 +283,7 @@ jobs:
           yum install -y perl-Test-Simple perl-FindBin perl-IPC-Cmd perl-Text-Template perl-File-Compare perl-File-Copy perl-Data-Dumper
           yum install -y llvm llvm-devel clang clang-devel libstdc++-devel glibc-devel tree python3
           yum install -y perl gawk perl-Pod-Perldoc file elfutils-devel gawk sed grep help2man
+          yum -y install autoconf autoconf-archive icu wget automake libtool m4 pkgconfig
           which pod2man
           which grep awk sed
 
