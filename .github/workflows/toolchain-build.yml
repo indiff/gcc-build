@@ -520,44 +520,7 @@ jobs:
           mkdir -p "$PREFIX_DIR/lib"
           mkdir -p "$PREFIX_DIR/lib64"
 
-          yum remove -y autoconf
-          wget https://ftp.gnu.org/gnu/autoconf/autoconf-2.71.tar.gz
-          tar -xzf autoconf-2.71.tar.gz
-          cd autoconf-2.71
-          ./configure --prefix=$PREFIX_DIR
-          make -j$(nproc)
-          make install
-          cd ..
-
-          # insatll autoconf
-          # git clone --depth=1 https://git.savannah.gnu.org/git/autoconf.git
-          # cd autoconf
-          # ./bootstrap     # 如果存在
-          # env CC=/opt/mygcc/bin/gcc CXX=/opt/mygcc/bin/g++ CFLAGS="$OPT_FLAGS" CXXFLAGS="$OPT_FLAGS" \
-          # ./configure --prefix=$PREFIX_DIR
-          # make -j$(nproc)
-          # make install
-          # cd ..
-
-          # insatll automake
-          git clone --depth=1 https://git.savannah.gnu.org/git/automake.git
-          cd automake
-          ./bootstrap     # 如果存在
-          env CC=/opt/mygcc/bin/gcc CXX=/opt/mygcc/bin/g++ CFLAGS="$OPT_FLAGS" CXXFLAGS="$OPT_FLAGS" \
-          ./configure --prefix=$PREFIX_DIR
-          make -j$(nproc)
-          make install
-          cd ..
-
-          # insatll libtool
-          git clone --depth=1 https://git.savannah.gnu.org/git/libtool.git
-          cd libtool
-          ./bootstrap     # 如果存在
-          env CC=/opt/mygcc/bin/gcc CXX=/opt/mygcc/bin/g++ CFLAGS="$OPT_FLAGS" CXXFLAGS="$OPT_FLAGS" \
-          ./configure --prefix=$PREFIX_DIR
-          make -j$(nproc)
-          make install
-          cd ..
+         
 
           build_zstd "$PREFIX_DIR"
 
@@ -717,7 +680,53 @@ jobs:
           # sed -i 's/Link tests are not allowed after GCC_NO_EXECUTABLES/Link tests are not allowed after GCC_NO_EXECUTABLES  $LINENO/g' ../gcc/libstdc++-v3/configure
           # grep -n 'Link tests are not allowed after GCC_NO_EXECUTABLES' ../gcc/libstdc++-v3/configure
           
-          
+          mkdir -p /opt/thetools
+          yum remove -y autoconf
+          wget https://ftp.gnu.org/gnu/autoconf/autoconf-2.71.tar.gz
+          tar -xzf autoconf-2.71.tar.gz
+          cd autoconf-2.71
+          ./configure --prefix=$PREFIX_DIR
+          make -j$(nproc)
+          make install
+          cd ..
+
+          # insatll autoconf
+          # git clone --depth=1 https://git.savannah.gnu.org/git/autoconf.git
+          # cd autoconf
+          # ./bootstrap     # 如果存在
+          # env CC=/opt/mygcc/bin/gcc CXX=/opt/mygcc/bin/g++ CFLAGS="$OPT_FLAGS" CXXFLAGS="$OPT_FLAGS" \
+          # ./configure --prefix=$PREFIX_DIR
+          # make -j$(nproc)
+          # make install
+          # cd ..
+
+          # insatll automake
+          git clone --depth=1 https://git.savannah.gnu.org/git/automake.git
+          cd automake
+          ./bootstrap     # 如果存在
+          env CC=/opt/mygcc/bin/gcc CXX=/opt/mygcc/bin/g++ CFLAGS="$OPT_FLAGS" CXXFLAGS="$OPT_FLAGS" \
+          ./configure --prefix=$PREFIX_DIR
+          make -j$(nproc)
+          make install
+          cd ..
+
+          # insatll libtool
+          git clone --depth=1 https://git.savannah.gnu.org/git/libtool.git
+          cd libtool
+          ./bootstrap     # 如果存在
+          env CC=/opt/mygcc/bin/gcc CXX=/opt/mygcc/bin/g++ CFLAGS="$OPT_FLAGS" CXXFLAGS="$OPT_FLAGS" \
+          ./configure --prefix=$PREFIX_DIR
+          make -j$(nproc)
+          make install
+          cd ..
+
+          wget https://pkgconfig.freedesktop.org/releases/pkg-config-0.29.2.tar.gz
+          tar xzf pkg-config-0.29.2.tar.gz
+          cd pkg-config-0.29.2
+          ./configure --prefix=$PREFIX_DIR
+          make -j$(nproc) 
+          make install
+          $PREFIX_DIR/bin/pkg-config --version
           
           # make all -j"$JOBS"
           # make install -j"$JOBS"
