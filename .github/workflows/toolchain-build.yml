@@ -559,14 +559,18 @@ jobs:
           cd build-binutils
           # --target="$TARGET"
           TARGET="x86_64-redhat-linux-gnu"
-          # 
+          # 检测是否包含?
+          grep -R "PTRACE_SET_THREAD_AREA" /usr/include || true
+          # --disable-nls \
           env CC=/opt/mygcc/bin/gcc CXX=/opt/mygcc/bin/g++ CFLAGS="$OPT_FLAGS" CXXFLAGS="$OPT_FLAGS" \
               ../binutils/configure --target="$TARGET" --build="$TARGET" --host="$TARGET" \
               --program-prefix= \
               --disable-dependency-tracking \
               --disable-docs \
               --disable-gdb \
-              --disable-nls \
+              --disable-debug \
+              --disable-gdbserver \
+              --disable-gdbsupport \
               --disable-werror \
               --without-debuginfod \
               --enable-ld \
