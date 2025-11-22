@@ -685,7 +685,7 @@ jobs:
           # grep -n 'Link tests are not allowed after GCC_NO_EXECUTABLES' ../gcc/libstdc++-v3/configure
           
           mkdir -p /opt/thetools
-          yum remove -y autoconf
+          cd /opt/thetools
           wget https://ftp.gnu.org/gnu/autoconf/autoconf-2.71.tar.gz
           tar -xzf autoconf-2.71.tar.gz
           cd autoconf-2.71
@@ -693,7 +693,6 @@ jobs:
           ./configure --prefix=$PREFIX_DIR
           make -j$(nproc)
           make install
-          cd ..
 
           # insatll autoconf
           # git clone --depth=1 https://git.savannah.gnu.org/git/autoconf.git
@@ -706,27 +705,33 @@ jobs:
           # cd ..
 
           # insatll automake
-          git clone --depth=1 https://https.git.savannah.gnu.org/git/automake.git
-          cd automake
+          # git clone --depth=1 https://https.git.savannah.gnu.org/git/automake.git
+          cd /opt/thetools
+          wget https://ftp.gnu.org/gnu/automake/automake-1.18.1.tar.gz
+          tar -xzf automake-1.18.1.tar.gz
+          cd automake-1.18.1
           ./bootstrap     # 如果存在
           env CC=/opt/mygcc/bin/gcc CXX=/opt/mygcc/bin/g++ CFLAGS="$OPT_FLAGS" CXXFLAGS="$OPT_FLAGS" \
           ./configure --prefix=$PREFIX_DIR
           make -j$(nproc)
           make install
-          cd ..
 
           # insatll libtool
-          git clone --depth=1 https://https.git.savannah.gnu.org/git/libtool.git
-          cd libtool
+          # git clone --depth=1 https://https.git.savannah.gnu.org/git/libtool.git
+          cd /opt/thetools
+          wget http://mirrors.tencent.com/gnu/libtool/libtool-2.5.4.tar.gz
+          tar -xzf libtool-2.5.4.tar.gz
+          cd libtool-2.5.4
           ./bootstrap     # 如果存在
           env CC=/opt/mygcc/bin/gcc CXX=/opt/mygcc/bin/g++ CFLAGS="$OPT_FLAGS" CXXFLAGS="$OPT_FLAGS" \
           ./configure --prefix=$PREFIX_DIR
           make -j$(nproc)
           make install
-          cd ..
+          
 
+          cd /opt/thetools
           wget https://pkgconfig.freedesktop.org/releases/pkg-config-0.29.2.tar.gz
-          tar xzf pkg-config-0.29.2.tar.gz
+          tar -xzf pkg-config-0.29.2.tar.gz
           cd pkg-config-0.29.2
           env CC=/opt/mygcc/bin/gcc CXX=/opt/mygcc/bin/g++ CFLAGS="$OPT_FLAGS" CXXFLAGS="$OPT_FLAGS" \
           ./configure --prefix=$PREFIX_DIR
@@ -734,6 +739,15 @@ jobs:
           make install
           $PREFIX_DIR/bin/pkg-config --version
           
+          # cd /opt/thetools
+          # wget https://ftp.gnu.org/gnu/m4/m4-1.4.20.tar.gz
+          # tar -xzf m4-1.4.20.tar.gz
+          # cd m4-1.4.20
+          # env CC=/opt/mygcc/bin/gcc CXX=/opt/mygcc/bin/g++ CFLAGS="$OPT_FLAGS" CXXFLAGS="$OPT_FLAGS" \
+          # ./configure --prefix=$PREFIX_DIR
+          # make -j$(nproc)
+          # make install
+
           # make all -j"$JOBS"
           # make install -j"$JOBS"
           echo "Built GCC end!"
