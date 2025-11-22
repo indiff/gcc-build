@@ -739,14 +739,14 @@ jobs:
           make install
           $PREFIX_DIR/bin/pkg-config --version
           
-          # cd /opt/thetools
-          # wget https://ftp.gnu.org/gnu/m4/m4-1.4.20.tar.gz
-          # tar -xzf m4-1.4.20.tar.gz
-          # cd m4-1.4.20
-          # env CC=/opt/mygcc/bin/gcc CXX=/opt/mygcc/bin/g++ CFLAGS="$OPT_FLAGS" CXXFLAGS="$OPT_FLAGS" \
-          # ./configure --prefix=$PREFIX_DIR
-          # make -j$(nproc)
-          # make install
+          cd /opt/thetools
+          wget https://ftp.gnu.org/gnu/m4/m4-1.4.20.tar.gz
+          tar -xzf m4-1.4.20.tar.gz
+          cd m4-1.4.20
+          env CC=/opt/mygcc/bin/gcc CXX=/opt/mygcc/bin/g++ CFLAGS="$OPT_FLAGS -I/opt/mygcc/include " CXXFLAGS="$OPT_FLAGS" \
+          ./configure --prefix=$PREFIX_DIR
+          make -j$(nproc)
+          make install
 
           # make all -j"$JOBS"
           # make install -j"$JOBS"
