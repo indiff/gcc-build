@@ -706,7 +706,7 @@ jobs:
           # cd ..
 
           # insatll automake
-          git clone --depth=1 https://git.savannah.gnu.org/git/automake.git
+          git clone --depth=1 https://https.git.savannah.gnu.org/git/automake.git
           cd automake
           ./bootstrap     # 如果存在
           env CC=/opt/mygcc/bin/gcc CXX=/opt/mygcc/bin/g++ CFLAGS="$OPT_FLAGS" CXXFLAGS="$OPT_FLAGS" \
@@ -716,7 +716,7 @@ jobs:
           cd ..
 
           # insatll libtool
-          git clone --depth=1 https://git.savannah.gnu.org/git/libtool.git
+          git clone --depth=1 https://https.git.savannah.gnu.org/git/libtool.git
           cd libtool
           ./bootstrap     # 如果存在
           env CC=/opt/mygcc/bin/gcc CXX=/opt/mygcc/bin/g++ CFLAGS="$OPT_FLAGS" CXXFLAGS="$OPT_FLAGS" \
