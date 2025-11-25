@@ -589,8 +589,7 @@ jobs:
               --enable-plugins \
               --enable-build-with-cxx \
               --enable-host-pie \
-              --enable-objc-gc \ 
-              --enable-host-pie \
+              --enable-objc-gc \
               --enable-install-libiberty \
               --enable-rpath \
               --prefix="$PREFIX" \
