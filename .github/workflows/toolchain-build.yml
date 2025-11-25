@@ -661,7 +661,6 @@ jobs:
             --enable-rpath  \
             --disable-multilib  \
             --without-cuda-driver --enable-offload-defaulted \
-            --with-tune=generic \
             --with-arch_32=x86-64 \
             --prefix="$PREFIX" \
             --with-tune=generic \
