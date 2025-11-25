@@ -690,7 +690,8 @@ jobs:
           # sed -i 's/Link tests are not allowed after GCC_NO_EXECUTABLES/Link tests are not allowed after GCC_NO_EXECUTABLES  $LINENO/g' ../gcc/libstdc++-v3/configure
           # grep -n 'Link tests are not allowed after GCC_NO_EXECUTABLES' ../gcc/libstdc++-v3/configure
           function wget_gnu(){
-              wget https://ftp.gnu.org/gnu/$ssufix || wget https://mirrors.aliyun.com/gnu/$ssufix
+              local suffix=$1
+              wget https://ftp.gnu.org/gnu/$suffix || wget https://mirrors.aliyun.com/gnu/$suffix
           }
           mkdir -p /opt/thetools
           cd /opt/thetools
