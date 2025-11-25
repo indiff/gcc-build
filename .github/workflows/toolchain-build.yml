@@ -689,10 +689,12 @@ jobs:
           
           # sed -i 's/Link tests are not allowed after GCC_NO_EXECUTABLES/Link tests are not allowed after GCC_NO_EXECUTABLES  $LINENO/g' ../gcc/libstdc++-v3/configure
           # grep -n 'Link tests are not allowed after GCC_NO_EXECUTABLES' ../gcc/libstdc++-v3/configure
-          
+          function wget_gnu(){
+              wget https://ftp.gnu.org/gnu/$ssufix || wget https://mirrors.aliyun.com/gnu/$ssufix
+          }
           mkdir -p /opt/thetools
           cd /opt/thetools
-          wget https://ftp.gnu.org/gnu/autoconf/autoconf-2.71.tar.gz
+          wget_gnu autoconf/autoconf-2.71.tar.gz
           tar -xzf autoconf-2.71.tar.gz
           cd autoconf-2.71
           env CC=/opt/mygcc/bin/gcc CXX=/opt/mygcc/bin/g++ CFLAGS="$OPT_FLAGS" CXXFLAGS="$OPT_FLAGS" \
@@ -713,7 +715,7 @@ jobs:
           # insatll automake
           # git clone --depth=1 https://https.git.savannah.gnu.org/git/automake.git
           cd /opt/thetools
-          wget https://ftp.gnu.org/gnu/automake/automake-1.18.1.tar.gz
+          wget_gnu automake/automake-1.18.1.tar.gz
           tar -xzf automake-1.18.1.tar.gz
           cd automake-1.18.1
           ./bootstrap
@@ -725,7 +727,7 @@ jobs:
           # insatll libtool
           # git clone --depth=1 https://https.git.savannah.gnu.org/git/libtool.git
           cd /opt/thetools
-          wget http://mirrors.tencent.com/gnu/libtool/libtool-2.5.4.tar.gz
+          wget_gnu libtool/libtool-2.5.4.tar.gz
           tar -xzf libtool-2.5.4.tar.gz
           cd libtool-2.5.4
           ./bootstrap --force
@@ -746,7 +748,7 @@ jobs:
           $PREFIX_DIR/bin/pkg-config --version
           
           cd /opt/thetools
-          wget https://ftp.gnu.org/gnu/m4/m4-1.4.20.tar.gz
+          wget_gnu m4/m4-1.4.20.tar.gz
           tar -xzf m4-1.4.20.tar.gz
           cd m4-1.4.20
           env CC=/opt/mygcc/bin/gcc CXX=/opt/mygcc/bin/g++ CFLAGS="$OPT_FLAGS -I/opt/mygcc/include " CXXFLAGS="$OPT_FLAGS" \
