@@ -557,11 +557,14 @@ jobs:
           echo "Building Binutils"
           mkdir build-binutils
           cd build-binutils
+          # Patch for binutils 2.39(gprofng's documents have some error when building)
+          sed -i.bak 's/[[:space:]]doc$//g' gprofng/Makefile.in
           # --target="$TARGET"
           TARGET="x86_64-redhat-linux-gnu"
           # 检测是否包含?
           grep -R "PTRACE_SET_THREAD_AREA" /usr/include || true
           # --disable-nls \
+          # --enable-libssp # libssp（Stack Smashing Protection）库。该库通过检测和防止栈溢出攻击来提高程序的安全性
           env CC=/opt/mygcc/bin/gcc CXX=/opt/mygcc/bin/g++ CFLAGS="$OPT_FLAGS" CXXFLAGS="$OPT_FLAGS" \
               ../binutils/configure --target="$TARGET" --build="$TARGET" --host="$TARGET" \
               --program-prefix= \
@@ -585,6 +588,11 @@ jobs:
               --enable-plugins \
               --enable-build-with-cxx \
               --enable-host-pie \
+              --enable-objc-gc \ 
+              --enable-vtable-verify \
+              --enable-host-pie \
+              --enable-install-libiberty \
+              --enable-rpath \
               --prefix="$PREFIX" \
               --with-bugurl=https://github.com/indiff/gcc-build \
               $SYSROOT_ARG \
