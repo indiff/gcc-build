@@ -558,7 +558,7 @@ jobs:
           mkdir build-binutils
           cd build-binutils
           # Patch for binutils 2.39(gprofng's documents have some error when building)
-          sed -i.bak 's/[[:space:]]doc$//g' gprofng/Makefile.in
+          # sed -i.bak 's/[[:space:]]doc$//g' gprofng/Makefile.in
           # --target="$TARGET"
           TARGET="x86_64-redhat-linux-gnu"
           # 检测是否包含?
