@@ -693,6 +693,7 @@ jobs:
               local suffix=$1
               wget https://ftp.gnu.org/gnu/$suffix || wget https://mirrors.aliyun.com/gnu/$suffix
           }
+          
           mkdir -p /opt/thetools
           cd /opt/thetools
           wget_gnu autoconf/autoconf-2.71.tar.gz
