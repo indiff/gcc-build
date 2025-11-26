@@ -5,6 +5,15 @@
 [![GCC+LLD Build](https://github.com/indiff/gcc-build/actions/workflows/toolchain-build.yml/badge.svg)](https://github.com/indiff/gcc-build/actions/workflows/toolchain-build.yml)
 
 This repository contains the script needed to compile bare metal GCC for various architectures using Linux distributions. The GCC source is fetched from the master branch hence, contains all the bleeding edge changes.
+## Use LLD
+```bash
+unzip gcc-indiff.zip -d /opt/gcc-indiff
+unzip lld-indiff.zip -d /opt/gcc-indiff
+export LD_LIBRARY_PATH="/opt/gcc-indiff/lib64:/opt/gcc-indiff/lib:$LD_LIBRARY_PATH"
+ln -sf /opt/gcc-indiff/bin/ld.lld /usr/bin/ld.lld
+/opt/gcc-indiff/gcc -fuse-ld=lld -Wl,--version -xc - <<< 'int main(){return 0;}'
+env CC="/opt/gcc-indiff/bin/gcc" CXX="/opt/gcc-indiff/bin/g++" LDFLAGS="-fuse-ld=lld" ./vcpkg install apr
+```
 
 ## Before we start
 
