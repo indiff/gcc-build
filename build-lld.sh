@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
-# SPDX-License-Identifier: GPL-3.0
-# Author: Vaisakh Murali
+# Author:indiff
 set -e
 
 echo "***************************"
@@ -70,7 +69,7 @@ build_lld() {
   export LD_LIBRARY_PATH=/opt/mygcc/lib:/opt/mygcc/lib64:$LD_LIBRARY_PATH
   export PATH=/opt/mygcc/bin:$PATH
   
-  # Ê¹ÓÃ LLVM µÄ libc++
+  # ä½¿ç”¨ LLVM çš„ libc++
   #   -DLLVM_PARALLEL_COMPILE_JOBS="$NPROC_HALF" \
   # -DLLVM_PARALLEL_LINK_JOBS="$NPROC_HALF" \
   # clang use follow, gcc no
@@ -83,6 +82,7 @@ build_lld() {
   # -DLLVM_ENABLE_RUNTIMES="compiler-rt;libcxx;libcxxabi;
   # -DLLVM_ENABLE_PROJECTS="clang;lld;compiler-rt" \
   #     -DLLVM_USE_LINKER=gold \
+  env LDFLAGS="-fuse-ld=lld -Wl,--strip-all -Wl,--gc-sections" \
   cmake -G "Ninja" \
     -DLLVM_ENABLE_PROJECTS="lld" \
     -DCMAKE_BUILD_TYPE=Release \
@@ -111,28 +111,37 @@ build_lld() {
     -DCMAKE_LINKER=/opt/mygcc/bin/ld.gold \
     -DLLVM_PARALLEL_LINK_JOBS=2 \
     -DCMAKE_EXE_LINKER_FLAGS="\
+    -fuse-ld=lld \
+    -Wl,--strip-all \
+    -Wl,--gc-sections \
     -Wl,--as-needed \
     -Wl,--gc-sections \
     -Wl,--no-keep-memory " \
     -DCMAKE_SHARED_LINKER_FLAGS="\
+    -fuse-ld=lld \
+    -Wl,--strip-all \
+    -Wl,--gc-sections \
     -Wl,--as-needed \
     -Wl,--gc-sections \
     -Wl,--no-keep-memory " \
     -DCMAKE_MODULE_LINKER_FLAGS="\
+    -fuse-ld=lld \
+    -Wl,--strip-all \
+    -Wl,--gc-sections \
     -Wl,--as-needed \
     -Wl,--no-keep-memory " \
-    -DCMAKE_C_FLAGS="-O3 -DNDEBUG" \
-    -DCMAKE_CXX_FLAGS="-O3 -DNDEBUG" \
+    -DCMAKE_C_FLAGS="-O2 -DNDEBUG -march=native" \
+    -DCMAKE_CXX_FLAGS="-O2 -DNDEBUG -march=native" \
     -DLLVM_ENABLE_PIC=ON \
     -DLLVM_ENABLE_ZLIB=1 \
     -DZLIB_LIBRARY="/opt/vcpkg/installed/x64-linux/lib/libz.a" \
     -DZLIB_INCLUDE_DIR="/opt/vcpkg/installed/x64-linux/include" \
     "${WORK_DIR}"/llvm-project/llvm
-  # ÕâÀï»áÏûºÄÃ£Ã£¶àÄÚ´æ£¬ËùÒÔ³¢ÊÔÏÈ¿ªÆô¶à½ø³Ì±àÒë£¬Ê§°ÜÖ®ºó½µ¼¶µ½µ¥½ø³Ì  
+  # è¿™é‡Œä¼šæ¶ˆè€—èŒ«èŒ«å¤šå†…å­˜ï¼Œæ‰€ä»¥å°è¯•å…ˆå¼€å¯å¤šè¿›ç¨‹ç¼–è¯‘ï¼Œå¤±è´¥ä¹‹åŽé™çº§åˆ°å•è¿›ç¨‹  
   # ninja -j$(nproc --all) || ninja -j$NPROC_HALF || ninja || echo "failed"
 
-   # ÕâÀï»áÏûºÄÃ£Ã£¶àÄÚ´æ£¬ËùÒÔ³¢ÊÔÏÈ¿ªÆô¶à½ø³Ì±àÒë£¬Ê§°ÜÖ®ºó½µ¼¶µ½µ¥½ø³Ì
-  # °´ÐèÇó£º½µ¼¶Ò»´Î -> ÊÍ·ÅÒ»´ÎÄÚ´æºÍ»º´æ -> ÔÙ½µ¼¶Ò»´Î
+   # è¿™é‡Œä¼šæ¶ˆè€—èŒ«èŒ«å¤šå†…å­˜ï¼Œæ‰€ä»¥å°è¯•å…ˆå¼€å¯å¤šè¿›ç¨‹ç¼–è¯‘ï¼Œå¤±è´¥ä¹‹åŽé™çº§åˆ°å•è¿›ç¨‹
+  # æŒ‰éœ€æ±‚ï¼šé™çº§ä¸€æ¬¡ -> é‡Šæ”¾ä¸€æ¬¡å†…å­˜å’Œç¼“å­˜ -> å†é™çº§ä¸€æ¬¡
   if ! ninja -j"$(nproc --all)"; then
     echo "> First attempt failed. Retrying with $NPROC_HALF jobs..."
     if ! ninja -j"$NPROC_HALF"; then
