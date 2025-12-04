@@ -608,7 +608,7 @@ jobs:
           # env LDFLAGS="-Wl,-rpath=$PREFIX/lib64:$PREFIX/lib" CFLAGS="$OPT_FLAGS -fPIC -I$PREFIX/include " CXXFLAGS="$OPT_FLAGS -fPIC -I$PREFIX/include " \
           export OPT_FLAGS=" -lrt -lpthread -ldl -lm -lzstd  "
           # python require this --disable-gcov 
-          env CC=/opt/mygcc/bin/gcc CXX=/opt/mygcc/bin/g++ LDFLAGS="-L/opt/mygcc/lib64 -fuse-ld=lld -Wl,--strip-all -Wl,--gc-sections -Wl,-rpath=$PREFIX/lib64:$PREFIX/lib -lc -lpthread -ldl" \
+          env CC=/opt/mygcc/bin/gcc CXX=/opt/mygcc/bin/g++ LDFLAGS="-fuse-ld=lld -Wl,--strip-all -Wl,--gc-sections -Wl,-rpath=$PREFIX/lib64:$PREFIX/lib" \
             CFLAGS="-O2 -march=native $OPT_FLAGS -fPIC $([[ "$USE_INTERNAL_GLIBC" == "1" ]] && echo "-I$GLIBC_RT/include")" \
             CXXFLAGS="-O2 -march=native $OPT_FLAGS -fPIC $([[ "$USE_INTERNAL_GLIBC" == "1" ]] && echo "-I$GLIBC_RT/include")" \
             ../gcc/configure --target="$TARGET" --build="$TARGET" --host="$TARGET" \
