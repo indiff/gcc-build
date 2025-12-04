@@ -552,7 +552,7 @@ jobs:
           # --enable-vtable-verify  not found
           # --disable-nls \
           # --enable-libssp # libssp(Stack Smashing Protection)库。该库通过检测和防止栈溢出攻击来提高程序的安全性
-          env CC=/opt/mygcc/bin/gcc CXX=/opt/mygcc/bin/g++ LDFLAGS="-fuse-ld=lld -Wl,--strip-all -Wl,--gc-sections" CFLAGS="-O2 $OPT_FLAGS" CXXFLAGS="-O2 $OPT_FLAGS" \
+          env CC=/opt/mygcc/bin/gcc CXX=/opt/mygcc/bin/g++ LDFLAGS="-fuse-ld=lld -Wl,--strip-all -Wl,--gc-sections -lc -lpthread -ldl" CFLAGS="-O2 $OPT_FLAGS" CXXFLAGS="-O2 $OPT_FLAGS" \
               ../binutils/configure --target="$TARGET" --build="$TARGET" --host="$TARGET" \
               --program-prefix= \
               --disable-dependency-tracking \
@@ -606,7 +606,7 @@ jobs:
           # env LDFLAGS="-Wl,-rpath=$PREFIX/lib64:$PREFIX/lib" CFLAGS="$OPT_FLAGS -fPIC -I$PREFIX/include " CXXFLAGS="$OPT_FLAGS -fPIC -I$PREFIX/include " \
           export OPT_FLAGS=" -lrt -lpthread -ldl -lm -lzstd  "
           # python require this --disable-gcov 
-          env CC=/opt/mygcc/bin/gcc CXX=/opt/mygcc/bin/g++ LDFLAGS="-L/opt/mygcc/lib64 -fuse-ld=lld -Wl,--strip-all -Wl,--gc-sections -Wl,-rpath=$PREFIX/lib64:$PREFIX/lib" \
+          env CC=/opt/mygcc/bin/gcc CXX=/opt/mygcc/bin/g++ LDFLAGS="-L/opt/mygcc/lib64 -fuse-ld=lld -Wl,--strip-all -Wl,--gc-sections -Wl,-rpath=$PREFIX/lib64:$PREFIX/lib -lc -lpthread -ldl" \
             CFLAGS="-O2 -march=native $OPT_FLAGS -fPIC $([[ "$USE_INTERNAL_GLIBC" == "1" ]] && echo "-I$GLIBC_RT/include")" \
             CXXFLAGS="-O2 -march=native $OPT_FLAGS -fPIC $([[ "$USE_INTERNAL_GLIBC" == "1" ]] && echo "-I$GLIBC_RT/include")" \
             ../gcc/configure --target="$TARGET" --build="$TARGET" --host="$TARGET" \
