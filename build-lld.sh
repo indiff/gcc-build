@@ -82,7 +82,7 @@ build_lld() {
   # -DLLVM_ENABLE_RUNTIMES="compiler-rt;libcxx;libcxxabi;
   # -DLLVM_ENABLE_PROJECTS="clang;lld;compiler-rt" \
   #     -DLLVM_USE_LINKER=gold \
-  env LDFLAGS="-fuse-ld=lld -Wl,--strip-all -Wl,--gc-sections" \
+  env LDFLAGS=" -Wl,--strip-all -Wl,--gc-sections" \
   cmake -G "Ninja" \
     -DLLVM_ENABLE_PROJECTS="lld" \
     -DCMAKE_BUILD_TYPE=Release \
@@ -107,25 +107,22 @@ build_lld() {
     -DLLVM_ENABLE_BACKTRACES=OFF \
     -DBUILD_SHARED_LIBS=OFF \
     -DLLVM_INSTALL_TOOLCHAIN_ONLY=ON \
-    -DLLVM_USE_LINKER=gold \
-    -DCMAKE_LINKER=/opt/mygcc/bin/ld.gold \
+    -DLLVM_USE_LINKER=lld \
+    -DCMAKE_LINKER=/opt/mygcc/bin/ld.lld \
     -DLLVM_PARALLEL_LINK_JOBS=2 \
     -DCMAKE_EXE_LINKER_FLAGS="\
-    -fuse-ld=lld \
     -Wl,--strip-all \
     -Wl,--gc-sections \
     -Wl,--as-needed \
     -Wl,--gc-sections \
     -Wl,--no-keep-memory " \
     -DCMAKE_SHARED_LINKER_FLAGS="\
-    -fuse-ld=lld \
     -Wl,--strip-all \
     -Wl,--gc-sections \
     -Wl,--as-needed \
     -Wl,--gc-sections \
     -Wl,--no-keep-memory " \
     -DCMAKE_MODULE_LINKER_FLAGS="\
-    -fuse-ld=lld \
     -Wl,--strip-all \
     -Wl,--gc-sections \
     -Wl,--as-needed \
