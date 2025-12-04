@@ -34,7 +34,8 @@ env:
   CHAT_ID: ${{ secrets.CHAT_ID }}
   GIT_VERSION: "2.49.0"
   gcc_indiff_ubuntu_url: "https://github.com/indiff/gcc-build/releases/download/20250416_1126/gcc-indiff-ubuntu-x86_64-20250416_1125.xz"
-  gcc_indiff_centos7_url: "https://github.com/indiff/gcc-build/releases/download/20251009_0934_16.0.0/gcc-indiff-centos7-16.0.0-x86_64-20251009_0931.xz"
+  gcc_indiff_centos7_url: "https://github.com/indiff/gcc-build/releases/download/20251203_1308_16.0.0/gcc-indiff-centos7-16.0.0-x86_64-20251203_1005.xz"
+  lld_indiff_centos7_url: "https://github.com/indiff/gcc-build/releases/download/20251203_1308_16.0.0/lld-indiff-centos7-x86_64-20251203_1307.xz"
 jobs:
   before_build:
     runs-on: [ ubuntu-latest ]
@@ -385,7 +386,9 @@ jobs:
           
           # install gcc
           curl -sLo /opt/gcc-indiff.zip "${{ env.gcc_indiff_centos7_url }}"
+          curl -sLo /opt/lld-indiff.zip "${{ env.lld_indiff_centos7_url }}"
           unzip /opt/gcc-indiff.zip -d /opt/mygcc
+          unzip /opt/lld-indiff.zip -d /opt/mygcc
           export CC=/opt/mygcc/bin/gcc 
           export CXX=/opt/mygcc/bin/g++
           export LD_LIBRARY_PATH=/opt/mygcc/lib:/opt/mygcc/lib64:$LD_LIBRARY_PATH
@@ -566,7 +569,8 @@ jobs:
           # --enable-vtable-verify  not found
           # --disable-nls \
           # --enable-libssp # libssp（Stack Smashing Protection）库。该库通过检测和防止栈溢出攻击来提高程序的安全性
-          env CC=/opt/mygcc/bin/gcc CXX=/opt/mygcc/bin/g++ CFLAGS="$OPT_FLAGS" CXXFLAGS="$OPT_FLAGS" \
+          env CC=/opt/mygcc/bin/gcc CXX=/opt/mygcc/bin/g++ CFLAGS="-O2 -march=native $OPT_FLAGS" CXXFLAGS="-O2 -march=native $OPT_FLAGS" \
+              LDFLAGS="-fuse-ld=lld -Wl,--strip-all -Wl,--gc-sections" \
               ../binutils/configure --target="$TARGET" --build="$TARGET" --host="$TARGET" \
               --program-prefix= \
               --disable-dependency-tracking \
@@ -620,9 +624,9 @@ jobs:
           # env LDFLAGS="-Wl,-rpath=$PREFIX/lib64:$PREFIX/lib" CFLAGS="$OPT_FLAGS -fPIC -I$PREFIX/include " CXXFLAGS="$OPT_FLAGS -fPIC -I$PREFIX/include " \
           export OPT_FLAGS=" -lrt -lpthread -ldl -lm -lzstd  "
           # python require this --disable-gcov 
-          env CC=/opt/mygcc/bin/gcc CXX=/opt/mygcc/bin/g++ LDFLAGS="-L/opt/mygcc/lib64 -Wl,-rpath=$PREFIX/lib64:$PREFIX/lib" \
-            CFLAGS="$OPT_FLAGS -fPIC $([[ "$USE_INTERNAL_GLIBC" == "1" ]] && echo "-I$GLIBC_RT/include")" \
-            CXXFLAGS="$OPT_FLAGS -fPIC $([[ "$USE_INTERNAL_GLIBC" == "1" ]] && echo "-I$GLIBC_RT/include")" \
+          env CC=/opt/mygcc/bin/gcc CXX=/opt/mygcc/bin/g++ LDFLAGS="-L/opt/mygcc/lib64 -fuse-ld=lld -Wl,--strip-all -Wl,--gc-sections -Wl,-rpath=$PREFIX/lib64:$PREFIX/lib" \
+            CFLAGS="-O2 -march=native $OPT_FLAGS -fPIC $([[ "$USE_INTERNAL_GLIBC" == "1" ]] && echo "-I$GLIBC_RT/include")" \
+            CXXFLAGS="-O2 -march=native $OPT_FLAGS -fPIC $([[ "$USE_INTERNAL_GLIBC" == "1" ]] && echo "-I$GLIBC_RT/include")" \
             ../gcc/configure --target="$TARGET" --build="$TARGET" --host="$TARGET" \
             --with-bugurl=https://github.com/indiff/gcc-build \
             --disable-decimal-float \
@@ -708,7 +712,7 @@ jobs:
           # git clone --depth=1 https://git.savannah.gnu.org/git/autoconf.git
           # cd autoconf
           # ./bootstrap     # 如果存在
-          # env CC=/opt/mygcc/bin/gcc CXX=/opt/mygcc/bin/g++ CFLAGS="$OPT_FLAGS" CXXFLAGS="$OPT_FLAGS" \
+          # env CC=/opt/mygcc/bin/gcc CXX=/opt/mygcc/bin/g++ LDFLAGS="-fuse-ld=lld -Wl,--strip-all -Wl,--gc-sections" CFLAGS="-O2 -march=native" CXXFLAGS="-O2 -march=native"\
           # ./configure --prefix=$PREFIX_DIR
           # make -j$(nproc)
           # make install
@@ -721,7 +725,7 @@ jobs:
           tar -xzf automake-1.18.1.tar.gz
           cd automake-1.18.1
           ./bootstrap
-          env CC=/opt/mygcc/bin/gcc CXX=/opt/mygcc/bin/g++ CFLAGS="$OPT_FLAGS" CXXFLAGS="$OPT_FLAGS" \
+          env CC=/opt/mygcc/bin/gcc CXX=/opt/mygcc/bin/g++ LDFLAGS="-fuse-ld=lld -Wl,--strip-all -Wl,--gc-sections" CFLAGS="-O2 -march=native" CXXFLAGS="-O2 -march=native" \
           ./configure --prefix=$PREFIX_DIR
           make -j$(nproc)
           make install
@@ -733,7 +737,7 @@ jobs:
           tar -xzf libtool-2.5.4.tar.gz
           cd libtool-2.5.4
           ./bootstrap --force
-          env CC=/opt/mygcc/bin/gcc CXX=/opt/mygcc/bin/g++ CFLAGS="$OPT_FLAGS" CXXFLAGS="$OPT_FLAGS" \
+          env CC=/opt/mygcc/bin/gcc CXX=/opt/mygcc/bin/g++ LDFLAGS="-fuse-ld=lld -Wl,--strip-all -Wl,--gc-sections" CFLAGS="-O2 -march=native" CXXFLAGS="-O2 -march=native"\
           ./configure --prefix=$PREFIX_DIR
           make -j$(nproc)
           make install
@@ -743,7 +747,7 @@ jobs:
           wget https://pkgconfig.freedesktop.org/releases/pkg-config-0.29.2.tar.gz
           tar -xzf pkg-config-0.29.2.tar.gz
           cd pkg-config-0.29.2
-          env CC=/opt/mygcc/bin/gcc CXX=/opt/mygcc/bin/g++ CFLAGS="$OPT_FLAGS" CXXFLAGS="$OPT_FLAGS" \
+          env CC=/opt/mygcc/bin/gcc CXX=/opt/mygcc/bin/g++ LDFLAGS="-fuse-ld=lld -Wl,--strip-all -Wl,--gc-sections" CFLAGS="-O2 -march=native" CXXFLAGS="-O2 -march=native" \
           ./configure --prefix=$PREFIX_DIR --with-internal-glib
           make CFLAGS="-Ubool -std=gnu11 -O2" -j$(nproc)
           make install
@@ -753,7 +757,7 @@ jobs:
           wget_gnu m4/m4-1.4.20.tar.gz
           tar -xzf m4-1.4.20.tar.gz
           cd m4-1.4.20
-          env CC=/opt/mygcc/bin/gcc CXX=/opt/mygcc/bin/g++ CFLAGS="$OPT_FLAGS -I/opt/mygcc/include " CXXFLAGS="$OPT_FLAGS" \
+          env CC=/opt/mygcc/bin/gcc CXX=/opt/mygcc/bin/g++ LDFLAGS="-fuse-ld=lld -Wl,--strip-all -Wl,--gc-sections"  CFLAGS="-O2 -march=native $OPT_FLAGS -I/opt/mygcc/include " CXXFLAGS="-O2 -march=native $OPT_FLAGS" \
           ./configure --prefix=$PREFIX_DIR
           make -j$(nproc)
           make install
