@@ -721,7 +721,7 @@ jobs:
           tar -xzf libtool-2.5.4.tar.gz
           cd libtool-2.5.4
           ./bootstrap --force
-          env CC=/opt/mygcc/bin/gcc CXX=/opt/mygcc/bin/g++ LDFLAGS="-fuse-ld=lld -Wl,--strip-all -Wl,--gc-sections" CFLAGS="-O2 -march=native" CXXFLAGS="-O2 -march=native"\
+          env CC=/opt/mygcc/bin/gcc CXX=/opt/mygcc/bin/g++ LDFLAGS="-Wl,--strip-all -Wl,--gc-sections" \
           ./configure --prefix=$PREFIX_DIR
           make -j$(nproc)
           make install
@@ -731,7 +731,7 @@ jobs:
           wget https://pkgconfig.freedesktop.org/releases/pkg-config-0.29.2.tar.gz
           tar -xzf pkg-config-0.29.2.tar.gz
           cd pkg-config-0.29.2
-          env CC=/opt/mygcc/bin/gcc CXX=/opt/mygcc/bin/g++ LDFLAGS="-fuse-ld=lld -Wl,--strip-all -Wl,--gc-sections" CFLAGS="-O2 -march=native" CXXFLAGS="-O2 -march=native" \
+          env CC=/opt/mygcc/bin/gcc CXX=/opt/mygcc/bin/g++ LDFLAGS="-Wl,--strip-all -Wl,--gc-sections"  \
           ./configure --prefix=$PREFIX_DIR --with-internal-glib
           make CFLAGS="-Ubool -std=gnu11 -O2" -j$(nproc)
           make install
@@ -741,7 +741,7 @@ jobs:
           wget_gnu m4/m4-1.4.20.tar.gz
           tar -xzf m4-1.4.20.tar.gz
           cd m4-1.4.20
-          env CC=/opt/mygcc/bin/gcc CXX=/opt/mygcc/bin/g++ LDFLAGS="-fuse-ld=lld -Wl,--strip-all -Wl,--gc-sections"  CFLAGS="-O2 -march=native $OPT_FLAGS -I/opt/mygcc/include " CXXFLAGS="-O2 -march=native $OPT_FLAGS" \
+          env CC=/opt/mygcc/bin/gcc CXX=/opt/mygcc/bin/g++ LDFLAGS="-Wl,--strip-all -Wl,--gc-sections"  \
           ./configure --prefix=$PREFIX_DIR
           make -j$(nproc)
           make install
