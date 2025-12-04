@@ -389,7 +389,7 @@ jobs:
           curl -sLo /opt/lld-indiff.zip "${{ env.lld_indiff_centos7_url }}"
           unzip /opt/gcc-indiff.zip -d /opt/mygcc
           unzip /opt/lld-indiff.zip -d /opt/mygcc
-          export CC=/opt/mygcc/bin/gcc 
+          export CC=/opt/mygcc/bin/gcc
           export CXX=/opt/mygcc/bin/g++
           export LD_LIBRARY_PATH=/opt/mygcc/lib:/opt/mygcc/lib64:$LD_LIBRARY_PATH
           export PATH=/opt/mygcc/bin:$PATH
