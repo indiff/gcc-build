@@ -552,7 +552,9 @@ jobs:
           # --enable-vtable-verify  not found
           # --disable-nls \
           # --enable-libssp # libssp(Stack Smashing Protection)库。该库通过检测和防止栈溢出攻击来提高程序的安全性
-          env CC=/opt/mygcc/bin/gcc CXX=/opt/mygcc/bin/g++ LDFLAGS="-fuse-ld=lld -Wl,--strip-all -Wl,--gc-sections -lc -lpthread -ldl" CFLAGS="-O2 $OPT_FLAGS" CXXFLAGS="-O2 $OPT_FLAGS" \
+          export LD_LIBRARY_PATH=/opt/mygcc/lib:/opt/mygcc/lib64:$LD_LIBRARY_PATH
+          env CC=/opt/mygcc/bin/gcc CXX=/opt/mygcc/bin/g++ LDFLAGS="-fuse-ld=lld -L/opt/mygcc/lib64 -L/opt/mygcc/lib -Wl,--strip-all -Wl,--gc-sections" \
+              CFLAGS="-I/opt/mygcc/include -O2 $OPT_FLAGS" CXXFLAGS="I/opt/mygcc/include -O2 $OPT_FLAGS" \
               ../binutils/configure --target="$TARGET" --build="$TARGET" --host="$TARGET" \
               --program-prefix= \
               --disable-dependency-tracking \
