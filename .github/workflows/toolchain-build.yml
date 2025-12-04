@@ -219,7 +219,6 @@ jobs:
           # curl -o /etc/yum.repos.d/CentOS-Base.repo https://mirrors.aliyun.com/repo/Centos-7.repo
           # curl -o /etc/yum.repos.d/epel.repo https://mirrors.aliyun.com/repo/epel-7.repo
 
-          # 定义镜像列表  "http://mirrors.aliyun.com/centos-vault/7.9.2009"
           MIRRORS=(
               "http://mirror.rackspace.com/centos-vault/7.9.2009"
               "https://mirror.nsc.liu.se/centos-store/7.9.2009"
@@ -228,27 +227,22 @@ jobs:
               "https://vault.centos.org/7.9.2009"
           )
 
-          # 初始化变量
           FASTEST_MIRROR=""
           FASTEST_TIME=99999
 
           echo "Testing mirror response times..."
 
-          # 测试每个镜像的响应时间
           for MIRROR in "${MIRRORS[@]}"; do
               echo -n "Testing $MIRROR ... "
-              # 使用 curl 测试响应时间
               TIME=$(curl -o /dev/null -s -w "%{time_total}\n" "$MIRROR")
               echo "$TIME seconds"
 
-              # 比较响应时间，记录最快的镜像
               if (( $(echo "$TIME < $FASTEST_TIME" | bc -l) )); then
                   FASTEST_TIME=$TIME
                   FASTEST_MIRROR=$MIRROR
               fi
           done
 
-          # 输出最快的镜像
           echo "-----------------------------------"
           echo "Fastest mirror: $FASTEST_MIRROR"
           echo "Response time: $FASTEST_TIME seconds"
@@ -287,7 +281,6 @@ jobs:
           yum -y install autoconf autoconf-archive icu wget automake libtool m4 pkgconfig
           which pod2man
           which grep awk sed
-
 
           echo "[buildlogs-devtoolset-10-centos-x86_64]" > /etc/yum.repos.d/centos7-devtoolset-10.repo
           echo "name=devtoolset-10" >> /etc/yum.repos.d/centos7-devtoolset-10.repo
@@ -355,14 +348,6 @@ jobs:
           done
 
           cd "${WORK_DIR}"
-          # git clone https://github.com/Microsoft/vcpkg.git --depth 1
-          # cd vcpkg
-          # export VCPKG_ROOT=$(pwd)
-          # export PATH=$VCPKG_ROOT:$PATH
-          # ./bootstrap-vcpkg.sh
-          # ./vcpkg integrate install
-          # ./vcpkg install zlib zstd
-
           echo "Downloaded prerequisites!"
           curl -s -X POST "https://api.telegram.org/bot${{ env.BOT_TOKEN }}/sendMessage" -d chat_id="${{ env.CHAT_ID }}" -d "disable_web_page_preview=true" -d "parse_mode=html" -d text="<b>Starting centos7 GCC Build</b>"
           
@@ -522,8 +507,6 @@ jobs:
           mkdir -p "$PREFIX_DIR/include"
           mkdir -p "$PREFIX_DIR/lib"
           mkdir -p "$PREFIX_DIR/lib64"
-
-         
 
           build_zstd "$PREFIX_DIR"
 
