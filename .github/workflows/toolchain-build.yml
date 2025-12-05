@@ -741,10 +741,23 @@ jobs:
           wget_gnu m4/m4-1.4.20.tar.gz
           tar -xzf m4-1.4.20.tar.gz
           cd m4-1.4.20
-          env CC=/opt/mygcc/bin/gcc CXX=/opt/mygcc/bin/g++ \
+          env CC=/opt/mygcc/bin/gcc CXX=/opt/mygcc/bin/g++ CFLAGS="-I/opt/mygcc/include " \
           ./configure --prefix=$PREFIX_DIR
           make -j$(nproc)
           make install
+
+          cd /opt/thetools
+          # git clone --branch stable https://github.com/rui314/mold.git
+          git clone --depth 1 https://github.com/rui314/mold.git
+          cd mold
+          cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER="/opt/gcc-indiff/bin/gcc" -DCMAKE_CXX_COMPILER="/opt/gcc-indiff/bin/g++" \
+          -DCMAKE_INSTALL_PREFIX="$PREFIX_DIR" \
+          -B build
+          cmake --build build -j$(nproc)
+          cmake --install build || ( cd build && make install ) || true
+
+          
+          
 
           # make all -j"$JOBS"
           # make install -j"$JOBS"
