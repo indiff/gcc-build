@@ -15,6 +15,15 @@ ln -sf /opt/gcc-indiff/bin/ld.lld /usr/bin/ld.lld
 env CC="/opt/gcc-indiff/bin/gcc" CXX="/opt/gcc-indiff/bin/g++" LDFLAGS="-fuse-ld=lld" ./vcpkg install apr
 ```
 
+## Use mold
+```bash
+unzip gcc-indiff.zip -d /opt/gcc-indiff
+export LD_LIBRARY_PATH="/opt/gcc-indiff/lib64:/opt/gcc-indiff/lib:$LD_LIBRARY_PATH"
+ln -sf /opt/gcc-indiff/bin/ld.mold /usr/bin/ld.mold
+/opt/gcc-indiff/bin/gcc -fuse-ld=mold -Wl,--version -xc - <<< 'int main(){return 0;}'
+env CC="/opt/gcc-indiff/bin/gcc" CXX="/opt/gcc-indiff/bin/g++" LDFLAGS="-fuse-ld=mold" ./vcpkg install apr
+```
+
 ## Before we start
 
 **Below are the packages you'll need**
