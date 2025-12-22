@@ -666,55 +666,6 @@ jobs:
           }
           
           mkdir -p /opt/thetools
-          cd /opt/thetools
-          wget_gnu autoconf/autoconf-2.71.tar.gz
-          tar -xzf autoconf-2.71.tar.gz
-          cd autoconf-2.71
-          env CC=/opt/mygcc/bin/gcc CXX=/opt/mygcc/bin/g++ CFLAGS="$OPT_FLAGS" CXXFLAGS="$OPT_FLAGS " \
-          ./configure --prefix=$PREFIX_DIR
-          make -j$(nproc)
-          make install
-
-          # insatll automake
-          cd /opt/thetools
-          wget_gnu automake/automake-1.18.1.tar.gz
-          tar -xzf automake-1.18.1.tar.gz
-          cd automake-1.18.1
-          ./bootstrap
-          env CC=/opt/mygcc/bin/gcc CXX=/opt/mygcc/bin/g++ LDFLAGS="-fuse-ld=lld -Wl,--strip-all -Wl,--gc-sections" CFLAGS="-O2 -march=native" CXXFLAGS="-O2 -march=native" \
-          ./configure --prefix=$PREFIX_DIR
-          make -j$(nproc)
-          make install
-
-          # insatll libtool
-          cd /opt/thetools
-          wget_gnu libtool/libtool-2.5.4.tar.gz
-          tar -xzf libtool-2.5.4.tar.gz
-          cd libtool-2.5.4
-          ./bootstrap --force
-          env CC=/opt/mygcc/bin/gcc CXX=/opt/mygcc/bin/g++ LDFLAGS="-Wl,--strip-all -Wl,--gc-sections -Wl,-rpath=\$ORIGIN:\$ORIGIN/../lib64:\$ORIGIN/../lib" \
-          ./configure --prefix=$PREFIX_DIR
-          make -j$(nproc)
-          make install
-
-          cd /opt/thetools
-          wget https://pkgconfig.freedesktop.org/releases/pkg-config-0.29.2.tar.gz
-          tar -xzf pkg-config-0.29.2.tar.gz
-          cd pkg-config-0.29.2
-          env CC=/opt/mygcc/bin/gcc CXX=/opt/mygcc/bin/g++ LDFLAGS="-Wl,--strip-all -Wl,--gc-sections -Wl,-rpath=\$ORIGIN:\$ORIGIN/../lib64:\$ORIGIN/../lib"  \
-          ./configure --prefix=$PREFIX_DIR --with-internal-glib
-          make CFLAGS="-Ubool -std=gnu11 -O2" -j$(nproc)
-          make install
-          $PREFIX_DIR/bin/pkg-config --version
-          
-          cd /opt/thetools
-          wget_gnu m4/m4-1.4.20.tar.gz
-          tar -xzf m4-1.4.20.tar.gz
-          cd m4-1.4.20
-          env CC=/opt/mygcc/bin/gcc CXX=/opt/mygcc/bin/g++ CFLAGS="-I/opt/mygcc/include " LDFLAGS="-Wl,-rpath=\$ORIGIN:\$ORIGIN/../lib64:\$ORIGIN/../lib"  \
-          ./configure --prefix=$PREFIX_DIR
-          make -j$(nproc)
-          make install
 
           cd /opt/thetools
           # git clone --branch stable https://github.com/rui314/mold.git
@@ -726,10 +677,58 @@ jobs:
           cmake --build build -j$(nproc)
           cmake --install build || ( cd build && make install ) || true
           
+          # cd /opt/thetools
+          # wget_gnu autoconf/autoconf-2.71.tar.gz
+          # tar -xzf autoconf-2.71.tar.gz
+          # cd autoconf-2.71
+          # env CC=/opt/mygcc/bin/gcc CXX=/opt/mygcc/bin/g++ CFLAGS="$OPT_FLAGS" CXXFLAGS="$OPT_FLAGS " \
+          # ./configure --prefix=$PREFIX_DIR
+          # make -j$(nproc)
+          # make install
+
+          # # insatll automake
+          # cd /opt/thetools
+          # wget_gnu automake/automake-1.18.1.tar.gz
+          # tar -xzf automake-1.18.1.tar.gz
+          # cd automake-1.18.1
+          # ./bootstrap
+          # env CC=/opt/mygcc/bin/gcc CXX=/opt/mygcc/bin/g++ LDFLAGS="-fuse-ld=lld -Wl,--strip-all -Wl,--gc-sections" CFLAGS="-O2 -march=native" CXXFLAGS="-O2 -march=native" \
+          # ./configure --prefix=$PREFIX_DIR
+          # make -j$(nproc)
+          # make install
+
+          # # insatll libtool
+          # cd /opt/thetools
+          # wget_gnu libtool/libtool-2.5.4.tar.gz
+          # tar -xzf libtool-2.5.4.tar.gz
+          # cd libtool-2.5.4
+          # ./bootstrap --force
+          # env CC=/opt/mygcc/bin/gcc CXX=/opt/mygcc/bin/g++ LDFLAGS="-Wl,--strip-all -Wl,--gc-sections -Wl,-rpath=\$ORIGIN:\$ORIGIN/../lib64:\$ORIGIN/../lib" \
+          # ./configure --prefix=$PREFIX_DIR
+          # make -j$(nproc)
+          # make install
+
+          # cd /opt/thetools
+          # wget https://pkgconfig.freedesktop.org/releases/pkg-config-0.29.2.tar.gz
+          # tar -xzf pkg-config-0.29.2.tar.gz
+          # cd pkg-config-0.29.2
+          # env CC=/opt/mygcc/bin/gcc CXX=/opt/mygcc/bin/g++ LDFLAGS="-Wl,--strip-all -Wl,--gc-sections -Wl,-rpath=\$ORIGIN:\$ORIGIN/../lib64:\$ORIGIN/../lib"  \
+          # ./configure --prefix=$PREFIX_DIR --with-internal-glib
+          # make CFLAGS="-Ubool -std=gnu11 -O2" -j$(nproc)
+          # make install
+          # $PREFIX_DIR/bin/pkg-config --version
+          
+          # cd /opt/thetools
+          # wget_gnu m4/m4-1.4.20.tar.gz
+          # tar -xzf m4-1.4.20.tar.gz
+          # cd m4-1.4.20
+          # env CC=/opt/mygcc/bin/gcc CXX=/opt/mygcc/bin/g++ CFLAGS="-I/opt/mygcc/include " LDFLAGS="-Wl,-rpath=\$ORIGIN:\$ORIGIN/../lib64:\$ORIGIN/../lib"  \
+          # ./configure --prefix=$PREFIX_DIR
+          # make -j$(nproc)
+          # make install
 
           # make all -j"$JOBS"
           echo "Built GCC end!"
-          
           cd /opt/gcc-indiff
           zname=/workspace/gcc-indiff-centos7-${{ needs.before_build.outputs.GCC_BUILD_VERSION }}-x86_64-$(date +'%Y%m%d_%H%M')
           zip -r -q -9 $zname.zip .
