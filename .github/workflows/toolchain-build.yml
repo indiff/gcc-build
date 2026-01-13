@@ -229,9 +229,7 @@ jobs:
 
           FASTEST_MIRROR=""
           FASTEST_TIME=99999
-
           echo "Testing mirror response times..."
-
           for MIRROR in "${MIRRORS[@]}"; do
               echo -n "Testing $MIRROR ... "
               TIME=$(curl -o /dev/null -s -w "%{time_total}\n" "$MIRROR")
@@ -243,10 +241,8 @@ jobs:
               fi
           done
 
-          echo "-----------------------------------"
           echo "Fastest mirror: $FASTEST_MIRROR"
           echo "Response time: $FASTEST_TIME seconds"
-
           echo "[base]" > /etc/yum.repos.d/CentOS-Base.repo
           echo "name=CentOS-Base" >> /etc/yum.repos.d/CentOS-Base.repo
           echo "baseurl=${FASTEST_MIRROR}/os/\$basearch/" >> /etc/yum.repos.d/CentOS-Base.repo
@@ -297,7 +293,6 @@ jobs:
           
           free -h
 
-          # TODO: Add more dynamic option handling
           while getopts a: flag; do
             case "${flag}" in
               a) arch=${OPTARG} ;;
@@ -305,7 +300,6 @@ jobs:
             esac
           done
 
-          # TODO: Better target handling
           case "${arch}" in
             "arm") TARGET="arm-eabi" ;;
             "arm64") TARGET="aarch64-elf" ;;
@@ -323,7 +317,6 @@ jobs:
           # export OPT_FLAGS="-flto -flto-compression-level=10 -O3 -pipe -ffunction-sections -fdata-sections"
           export OPT_FLAGS="-flto-compression-level=10 -O2 -pipe -ffunction-sections -fdata-sections"
           export OPT_FLAGS=""
-          # rm -rf "$WORK_DIR"/{binutils,build-binutils,build-gcc,gcc}
           
           # update git
           yum -y remove git
@@ -359,9 +352,6 @@ jobs:
           BUILD_STAGE1_LIBRARY_PREFIX="$WORK_DIR/stage1-$PREFIX_BASE_NAME-library"
           BUILD_STAGE1_TOOLS_PREFIX="$WORK_DIR/stage1-$PREFIX_BASE_NAME-tools"
           BUILD_STAGE1_GCC_PREFIX="$WORK_DIR/stage1-$PREFIX_BASE_NAME-gcc"
-
-          # yum install -y cmake3
-          # sudo ln -sf /usr/bin/cmake3 /usr/bin/cmake
 
           curl -sLo cmake3.tar.gz https://github.com/Kitware/CMake/releases/download/v3.31.6/cmake-3.31.6-linux-x86_64.tar.gz
           tar -xzf cmake3.tar.gz
@@ -431,7 +421,6 @@ jobs:
             echo "${PKG_VAR_VAL[0]}"
           }
           
-          # install zstd
           function build_zstd() {
             INSTALL_PREFIX_PATH="$1"
             STAGE_CFLAGS=""
@@ -503,7 +492,6 @@ jobs:
             fi
           }
           
-          # bootstrap
           mkdir -p "$PREFIX_DIR/include"
           mkdir -p "$PREFIX_DIR/lib"
           mkdir -p "$PREFIX_DIR/lib64"
@@ -512,7 +500,6 @@ jobs:
 
           ls -lh "$PREFIX_DIR/lib"
 
-          # 控制是否使用内部 glibc 1=使用新编译的glibc 0=使用系统自带
           USE_INTERNAL_GLIBC=0
 
           if [[ "$USE_INTERNAL_GLIBC" == "1" ]]; then
@@ -553,7 +540,7 @@ jobs:
           # --disable-nls \
           # --enable-libssp # libssp(Stack Smashing Protection)库。该库通过检测和防止栈溢出攻击来提高程序的安全性
           # export LD_LIBRARY_PATH=/opt/mygcc/lib:/opt/mygcc/lib64:$LD_LIBRARY_PATH
-          env CC=/opt/mygcc/bin/gcc CXX=/opt/mygcc/bin/g++ LDFLAGS="-Wl,--strip-all -Wl,--gc-sections" \
+          env CC=/opt/mygcc/bin/gcc CXX=/opt/mygcc/bin/g++ LDFLAGS="-Wl,--strip-all -Wl,--gc-sections -Wl,-rpath=\$ORIGIN:\$ORIGIN/../lib64:\$ORIGIN/../lib" \
               CFLAGS="$OPT_FLAGS" CXXFLAGS="$OPT_FLAGS" \
               ../binutils/configure --target="$TARGET" --build="$TARGET" --host="$TARGET" \
               --program-prefix= \
@@ -588,7 +575,6 @@ jobs:
           make -j"$JOBS"
           make install -j"$JOBS"
           cd ../
-          echo "Built Binutils, proceeding to next step...."
 
           cd "${WORK_DIR}"
           echo "Building GCC"
@@ -608,7 +594,7 @@ jobs:
           # env LDFLAGS="-Wl,-rpath=$PREFIX/lib64:$PREFIX/lib" CFLAGS="$OPT_FLAGS -fPIC -I$PREFIX/include " CXXFLAGS="$OPT_FLAGS -fPIC -I$PREFIX/include " \
           export OPT_FLAGS=" -lrt -lpthread -ldl -lm -lzstd  "
           # python require this --disable-gcov 
-          env CC=/opt/mygcc/bin/gcc CXX=/opt/mygcc/bin/g++ LDFLAGS="-Wl,--strip-all -Wl,--gc-sections -Wl,-rpath=$PREFIX/lib64:$PREFIX/lib" \
+          env CC=/opt/mygcc/bin/gcc CXX=/opt/mygcc/bin/g++ LDFLAGS="-Wl,--strip-all -Wl,--gc-sections -Wl,-rpath=\$ORIGIN:\$ORIGIN/../lib64:\$ORIGIN/../lib" \
             CFLAGS="-O2 $OPT_FLAGS -fPIC $([[ "$USE_INTERNAL_GLIBC" == "1" ]] && echo "-I$GLIBC_RT/include")" \
             CXXFLAGS="-O2 $OPT_FLAGS -fPIC $([[ "$USE_INTERNAL_GLIBC" == "1" ]] && echo "-I$GLIBC_RT/include")" \
             ../gcc/configure --target="$TARGET" --build="$TARGET" --host="$TARGET" \
@@ -662,7 +648,6 @@ jobs:
             --with-ld=/opt/mygcc/bin/ld \
             --with-pkgversion="Indiff GCC" || cat config.log
 
-          #  dump Makefile
           cat Makefile || true
           
           make all-gcc -j"$JOBS"
@@ -675,76 +660,12 @@ jobs:
           make install-target-libstdc++-v3 -j"$JOBS"
           make install-gcc -j"$JOBS"
           
-          # sed -i 's/Link tests are not allowed after GCC_NO_EXECUTABLES/Link tests are not allowed after GCC_NO_EXECUTABLES  $LINENO/g' ../gcc/libstdc++-v3/configure
-          # grep -n 'Link tests are not allowed after GCC_NO_EXECUTABLES' ../gcc/libstdc++-v3/configure
           function wget_gnu(){
               local suffix=$1
               wget https://ftp.gnu.org/gnu/$suffix || wget https://mirrors.aliyun.com/gnu/$suffix
           }
           
           mkdir -p /opt/thetools
-          cd /opt/thetools
-          wget_gnu autoconf/autoconf-2.71.tar.gz
-          tar -xzf autoconf-2.71.tar.gz
-          cd autoconf-2.71
-          env CC=/opt/mygcc/bin/gcc CXX=/opt/mygcc/bin/g++ CFLAGS="$OPT_FLAGS" CXXFLAGS="$OPT_FLAGS" \
-          ./configure --prefix=$PREFIX_DIR
-          make -j$(nproc)
-          make install
-
-          # insatll autoconf
-          # git clone --depth=1 https://git.savannah.gnu.org/git/autoconf.git
-          # cd autoconf
-          # ./bootstrap     # 如果存在
-          # env CC=/opt/mygcc/bin/gcc CXX=/opt/mygcc/bin/g++ LDFLAGS="-fuse-ld=lld -Wl,--strip-all -Wl,--gc-sections" CFLAGS="-O2 -march=native" CXXFLAGS="-O2 -march=native"\
-          # ./configure --prefix=$PREFIX_DIR
-          # make -j$(nproc)
-          # make install
-          # cd ..
-
-          # insatll automake
-          # git clone --depth=1 https://https.git.savannah.gnu.org/git/automake.git
-          cd /opt/thetools
-          wget_gnu automake/automake-1.18.1.tar.gz
-          tar -xzf automake-1.18.1.tar.gz
-          cd automake-1.18.1
-          ./bootstrap
-          env CC=/opt/mygcc/bin/gcc CXX=/opt/mygcc/bin/g++ LDFLAGS="-fuse-ld=lld -Wl,--strip-all -Wl,--gc-sections" CFLAGS="-O2 -march=native" CXXFLAGS="-O2 -march=native" \
-          ./configure --prefix=$PREFIX_DIR
-          make -j$(nproc)
-          make install
-
-          # insatll libtool
-          # git clone --depth=1 https://https.git.savannah.gnu.org/git/libtool.git
-          cd /opt/thetools
-          wget_gnu libtool/libtool-2.5.4.tar.gz
-          tar -xzf libtool-2.5.4.tar.gz
-          cd libtool-2.5.4
-          ./bootstrap --force
-          env CC=/opt/mygcc/bin/gcc CXX=/opt/mygcc/bin/g++ LDFLAGS="-Wl,--strip-all -Wl,--gc-sections" \
-          ./configure --prefix=$PREFIX_DIR
-          make -j$(nproc)
-          make install
-          
-
-          cd /opt/thetools
-          wget https://pkgconfig.freedesktop.org/releases/pkg-config-0.29.2.tar.gz
-          tar -xzf pkg-config-0.29.2.tar.gz
-          cd pkg-config-0.29.2
-          env CC=/opt/mygcc/bin/gcc CXX=/opt/mygcc/bin/g++ LDFLAGS="-Wl,--strip-all -Wl,--gc-sections"  \
-          ./configure --prefix=$PREFIX_DIR --with-internal-glib
-          make CFLAGS="-Ubool -std=gnu11 -O2" -j$(nproc)
-          make install
-          $PREFIX_DIR/bin/pkg-config --version
-          
-          cd /opt/thetools
-          wget_gnu m4/m4-1.4.20.tar.gz
-          tar -xzf m4-1.4.20.tar.gz
-          cd m4-1.4.20
-          env CC=/opt/mygcc/bin/gcc CXX=/opt/mygcc/bin/g++ CFLAGS="-I/opt/mygcc/include " \
-          ./configure --prefix=$PREFIX_DIR
-          make -j$(nproc)
-          make install
 
           cd /opt/thetools
           # git clone --branch stable https://github.com/rui314/mold.git
@@ -755,14 +676,59 @@ jobs:
           -B build
           cmake --build build -j$(nproc)
           cmake --install build || ( cd build && make install ) || true
+          
+          # cd /opt/thetools
+          # wget_gnu autoconf/autoconf-2.71.tar.gz
+          # tar -xzf autoconf-2.71.tar.gz
+          # cd autoconf-2.71
+          # env CC=/opt/mygcc/bin/gcc CXX=/opt/mygcc/bin/g++ CFLAGS="$OPT_FLAGS" CXXFLAGS="$OPT_FLAGS " \
+          # ./configure --prefix=$PREFIX_DIR
+          # make -j$(nproc)
+          # make install
 
+          # # insatll automake
+          # cd /opt/thetools
+          # wget_gnu automake/automake-1.18.1.tar.gz
+          # tar -xzf automake-1.18.1.tar.gz
+          # cd automake-1.18.1
+          # ./bootstrap
+          # env CC=/opt/mygcc/bin/gcc CXX=/opt/mygcc/bin/g++ LDFLAGS="-fuse-ld=lld -Wl,--strip-all -Wl,--gc-sections" CFLAGS="-O2 -march=native" CXXFLAGS="-O2 -march=native" \
+          # ./configure --prefix=$PREFIX_DIR
+          # make -j$(nproc)
+          # make install
+
+          # # insatll libtool
+          # cd /opt/thetools
+          # wget_gnu libtool/libtool-2.5.4.tar.gz
+          # tar -xzf libtool-2.5.4.tar.gz
+          # cd libtool-2.5.4
+          # ./bootstrap --force
+          # env CC=/opt/mygcc/bin/gcc CXX=/opt/mygcc/bin/g++ LDFLAGS="-Wl,--strip-all -Wl,--gc-sections -Wl,-rpath=\$ORIGIN:\$ORIGIN/../lib64:\$ORIGIN/../lib" \
+          # ./configure --prefix=$PREFIX_DIR
+          # make -j$(nproc)
+          # make install
+
+          # cd /opt/thetools
+          # wget https://pkgconfig.freedesktop.org/releases/pkg-config-0.29.2.tar.gz
+          # tar -xzf pkg-config-0.29.2.tar.gz
+          # cd pkg-config-0.29.2
+          # env CC=/opt/mygcc/bin/gcc CXX=/opt/mygcc/bin/g++ LDFLAGS="-Wl,--strip-all -Wl,--gc-sections -Wl,-rpath=\$ORIGIN:\$ORIGIN/../lib64:\$ORIGIN/../lib"  \
+          # ./configure --prefix=$PREFIX_DIR --with-internal-glib
+          # make CFLAGS="-Ubool -std=gnu11 -O2" -j$(nproc)
+          # make install
+          # $PREFIX_DIR/bin/pkg-config --version
           
-          
+          # cd /opt/thetools
+          # wget_gnu m4/m4-1.4.20.tar.gz
+          # tar -xzf m4-1.4.20.tar.gz
+          # cd m4-1.4.20
+          # env CC=/opt/mygcc/bin/gcc CXX=/opt/mygcc/bin/g++ CFLAGS="-I/opt/mygcc/include " LDFLAGS="-Wl,-rpath=\$ORIGIN:\$ORIGIN/../lib64:\$ORIGIN/../lib"  \
+          # ./configure --prefix=$PREFIX_DIR
+          # make -j$(nproc)
+          # make install
 
           # make all -j"$JOBS"
-          # make install -j"$JOBS"
           echo "Built GCC end!"
-          
           cd /opt/gcc-indiff
           zname=/workspace/gcc-indiff-centos7-${{ needs.before_build.outputs.GCC_BUILD_VERSION }}-x86_64-$(date +'%Y%m%d_%H%M')
           zip -r -q -9 $zname.zip .
