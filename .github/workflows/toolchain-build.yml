@@ -791,7 +791,7 @@ jobs:
           tree ${{ needs.before_build.outputs.GCC_BUILD_PREFIX }}
 
       - name: Upload GCC package
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: gcc-centos7-${{ needs.before_build.outputs.GCC_BUILD_VERSION }}
           path: |
@@ -1181,7 +1181,7 @@ jobs:
           tree ${{ needs.before_build.outputs.GCC_BUILD_PREFIX }}
 
       - name: Upload GCC package
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: gcc-centos6-${{ needs.before_build.outputs.GCC_BUILD_VERSION }}
           path: |
@@ -1257,7 +1257,7 @@ jobs:
           mv lld-indiff-centos7-x86_64-*.zip lld-indiff-centos7-x86_64-$(date +'%Y%m%d_%H%M').xz
 
       - name: Upload LLD package
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: lld-centos7-x86_64
           path: |
