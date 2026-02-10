@@ -90,7 +90,7 @@ jobs:
     runs-on: ubuntu-24.04-arm
 
     steps:
-    - uses: actions/checkout@v6.0.1
+    - uses: actions/checkout@v6.0.2
     - name: Set build date
       id: get-date
       run: |
@@ -138,7 +138,7 @@ jobs:
     needs: before_build
 
     steps:
-    - uses: actions/checkout@v6.0.1
+    - uses: actions/checkout@v6.0.2
     - name: Set build date
       id: get-date
       run: |
@@ -204,7 +204,7 @@ jobs:
         run: df -h && sudo apt-get clean && docker system prune -a -f && sudo rm -rf /usr/local/lib/android /usr/share/dotnet /opt/ghc && df -h && free -h
 
       - name: Checkout v5
-        uses: actions/checkout@v6.0.1    
+        uses: actions/checkout@v6.0.2    
 
       - name: Create build script
         run: |
@@ -771,7 +771,7 @@ jobs:
 
     steps:
       - name: Checkout v4
-        uses: actions/checkout@v6.0.1
+        uses: actions/checkout@v6.0.2
 
       - name: Create build script
         run: |
@@ -1167,7 +1167,7 @@ jobs:
         run: df -h && sudo apt-get clean && docker system prune -a -f && sudo rm -rf /usr/local/lib/android /usr/share/dotnet /opt/ghc && df -h && free -h
 
       - name: Checkout repository
-        uses: actions/checkout@v6.0.1
+        uses: actions/checkout@v6.0.2
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -1235,7 +1235,7 @@ jobs:
       runs-on: ubuntu-latest
 
       steps:
-        - uses: actions/checkout@v6.0.1
+        - uses: actions/checkout@v6.0.2
         - name: Restoring artifacts
           uses: actions/download-artifact@main
           with:
