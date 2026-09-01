@@ -726,20 +726,18 @@ jobs:
           # ./configure --prefix=$PREFIX_DIR
           # make -j$(nproc)
           # make install
-
           # make all -j"$JOBS"
           echo "Built GCC end!"
+          cd /opt/gcc-indiff/lib
+          ZSTD_FILE=$(find /opt/gcc-indiff/lib -name "libzstd.so.1*" -type f)
+          ln -sf "$ZSTD_FILE" /opt/gcc-indiff/lib/libzstd.so.1
+          ln -sf "$ZSTD_FILE" /opt/gcc-indiff/lib/libzstd.so
+          ldconfig /opt/gcc-indiff/lib
+          
           cd /opt/gcc-indiff
           zname=/workspace/gcc-indiff-centos7-${{ needs.before_build.outputs.GCC_BUILD_VERSION }}-x86_64-$(date +'%Y%m%d_%H%M')
           zip -r -q -9 $zname.zip .
           mv $zname.zip $zname.xz
-          
-          # free memory
-          free -h
-          sync
-          echo 3 > /proc/sys/vm/drop_caches
-          free -h && df -h
-          # follow can not work,exit success
           exit 0
           EOF
           chmod +x build.sh
