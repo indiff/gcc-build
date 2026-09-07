@@ -1,0 +1,107 @@
+name: GCC Matrix Build
+
+on:
+#   push:
+#     branches: [main]
+#     paths:
+#       - 'build-gcc.sh'
+#       - 'Dockerfile.gcc'
+#       - '.github/workflows/build-gcc.yml'
+  schedule:
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+    inputs:
+      gcc_ref:
+        description: 'GCC git ref (branch, tag, or commit)'
+        required: false
+        default: 'master'
+        type: string
+      jobs:
+        description: 'Parallel make jobs per container (blank = nproc)'
+        required: false
+        default: ''
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: gcc-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  GCC_REF: ${{ inputs.gcc_ref || 'master' }}
+  BUILD_JOBS: ${{ inputs.jobs || '' }}
+
+jobs:
+  build:
+    name: ${{ matrix.os }} / ${{ matrix.arch }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 720
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { os: ubuntu,  image: ubuntu:24.04,     arch: x86,  docker_arch: amd64 }
+          - { os: ubuntu,  image: ubuntu:24.04,     arch: arm,  docker_arch: arm64 }
+          - { os: centos7, image: centos:7,         arch: x86,  docker_arch: amd64 }
+          - { os: centos7, image: centos:7,         arch: arm,  docker_arch: arm64 }
+          - { os: centos8, image: quay.io/centos/centos:stream8, arch: x86, docker_arch: amd64 }
+          - { os: centos8, image: quay.io/centos/centos:stream8, arch: arm, docker_arch: arm64 }
+          - { os: centos9, image: quay.io/centos/centos:stream9, arch: x86, docker_arch: amd64 }
+          - { os: centos9, image: quay.io/centos/centos:stream9, arch: arm, docker_arch: arm64 }
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+        with:
+          platforms: arm64
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build GCC builder image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile.gcc
+          platforms: linux/${{ matrix.docker_arch }}
+          build-args: BASE_IMAGE=${{ matrix.image }}
+          tags: gcc-builder:${{ matrix.os }}-${{ matrix.arch }}
+          load: true
+          cache-from: type=gha,scope=gcc-${{ matrix.os }}-${{ matrix.arch }}
+          cache-to: type=gha,mode=max,scope=gcc-${{ matrix.os }}-${{ matrix.arch }}
+
+      - name: Build GCC
+        env:
+          GCC_REF: ${{ env.GCC_REF }}
+          BUILD_JOBS: ${{ env.BUILD_JOBS }}
+        run: |
+          mkdir -p artifacts
+          args=(
+            --arch "${{ matrix.arch }}"
+            --os "${{ matrix.os }}"
+            --ref "$GCC_REF"
+            --output-dir /artifacts
+          )
+          if [[ -n "$BUILD_JOBS" ]]; then
+            args+=(--jobs "$BUILD_JOBS")
+          fi
+          docker run --rm \
+            --platform "linux/${{ matrix.docker_arch }}" \
+            -e GCC_REF \
+            -e BUILD_JOBS \
+            -v "$PWD/artifacts:/artifacts" \
+            gcc-builder:${{ matrix.os }}-${{ matrix.arch }} \
+            "${args[@]}"
+
+      - name: Upload GCC artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: gcc-${{ matrix.os }}-${{ matrix.arch }}
+          path: artifacts/*.tar.xz
+          if-no-files-found: error
+          retention-days: 14

@@ -1,146 +1,177 @@
 #!/usr/bin/env bash
 # SPDX-License-Identifier: GPL-3.0
-# Author: Vaisakh Murali
-set -e
+set -Eeuo pipefail
 
-echo "*****************************************"
-echo "* Building Bare-Metal Bleeding Edge GCC *"
-echo "*****************************************"
+usage() {
+  cat <<'EOF'
+Usage: build-gcc.sh --arch x86|arm [options]
 
-# Declare the number of jobs to run simultaneously
-JOBS=$(nproc --all)
+Options:
+  --arch NAME       Native container architecture: x86 (x86_64) or arm (aarch64)
+  --os NAME         Output OS label: ubuntu, centos7, centos8, or centos9
+  --ref REF         GCC git branch, tag, or commit (default: master)
+  --jobs N          Parallel make jobs (default: nproc)
+  --prefix DIR      Installation prefix inside the artifact (default: /opt/gcc)
+  --output-dir DIR  Directory receiving the tar.xz artifact (default: /artifacts)
+  --keep-source     Keep downloaded source trees after the build
+  -h, --help        Show this help
+EOF
+}
 
-# TODO: Add more dynamic option handling
-while getopts a: flag; do
-  case "${flag}" in
-    a) arch=${OPTARG} ;;
-    *) echo "Invalid argument passed" && exit 1 ;;
+ARCH=""
+OS_LABEL="linux"
+GCC_REF="${GCC_REF:-master}"
+JOBS="${BUILD_JOBS:-$(nproc)}"
+PREFIX="/opt/gcc"
+OUTPUT_DIR="/artifacts"
+KEEP_SOURCE=0
+
+while (($#)); do
+  case "$1" in
+    --arch) ARCH="${2:?missing value for --arch}"; shift 2 ;;
+    --os) OS_LABEL="${2:?missing value for --os}"; shift 2 ;;
+    --ref) GCC_REF="${2:?missing value for --ref}"; shift 2 ;;
+    --jobs) JOBS="${2:?missing value for --jobs}"; shift 2 ;;
+    --prefix) PREFIX="${2:?missing value for --prefix}"; shift 2 ;;
+    --output-dir) OUTPUT_DIR="${2:?missing value for --output-dir}"; shift 2 ;;
+    --keep-source) KEEP_SOURCE=1; shift ;;
+    -h|--help) usage; exit 0 ;;
+    *) echo "Unknown option: $1" >&2; usage >&2; exit 2 ;;
   esac
 done
 
-# TODO: Better target handling
-case "${arch}" in
-  "arm") TARGET="arm-eabi" ;;
-  "arm64") TARGET="aarch64-elf" ;;
-  "arm64gnu") TARGET="aarch64-linux-gnu" ;;
-  # "x86") TARGET="x86_64-elf" ;;
-  "x86") TARGET="x86_64-linux-gnu" ;;
+case "$ARCH" in
+  x86) ARCH_PATTERN='(x86_64|amd64)' ;;
+  arm) ARCH_PATTERN='(aarch64|arm64)' ;;
+  *) echo '--arch must be x86 or arm' >&2; exit 2 ;;
 esac
 
-export WORK_DIR="$PWD"
-export PREFIX="$WORK_DIR/gcc-${arch}"
-export PATH="$PREFIX/bin:/usr/bin/core_perl:$PATH"
-export OPT_FLAGS="-flto -flto-compression-level=10 -O3 -pipe -ffunction-sections -fdata-sections"
+case "$OS_LABEL" in
+  ubuntu|centos7|centos8|centos9|linux) ;;
+  *) echo '--os must be ubuntu, centos7, centos8, or centos9' >&2; exit 2 ;;
+esac
 
-echo "Cleaning up previously cloned repos..."
-rm -rf "$WORK_DIR"/{binutils,build-binutils,build-gcc,gcc}
+if ! [[ "$JOBS" =~ ^[1-9][0-9]*$ ]]; then
+  echo '--jobs must be a positive integer' >&2
+  exit 2
+fi
 
-echo "||                                                                    ||"
-echo "|| Building Bare Metal Toolchain for ${arch} with ${TARGET} as target ||"
-echo "||                                                                    ||"
+if [[ "$PREFIX" != /* ]]; then
+  echo '--prefix must be an absolute path' >&2
+  exit 2
+fi
 
-download_resources() {
-  echo "Downloading Pre-requisites"
-  echo "Cloning binutils"
-  git clone git://sourceware.org/git/binutils-gdb.git -b master binutils --depth=1
-  sed -i '/^development=/s/true/false/' binutils/bfd/development.sh
-  echo "Cloned binutils!"
-  echo "Cloning GCC"
-  git clone git://gcc.gnu.org/git/gcc.git -b master gcc --depth=1
-  cd "${WORK_DIR}"
-  echo "Downloaded prerequisites!"
+WORK_DIR="${WORK_DIR:-/workspace}"
+SOURCE_DIR="$WORK_DIR/src"
+BINUTILS_DIR="$SOURCE_DIR/binutils"
+GCC_DIR="$SOURCE_DIR/gcc"
+BUILD_BINUTILS="$WORK_DIR/build-binutils"
+BUILD_GCC="$WORK_DIR/build-gcc"
+BUILD_TRIPLET="$(gcc -dumpmachine)"
+if [[ ! "$BUILD_TRIPLET" =~ ^${ARCH_PATTERN} ]]; then
+  echo "Container architecture does not match --arch=$ARCH: gcc reports $BUILD_TRIPLET" >&2
+  exit 1
+fi
+TARGET="$BUILD_TRIPLET"
+DATE_TAG="$(date -u +%Y%m%d_%H%M%S)"
+ARTIFACT_NAME="gcc-${OS_LABEL}-${ARCH}-${DATE_TAG}"
+
+log() { printf '[gcc-build] %s\n' "$*"; }
+
+clone_shallow() {
+  local destination="$1"
+  local ref="$2"
+  shift 2
+  local url
+  rm -rf "$destination"
+  for url in "$@"; do
+    if git clone --depth=1 --branch "$ref" "$url" "$destination"; then
+      return 0
+    fi
+    rm -rf "$destination"
+  done
+  echo "Unable to clone $destination at ref $ref" >&2
+  exit 1
 }
 
-build_binutils() {
-	  cd "${WORK_DIR}"
-	  echo "Building Binutils"
-	  mkdir build-binutils
-	  cd build-binutils
-	  env CFLAGS="$OPT_FLAGS" CXXFLAGS="$OPT_FLAGS" \
-		../binutils/configure --target="$TARGET" --build="$TARGET" --host="$TARGET"  \
-		--program-prefix= \
-		--disable-docs \
-		--disable-gdb \
-		--disable-nls \
-		--disable-werror \
-		--enable-ld \
-		--enable-gold \
-		--enable-deterministic-archives=no \
-		--enable-lto \
-		--enable-compressed-debug-sections=none \
-		--enable-generate-build-notes=no \
-		--enable-threads=yes \
-		--enable-relro=yes \
-		--enable-plugins \
-		--prefix="$PREFIX" \
-		--with-bugurl=https://github.com/indiff/gcc-build \
-		--with-sysroot=/  \
-		--with-pkgversion="Indiff binutils"
-	  
-	  make -j"$JOBS"
-	  make install -j"$JOBS"
-	  cd ../
-	  echo "Built Binutils, proceeding to next step...."
-}
+rm -rf "$SOURCE_DIR" "$BUILD_BINUTILS" "$BUILD_GCC" "$PREFIX"
+mkdir -p "$SOURCE_DIR" "$OUTPUT_DIR"
 
-build_gcc() {
-  cd "${WORK_DIR}"
-  echo "Building GCC"
-  cd gcc
-  ./contrib/download_prerequisites
-  echo "Indiff Build" > gcc/DEV-PHASE
-  cd ../
-  mkdir build-gcc
-  cd build-gcc
-  rm -rf ../gcc/testsuite
-  # --target="$TARGET" --build="$TARGET" --host="$TARGET" 
-  env CFLAGS="$OPT_FLAGS" CXXFLAGS="$OPT_FLAGS" \
-    ../gcc/configure --target="$TARGET" --build="$TARGET" --host="$TARGET"  \
-    --with-bugurl=https://github.com/indiff/gcc-build \
-	--program-prefix="" \
-	--program-suffix="" \
-    --disable-decimal-float \
-    --disable-docs \
-    --disable-gcov \
-    --disable-libffi \
-    --disable-libgomp \
-    --disable-libmudflap \
-    --disable-libquadmath \
-    --disable-libstdcxx-pch \
+log "Building GCC ref=$GCC_REF os=$OS_LABEL arch=$ARCH target=$TARGET jobs=$JOBS"
+clone_shallow "$BINUTILS_DIR" master \
+  "https://sourceware.org/git/binutils-gdb.git" \
+  "https://github.com/bminor/binutils-gdb.git"
+clone_shallow "$GCC_DIR" "$GCC_REF" \
+  "https://github.com/gcc-mirror/gcc.git" \
+  "https://gcc.gnu.org/git/gcc.git"
+
+sed -i '/^development=/s/true/false/' "$BINUTILS_DIR/bfd/development.sh" || true
+
+log 'Downloading GCC prerequisites'
+(cd "$GCC_DIR" && ./contrib/download_prerequisites)
+
+log 'Configuring and building binutils'
+mkdir -p "$BUILD_BINUTILS"
+(
+  cd "$BUILD_BINUTILS"
+  "$BINUTILS_DIR/configure" \
+    --target="$TARGET" \
+    --build="$BUILD_TRIPLET" \
+    --host="$BUILD_TRIPLET" \
+    --prefix="$PREFIX" \
+    --disable-gdb \
     --disable-nls \
-    --disable-shared \
-    --disable-libunwind-exceptions \
-    --enable-__cxa_atexit \
-    --enable-bootstrap \
-    --enable-multilib \
-    --enable-gnu-unique-object \
-    --enable-plugin  \
-    --enable-gnu-indirect-function \
-    --enable-initfini-array \
-    --enable-default-ssp \
-    --enable-languages=c,c++,fortran,lto \
-    --enable-threads=posix \
-    --enable-libstdcxx-backtrace \
-    --enable-offload-targets=nvptx-none \
-    --without-cuda-driver --enable-offload-defaulted \
-    --with-tune=generic \
-    --with-gcc-major-version-only \
-    --with-arch_32=x86-64 \
+    --disable-werror \
+    --enable-plugins \
+    --enable-ld \
+    --enable-gold \
+    --with-pkgversion="indiff GCC build"
+  make -j"$JOBS"
+  make install
+)
+
+log 'Configuring and building GCC'
+mkdir -p "$BUILD_GCC"
+(
+  cd "$BUILD_GCC"
+  "$GCC_DIR/configure" \
+    --target="$TARGET" \
+    --build="$BUILD_TRIPLET" \
+    --host="$BUILD_TRIPLET" \
     --prefix="$PREFIX" \
     --with-gnu-as \
     --with-gnu-ld \
-    --with-linker-hash-style=gnu \
-    --with-pkgversion="Indiff GCC"
+    --with-as="$PREFIX/bin/$TARGET-as" \
+    --with-ld="$PREFIX/bin/$TARGET-ld" \
+    --disable-multilib \
+    --disable-nls \
+    --disable-werror \
+    --enable-languages=c,c++ \
+    --enable-threads=posix \
+    --enable-__cxa_atexit \
+    --enable-default-ssp \
+    --enable-plugin \
+    --with-pkgversion="indiff GCC build"
+  make -j"$JOBS" all-gcc all-target-libgcc all-target-libstdc++-v3
+  make install-gcc install-target-libgcc install-target-libstdc++-v3
+)
 
-  make all-gcc -j"$JOBS"
-  make all-target-libgcc -j"$JOBS"
-  make all-target-libstdc++-v3 -j"$JOBS"
-  make install-gcc -j"$JOBS"
-  make install-target-libgcc -j"$JOBS"
-  make install-target-libstdc++-v3 -j"$JOBS"
-  echo "Built GCC!"
-}
+log 'Writing build metadata and archive'
+mkdir -p "$PREFIX/share/gcc-build"
+cat > "$PREFIX/share/gcc-build/build-info.txt" <<EOF
+gcc_ref=$GCC_REF
+os=$OS_LABEL
+arch=$ARCH
+target=$TARGET
+build_triplet=$BUILD_TRIPLET
+build_date_utc=$(date -u +%FT%TZ)
+EOF
 
-download_resources
-build_binutils
-build_gcc
+mkdir -p "$OUTPUT_DIR"
+tar -C "$(dirname "$PREFIX")" -cJf "$OUTPUT_DIR/$ARTIFACT_NAME.tar.xz" "$(basename "$PREFIX")"
+sha256sum "$OUTPUT_DIR/$ARTIFACT_NAME.tar.xz" > "$OUTPUT_DIR/$ARTIFACT_NAME.tar.xz.sha256"
+log "Artifact: $OUTPUT_DIR/$ARTIFACT_NAME.tar.xz"
+
+if ((KEEP_SOURCE == 0)); then
+  rm -rf "$SOURCE_DIR" "$BUILD_BINUTILS" "$BUILD_GCC"
+fi
