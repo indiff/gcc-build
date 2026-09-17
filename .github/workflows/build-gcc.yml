@@ -7,8 +7,8 @@ on:
 #       - 'build-gcc.sh'
 #       - 'Dockerfile.gcc'
 #       - '.github/workflows/build-gcc.yml'
-  schedule:
-    - cron: '0 2 * * *'
+  # schedule:
+  #   - cron: '0 2 * * *'
   workflow_dispatch:
     inputs:
       gcc_ref:
