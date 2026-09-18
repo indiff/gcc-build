@@ -100,6 +100,7 @@ mkdir -p "$SOURCE_DIR" "$OUTPUT_DIR"
 log "Building GCC ref=$GCC_REF os=$OS_LABEL arch=$ARCH target=$TARGET jobs=$JOBS"
 clone_shallow "$BINUTILS_DIR" master \
   "https://sourceware.org/git/binutils-gdb.git" \
+  "https://gitlab.com/open-mirrors/binutils-gdb.git" \
   "https://github.com/bminor/binutils-gdb.git"
 clone_shallow "$GCC_DIR" "$GCC_REF" \
   "https://github.com/gcc-mirror/gcc.git" \
@@ -134,6 +135,15 @@ log 'Configuring and building GCC'
 mkdir -p "$BUILD_GCC"
 (
   cd "$BUILD_GCC"
+  # binutils 是 native 构建（build=host=target）时安装的工具不带 target 前缀，
+  # 例如 $PREFIX/bin/as 和 $PREFIX/bin/ld；cross 构建才会生成 $TARGET-as/$TARGET-ld。
+  if [[ -x "$PREFIX/bin/$TARGET-as" ]]; then
+    WITH_AS="$PREFIX/bin/$TARGET-as"
+    WITH_LD="$PREFIX/bin/$TARGET-ld"
+  else
+    WITH_AS="$PREFIX/bin/as"
+    WITH_LD="$PREFIX/bin/ld"
+  fi
   "$GCC_DIR/configure" \
     --target="$TARGET" \
     --build="$BUILD_TRIPLET" \
@@ -141,8 +151,8 @@ mkdir -p "$BUILD_GCC"
     --prefix="$PREFIX" \
     --with-gnu-as \
     --with-gnu-ld \
-    --with-as="$PREFIX/bin/$TARGET-as" \
-    --with-ld="$PREFIX/bin/$TARGET-ld" \
+    --with-as="$WITH_AS" \
+    --with-ld="$WITH_LD" \
     --disable-multilib \
     --disable-nls \
     --disable-werror \
@@ -152,8 +162,20 @@ mkdir -p "$BUILD_GCC"
     --enable-default-ssp \
     --enable-plugin \
     --with-pkgversion="indiff GCC build"
-  make -j"$JOBS" all-gcc all-target-libgcc all-target-libstdc++-v3
-  make install-gcc install-target-libgcc install-target-libstdc++-v3
+  # 注意：当前 GCC master 顶层 Makefile 中 configure-target-libgcc / configure-target-libstdc++-v3
+  # 都不依赖 all-gcc，configure-target-libstdc++-v3 也不依赖 all-target-libgcc。
+  # 若像旧写法一样在一条 make 命令中并行请求多个目标，会发生抢跑：
+  #   - libgcc 在 xgcc 生成前 configure（xgcc: No such file）
+  #   - libstdc++-v3 在 libgcc.a 生成前做链接测试（Link tests are not allowed after GCC_NO_EXECUTABLES）
+  # 因此必须逐个目标串行执行。
+  # 另外，GCC master 的 LINK_LIBATOMIC_SPEC 默认用 "-latomic_asneeded"，该 ldscript 由
+  # all-target-libatomic 生成到 $BUILD_GCC/gcc/ 目录；不先构建 libatomic 的话，
+  # libstdc++-v3 configure 的链接测试会报 "ld: cannot find -latomic_asneeded"。
+  make -j"$JOBS" all-gcc
+  make -j"$JOBS" all-target-libgcc
+  make -j"$JOBS" all-target-libatomic
+  make -j"$JOBS" all-target-libstdc++-v3
+  make install-gcc install-target-libgcc install-target-libatomic install-target-libstdc++-v3
 )
 
 log 'Writing build metadata and archive'
