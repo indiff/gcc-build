@@ -8,7 +8,7 @@ Usage: build-gcc.sh --arch x86|arm [options]
 
 Options:
   --arch NAME       Native container architecture: x86 (x86_64) or arm (aarch64)
-  --os NAME         Output OS label: ubuntu, centos7, centos8, or centos9
+  --os NAME         Output OS label (example: ubuntu, oraclelinux7, oraclelinux8, oraclelinux9)
   --ref REF         GCC git branch, tag, or commit (default: master)
   --jobs N          Parallel make jobs (default: nproc)
   --prefix DIR      Installation prefix inside the artifact (default: /opt/gcc)
@@ -46,10 +46,11 @@ case "$ARCH" in
   *) echo '--arch must be x86 or arm' >&2; exit 2 ;;
 esac
 
-case "$OS_LABEL" in
-  ubuntu|centos7|centos8|centos9|linux) ;;
-  *) echo '--os must be ubuntu, centos7, centos8, or centos9' >&2; exit 2 ;;
-esac
+# ========== 移除原来硬编码OS白名单校验，不再限制centos，支持oraclelinux7/8/9等任意标签 ==========
+# case "$OS_LABEL" in
+#   ubuntu|centos7|centos8|centos9|linux) ;;
+#   *) echo '--os must be ubuntu, centos7, centos8, or centos9' >&2; exit 2 ;;
+# esac
 
 if ! [[ "$JOBS" =~ ^[1-9][0-9]*$ ]]; then
   echo '--jobs must be a positive integer' >&2
