@@ -42,15 +42,15 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { os: ubuntu,  image: ubuntu:24.04,     arch: x86,  docker_arch: amd64 }
-          - { os: ubuntu,  image: ubuntu:24.04,     arch: arm,  docker_arch: arm64 }
-          - { os: centos7, image: centos:7,         arch: x86,  docker_arch: amd64 }
-          - { os: centos7, image: centos:7,         arch: arm,  docker_arch: arm64 }
-          - { os: centos8, image: quay.io/centos/centos:stream8, arch: x86, docker_arch: amd64 }
-          - { os: centos8, image: quay.io/centos/centos:stream8, arch: arm, docker_arch: arm64 }
-          - { os: centos9, image: quay.io/centos/centos:stream9, arch: x86, docker_arch: amd64 }
-          - { os: centos9, image: quay.io/centos/centos:stream9, arch: arm, docker_arch: arm64 }
-
+          include:
+            - { os: ubuntu,       image: ubuntu:24.04, arch: x86, docker_arch: amd64 }
+            - { os: ubuntu,       image: ubuntu:24.04, arch: arm, docker_arch: arm64 }
+            - { os: oraclelinux7, image: oraclelinux:7, arch: x86, docker_arch: amd64 }
+            - { os: oraclelinux7, image: oraclelinux:7, arch: arm, docker_arch: arm64 }
+            - { os: oraclelinux8, image: oraclelinux:8, arch: x86, docker_arch: amd64 }
+            - { os: oraclelinux8, image: oraclelinux:8, arch: arm, docker_arch: arm64 }
+            - { os: oraclelinux9, image: oraclelinux:9, arch: x86, docker_arch: amd64 }
+            - { os: oraclelinux9, image: oraclelinux:9, arch: arm, docker_arch: arm64 }
     steps:
       - name: Check out source
         uses: actions/checkout@v7
