@@ -13,14 +13,12 @@ ENV DEBIAN_FRONTEND=noninteractive \
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # Keep the image small and install the same toolchain prerequisites on every base OS.
-# CentOS-specific notes:
-#  - CentOS 7 / CentOS Stream 8 are EOL: their official mirrors are gone, so the
-#    repos must be switched to vault.centos.org (and EPEL 7 to the Fedora archive).
-#  - isl-devel / libmpc-devel live in the PowerTools (Stream 8) / CRB (Stream 9)
-#    repos, which are disabled by default; they must be enabled or `dnf install`
-#    fails with "Unable to find a match".
-#  - CentOS 7 ships GCC 4.8, too old to build current GCC master; devtoolset-11
-#    (GCC 11 via SCL) is installed and enabled at runtime by build-gcc.sh.
+# Oracle Linux notes:
+#  - Oracle Linux repos remain maintained, no vault mirror switch required.
+#  - isl-devel / libmpc-devel / mpfr-devel are in CodeReady Builder (CRB) repo.
+#    OL7: ol7_software_collections, OL8: ol8_codeready_builder, OL9: ol9_codeready_builder
+#  - Oracle Linux 7 ships GCC 4.8.5, too old to build current GCC master;
+#    install devtoolset-12/devtoolset-11 via SCL, enabled at runtime by build-gcc.sh.
 RUN set -eux; \
     if command -v apt-get >/dev/null 2>&1; then \
       apt-get update; \
@@ -33,14 +31,13 @@ RUN set -eux; \
       . /etc/os-release; \
       case "${VERSION_ID:-}" in \
         8*) \
-          sed -i 's|^mirrorlist=|#mirrorlist=|g; s|^#baseurl=http://mirror.centos.org|baseurl=https://vault.centos.org|g; s|^#baseurl=http://mirror.stream.centos.org|baseurl=https://vault.centos.org|g' /etc/yum.repos.d/*.repo || true; \
           dnf install -y dnf-plugins-core; \
-          dnf config-manager --set-enabled powertools || true; \
+          dnf config-manager --set-enabled ol8_codeready_builder || true; \
           dnf install -y gcc-toolset-12 || true; \
           ;; \
         9*) \
           dnf install -y dnf-plugins-core; \
-          dnf config-manager --set-enabled crb || true; \
+          dnf config-manager --set-enabled ol9_codeready_builder || true; \
           ;; \
       esac; \
       dnf install -y \
@@ -49,19 +46,11 @@ RUN set -eux; \
         perl pkgconf-pkg-config tar texinfo unzip wget xz zlib-devel; \
       dnf clean all; \
     elif command -v yum >/dev/null 2>&1; then \
-      if grep -qE 'release 7|release 8' /etc/centos-release 2>/dev/null; then \
-        sed -i 's|^mirrorlist=|#mirrorlist=|g; s|^#baseurl=http://mirror.centos.org|baseurl=https://vault.centos.org|g; s|^#baseurl=http://mirror.stream.centos.org|baseurl=https://vault.centos.org|g' /etc/yum.repos.d/CentOS-*.repo 2>/dev/null || true; \
-        sed -i 's|^mirrorlist=|#mirrorlist=|g; s|^#baseurl=http://mirror.centos.org|baseurl=https://vault.centos.org|g' /etc/yum.repos.d/CentOS-SCLo-scl*.repo 2>/dev/null || true; \
-      fi; \
-      yum install -y epel-release || true; \
-      if grep -qE 'release 7' /etc/centos-release 2>/dev/null; then \
-        sed -i 's|^metalink=|#metalink=|g; s|^#baseurl=http://download.fedoraproject.org/pub/epel|baseurl=https://archives.fedoraproject.org/pub/archive/epel|g; s|^#baseurl=https://download.fedoraproject.org/pub/epel|baseurl=https://archives.fedoraproject.org/pub/archive/epel|g' /etc/yum.repos.d/epel.repo || true; \
-        yum install -y centos-release-scl || true; \
-        # SCLo repo files are only created by centos-release-scl, so switch them
-        # to vault *after* installing it, otherwise devtoolset installs fail.
-        sed -i 's|^mirrorlist=|#mirrorlist=|g; s|^#baseurl=http://mirror.centos.org|baseurl=https://vault.centos.org|g' /etc/yum.repos.d/CentOS-SCLo-scl*.repo 2>/dev/null || true; \
-        # Install separately: devtoolset-12 has no aarch64 build on CentOS 7,
-        # and one missing package fails the whole yum transaction.
+      # Oracle Linux 7, no vault repo rewrite needed
+      yum install -y oracle-epel-release-el7 || true; \
+      if grep -q "Oracle Linux Server release 7" /etc/oracle-release 2>/dev/null; then \
+        yum install -y oracle-softwarecollection-release-el7 || true; \
+        # Install separately: devtoolset-12 aarch64 missing on OL7, avoid transaction fail
         yum install -y devtoolset-12 || true; \
         yum install -y devtoolset-11 || true; \
       fi; \
