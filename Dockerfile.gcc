@@ -12,13 +12,7 @@ ENV DEBIAN_FRONTEND=noninteractive \
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
-# Keep the image small and install the same toolchain prerequisites on every base OS.
-# Oracle Linux notes:
-#  - Oracle Linux repos remain maintained, no vault mirror switch required.
-#  - Do NOT install system isl/gmp/mpc/mpfr packages;
-#    gcc contrib/download_prerequisites will build these from source inside build script.
-#  - Oracle Linux 7 ships GCC 4.8.5, too old to build current GCC master;
-#    install devtoolset-12/devtoolset-11 via SCL, enabled at runtime by build-gcc.sh.
+# 编译gcc基础依赖，移除所有gmp/isl/mpc/mpfr系统包，由gcc源码脚本自动编译
 RUN set -eux; \
     if command -v apt-get >/dev/null 2>&1; then \
       apt-get update; \
