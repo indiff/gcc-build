@@ -33,17 +33,19 @@ RUN set -eux; \
         8*) \
           dnf install -y dnf-plugins-core; \
           dnf config-manager --set-enabled ol8_codeready_builder || true; \
+          dnf install -y oracle-epel-release-el8 || true; \
           dnf install -y gcc-toolset-12 || true; \
           ;; \
         9*) \
           dnf install -y dnf-plugins-core; \
           dnf config-manager --set-enabled ol9_codeready_builder || true; \
+          dnf install -y oracle-epel-release-el9 || true; \
           ;; \
       esac; \
       dnf install -y \
-        autoconf automake bison ca-certificates curl file flex gcc gcc-c++ gawk \
-        git gzip gmp-devel isl-devel libmpc-devel mpfr-devel libtool make patch \
-        perl pkgconf-pkg-config tar texinfo bzip2 unzip wget xz zlib-devel; \
+        autoconf automake bison bzip2 ca-certificates curl file flex gcc gcc-c++ gawk \
+        git gzip gmp-devel libisl-devel libmpc-devel mpfr-devel libtool make patch \
+        perl pkgconf-pkg-config tar texinfo unzip wget xz zlib-devel; \
       dnf clean all; \
     elif command -v yum >/dev/null 2>&1; then \
       # Oracle Linux 7, no vault repo rewrite needed
@@ -57,7 +59,7 @@ RUN set -eux; \
       yum groupinstall -y 'Development Tools' || yum groupinstall -y 'Development tools' || true; \
       yum install -y \
         autoconf bzip2 automake bison ca-certificates curl file flex gcc gcc-c++ gawk \
-        git gzip gmp-devel isl-devel libmpc-devel mpfr-devel libtool make patch \
+        git gzip gmp-devel libisl-devel libmpc-devel mpfr-devel libtool make patch \
         perl pkgconfig tar texinfo unzip wget xz zlib-devel; \
       yum clean all; \
     else \
