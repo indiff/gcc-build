@@ -190,9 +190,28 @@ build_triplet=$BUILD_TRIPLET
 build_date_utc=$(date -u +%FT%TZ)
 EOF
 
+# 1. strip 调试符号（GCC 构建产物默认带大量 debug info）
+find "$PREFIX" -type f \( -name '*.a' -o -name '*.so*' -o -executable \) \
+     -exec strip --strip-debug {} + 2>/dev/null || true
+
 mkdir -p "$OUTPUT_DIR"
-tar -C "$(dirname "$PREFIX")" -cJf "$OUTPUT_DIR/$ARTIFACT_NAME.tar.xz" "$(basename "$PREFIX")"
+# tar -C "$(dirname "$PREFIX")" -cJf "$OUTPUT_DIR/$ARTIFACT_NAME.tar.xz" "$(basename "$PREFIX")"
+
+log 'Creating compressed artifact (xz -9e, multi-threaded)'
+tar -C "$(dirname "$PREFIX")" \
+    --use-compress-program="xz -T0 -9e" \
+    -cf "$OUTPUT_DIR/$ARTIFACT_NAME.tar.xz" \
+    "$(basename "$PREFIX")"
+
+# 3. 使用 zstd 替代 xz（权衡选择）
+# zstd -22 --ultra -T0 压缩率接近 xz -9，速度快 3-5 倍
+# tar -C "$(dirname "$PREFIX")" \
+#     --use-compress-program="zstd -22 --ultra -T0" \
+#     -cf "$OUTPUT_DIR/$ARTIFACT_NAME.tar.zst" \
+#     "$(basename "$PREFIX")"
 sha256sum "$OUTPUT_DIR/$ARTIFACT_NAME.tar.xz" > "$OUTPUT_DIR/$ARTIFACT_NAME.tar.xz.sha256"
+ls -lh $OUTPUT_DIR
+
 log "Artifact: $OUTPUT_DIR/$ARTIFACT_NAME.tar.xz"
 
 if ((KEEP_SOURCE == 0)); then
