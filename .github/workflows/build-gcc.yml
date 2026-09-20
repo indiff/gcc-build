@@ -106,116 +106,104 @@ jobs:
           retention-days: 14
 
 
-  publish-release:
-      #  build-in-centos6 can not buildss
-      needs: [build-gcc] # build-arm64-tc,build-x86-tc,build-in-centos6  ,build-lld-centos7
-      runs-on: ubuntu-latest
-
-      steps:
-        - uses: actions/checkout@v7
-        - name: Restoring artifacts
-          uses: actions/download-artifact@main
-          with:
-            path: artifacts
-            pattern: gcc-*
-            merge-multiple: false
-        
         - name: Create Release
-          id: create_release
-          run: |
-            set -xeuo pipefail
+        id: create_release
+        run: |
+          set -xeuo pipefail
 
-            # ========== 1. 获取 GCC 版本与提交信息 ==========
-            curl --retry 3 --max-time 10 -sLo ver \
-              "https://github.com/gcc-mirror/gcc/raw/refs/heads/master/gcc/BASE-VER"
-            GCC_VERSION="$(cat ver)"
-            echo "gcc_version=${GCC_VERSION}" >> "$GITHUB_OUTPUT"
+          # ========== 1. 获取 GCC 版本与提交信息 ==========
+          curl --retry 3 --max-time 10 -sLo ver \
+            "https://github.com/gcc-mirror/gcc/raw/refs/heads/master/gcc/BASE-VER"
+          GCC_VERSION="$(cat ver)"
+          echo "gcc_version=${GCC_VERSION}" >> "$GITHUB_OUTPUT"
 
-            commit_info=$(curl -sf -H "Authorization: Bearer ${GITHUB_TOKEN}" \
-              -H "Accept: application/vnd.github.v3+json" \
-              "https://api.github.com/repos/gcc-mirror/gcc/commits?per_page=1" \
+          # 修复：确保 curl 与 jq 之间的管道在同一逻辑行内
+          commit_info=$(curl -sf -H "Authorization: Bearer ${GITHUB_TOKEN}" \
+            -H "Accept: application/vnd.github.v3+json" \
+            "https://api.github.com/repos/gcc-mirror/gcc/commits?per_page=1" \
 
-              | jq -r '.[0] | "\(.commit.author.name) | \(.commit.message | split("\n")[0]) | \(.commit.author.date)"')
-            echo "Commit Info: ${commit_info}"
+            | jq -r '.[0] | "\(.commit.author.name) | \(.commit.message | split("\n")[0]) | \(.commit.author.date)"')
+          echo "Commit Info: ${commit_info}"
 
-            # ========== 2. 生成 Release Tag ==========
-            TAG_NAME="gcc-${GCC_VERSION}-$(date -u +%Y%m%d)"
-            echo "TAG_NAME=${TAG_NAME}" >> "$GITHUB_ENV"
-            echo "tag_name=${TAG_NAME}" >> "$GITHUB_OUTPUT"
+          # ========== 2. 生成 Release Tag ==========
+          TAG_NAME="gcc-${GCC_VERSION}-$(date -u +%Y%m%d)"
+          echo "TAG_NAME=${TAG_NAME}" >> "$GITHUB_ENV"
+          echo "tag_name=${TAG_NAME}" >> "$GITHUB_OUTPUT"
 
-            # ========== 3. 在正确的 artifacts 目录中查找产物 ==========
-            ARTIFACT_DIR="./artifacts"
+          # ========== 3. 在正确的 artifacts 目录中查找产物 ==========
+          ARTIFACT_DIR="./artifacts"
 
-            # 查找 GCC 包：匹配 build-gcc.sh 输出的 gcc-*.tar.xz，排除 lld
-            gcc_pkgpath="$(find "${ARTIFACT_DIR}" -type f -name 'gcc-*.tar.xz' ! -name 'lld-*' | head -n 1)"
-            if [[ -z "${gcc_pkgpath}" ]]; then
-              # 回退查找 zip
-              gcc_pkgpath="$(find "${ARTIFACT_DIR}" -type f -name 'gcc-*.zip' ! -name 'lld-*' | head -n 1)"
-            fi
-            if [[ -z "${gcc_pkgpath}" ]]; then
-              echo '::error::未找到任何 GCC 打包文件 (gcc-*.tar.xz / gcc-*.zip)' >&2
-              ls -laR "${ARTIFACT_DIR}" >&2 || true
-              exit 1
-            fi
-            gcc_bname="$(basename "${gcc_pkgpath}")"
-            echo "Found GCC package: ${gcc_bname}"
+          gcc_pkgpath="$(find "${ARTIFACT_DIR}" -type f -name 'gcc-*.tar.xz' ! -name 'lld-*' | head -n 1)"
+          if [[ -z "${gcc_pkgpath}" ]]; then
+            gcc_pkgpath="$(find "${ARTIFACT_DIR}" -type f -name 'gcc-*.zip' ! -name 'lld-*' | head -n 1)" || true
+          fi
+          if [[ -z "${gcc_pkgpath}" ]]; then
+            echo '::error::未找到任何 GCC 打包文件 (gcc-*.tar.xz / gcc-*.zip)' >&2
+            ls -laR "${ARTIFACT_DIR}" >&2 || true
+            exit 1
+          fi
+          gcc_bname="$(basename "${gcc_pkgpath}")"
+          echo "Found GCC package: ${gcc_bname}"
 
-            # 查找 LLD 包（可选）
-            lld_pkgpath="$(find "${ARTIFACT_DIR}" -type f -name 'lld-*.tar.xz' | head -n 1)"
-            if [[ -z "${lld_pkgpath}" ]]; then
-              lld_pkgpath="$(find "${ARTIFACT_DIR}" -type f -name 'lld-*.zip' | head -n 1)" || true
-            fi
-            lld_bname=""
-            if [[ -n "${lld_pkgpath}" ]]; then
-              lld_bname="$(basename "${lld_pkgpath}")"
-              echo "Found LLD package: ${lld_bname}"
-            fi
+          lld_pkgpath=""
+          lld_bname=""
+          lld_pkgpath="$(find "${ARTIFACT_DIR}" -type f -name 'lld-*.tar.xz' | head -n 1)" || true
+          if [[ -z "${lld_pkgpath}" ]]; then
+            lld_pkgpath="$(find "${ARTIFACT_DIR}" -type f -name 'lld-*.zip' | head -n 1)" || true
+          fi
+          if [[ -n "${lld_pkgpath}" ]]; then
+            lld_bname="$(basename "${lld_pkgpath}")"
+            echo "Found LLD package: ${lld_bname}"
+          fi
 
-            # ========== 4. 生成 Release Notes ==========
-            cat > hello.md <<EOF
-            ## GCC ${GCC_VERSION} Build ($(date -u +%Y-%m-%d))
+          # ========== 4. 生成 Release Notes ==========
+          cat > hello.md <<EOF
+          ## GCC ${GCC_VERSION} Build ($(date -u +%Y-%m-%d))
 
-            > **Latest upstream commit:** ${commit_info}
+          > **Latest upstream commit:** ${commit_info}
 
-            ### GCC Package (\`${gcc_bname}\`)
+          ### GCC Package (\`${gcc_bname}\`)
 
-            Proxy download:
-            \`\`\`bash
-            curl -#Lo gcc-indiff.tar.xz "https://ghproxy.cfd/https://github.com/${GITHUB_REPOSITORY}/releases/download/${TAG_NAME}/${gcc_bname}"
-            \`\`\`
+          Proxy download:
+          \`\`\`bash
+          curl -#Lo gcc-indiff.tar.xz "https://ghproxy.cfd/https://github.com/${GITHUB_REPOSITORY}/releases/download/${TAG_NAME}/${gcc_bname}"
+          \`\`\`
 
-            Direct download:
-            \`\`\`bash
-            curl -#Lo gcc-indiff.tar.xz "https://github.com/${GITHUB_REPOSITORY}/releases/download/${TAG_NAME}/${gcc_bname}"
-            \`\`\`
-            EOF
+          Direct download:
+          \`\`\`bash
+          curl -#Lo gcc-indiff.tar.xz "https://github.com/${GITHUB_REPOSITORY}/releases/download/${TAG_NAME}/${gcc_bname}"
+          \`\`\`
+          EOF
 
-            if [[ -n "${lld_bname}" ]]; then
-              cat >> hello.md <<EOF
+          if [[ -n "${lld_bname}" ]]; then
+            cat >> hello.md <<EOF
 
-            ### LLD Package (\`${lld_bname}\`)
+          ### LLD Package (\`${lld_bname}\`)
 
-            Proxy download:
-            \`\`\`bash
-            curl -#Lo lld-indiff.tar.xz "https://ghproxy.cfd/https://github.com/${GITHUB_REPOSITORY}/releases/download/${TAG_NAME}/${lld_bname}"
-            \`\`\`
+          Proxy download:
+          \`\`\`bash
+          curl -#Lo lld-indiff.tar.xz "https://ghproxy.cfd/https://github.com/${GITHUB_REPOSITORY}/releases/download/${TAG_NAME}/${lld_bname}"
+          \`\`\`
 
-            Direct download:
-            \`\`\`bash
-            curl -#Lo lld-indiff.tar.xz "https://github.com/${GITHUB_REPOSITORY}/releases/download/${TAG_NAME}/${lld_bname}"
-            \`\`\`
-            EOF
-            fi
+          Direct download:
+          \`\`\`bash
+          curl -#Lo lld-indiff.tar.xz "https://github.com/${GITHUB_REPOSITORY}/releases/download/${TAG_NAME}/${lld_bname}"
+          \`\`\`
+          EOF
+          fi
 
-            # ========== 5. 创建 Release ==========
-            release_args=(
-              "${TAG_NAME}"
-              --title "GCC ${GCC_VERSION} (${TAG_NAME})"
-              -F hello.md
-              "${gcc_pkgpath}"
-            )
+          # ========== 5. 创建 Release ==========
+          release_args=(
+            "${TAG_NAME}"
+            --title "GCC ${GCC_VERSION} (${TAG_NAME})"
+            -F hello.md
+            "${gcc_pkgpath}"
+          )
+          if [[ -n "${lld_pkgpath}" ]]; then
+            release_args+=("${lld_pkgpath}")
+          fi
 
-            gh release create "${release_args[@]}" || \
-              gh release upload "${TAG_NAME}" "${release_args[@]:3}" --clobber
-          env:
-            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          gh release create "${release_args[@]}" || \
+            gh release upload "${TAG_NAME}" "${gcc_pkgpath}" ${lld_pkgpath:+${lld_pkgpath}} --clobber
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
