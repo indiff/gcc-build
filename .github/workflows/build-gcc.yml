@@ -116,10 +116,11 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
-      - name: Download all archives
-        uses: actions/download-artifact@v7
+      - name: Download All Artifacts
+        uses: actions/download-artifact@v8
         with:
           path: ./artifacts
+          pattern: gcc*
           merge-multiple: true
 
       - name: Create Release
