@@ -105,6 +105,23 @@ jobs:
           if-no-files-found: error
           retention-days: 14
 
+  create_release:
+    needs: build-gcc
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Download all archives
+        uses: actions/download-artifact@v7
+        with:
+          path: ./artifacts
+          merge-multiple: true
+
       - name: Create Release
         id: create_release
         run: |
