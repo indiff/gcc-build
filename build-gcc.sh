@@ -201,12 +201,16 @@ test -f "$MOLD_SRC/CMakeLists.txt" || {
   exit 1
 }
 
-cmake -S "$MOLD_SRC" -B "$MOLD_BUILD" \
-  -DCMAKE_BUILD_TYPE=Release \
-  -DCMAKE_INSTALL_PREFIX=$PREFIX
+chmod +x $PREFIX/bin/gcc
+chmod +x $PREFIX/bin/g++
 
-cmake --build "$MOLD_BUILD" --parallel "${BUILD_JOBS:-$(nproc)}"
-cmake --install "$MOLD_BUILD"
+cmake  -S "$MOLD_SRC" \
+  -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER="$PREFIX/bin/gcc" -DCMAKE_CXX_COMPILER="$PREFIX/bin/g++" \
+  -DCMAKE_INSTALL_PREFIX="$PREFIX_DIR" \
+  -B "$MOLD_BUILD"
+cmake --build "$MOLD_BUILD" -j$(nproc)
+cmake --install "$MOLD_BUILD" || ( cd "$MOLD_BUILD" && make install ) || true
+
 
 # 1. strip 调试符号（GCC 构建产物默认带大量 debug info）
 find "$PREFIX" -type f \( -name '*.a' -o -name '*.so*' -o -executable \) \
