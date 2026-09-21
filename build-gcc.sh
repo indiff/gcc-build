@@ -190,15 +190,23 @@ build_triplet=$BUILD_TRIPLET
 build_date_utc=$(date -u +%FT%TZ)
 EOF
 
-cd /opt/
-# git clone --branch stable https://github.com/rui314/mold.git
-git clone --depth 1 https://github.com/rui314/mold.git
-cd /opt/mold
-cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER="$PREFIX/bin/gcc" -DCMAKE_CXX_COMPILER="$PREFIX/bin/g++" \
--DCMAKE_INSTALL_PREFIX="$PREFIX" \
--B build
-cmake --build build -j$(nproc)
-cmake --install build || ( cd build && make install ) || true
+MOLD_SRC=/opt/mold
+MOLD_BUILD=/opt/mold-build
+rm -rf "$MOLD_SRC" "$MOLD_BUILD"
+git clone --depth 1 https://github.com/rui314/mold.git "$MOLD_SRC"
+
+test -f "$MOLD_SRC/CMakeLists.txt" || {
+  echo "::error::mold checkout is missing CMakeLists.txt"
+  find "$MOLD_SRC" -maxdepth 2 -type f | sort
+  exit 1
+}
+
+cmake -S "$MOLD_SRC" -B "$MOLD_BUILD" \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DCMAKE_INSTALL_PREFIX=$PREFIX
+
+cmake --build "$MOLD_BUILD" --parallel "${BUILD_JOBS:-$(nproc)}"
+cmake --install "$MOLD_BUILD"
 
 # 1. strip 调试符号（GCC 构建产物默认带大量 debug info）
 find "$PREFIX" -type f \( -name '*.a' -o -name '*.so*' -o -executable \) \
