@@ -22,7 +22,7 @@ ARCH=""
 OS_LABEL="linux"
 GCC_REF="${GCC_REF:-master}"
 JOBS="${BUILD_JOBS:-$(nproc)}"
-PREFIX="/opt/gcc"
+PREFIX="/opt/gcc-indiff"
 OUTPUT_DIR="/artifacts"
 KEEP_SOURCE=0
 
@@ -189,6 +189,16 @@ target=$TARGET
 build_triplet=$BUILD_TRIPLET
 build_date_utc=$(date -u +%FT%TZ)
 EOF
+
+cd /opt/
+# git clone --branch stable https://github.com/rui314/mold.git
+git clone --depth 1 https://github.com/rui314/mold.git
+cd /opt/mold
+cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER="$PREFIX/bin/gcc" -DCMAKE_CXX_COMPILER="$PREFIX/bin/g++" \
+-DCMAKE_INSTALL_PREFIX="$PREFIX" \
+-B build
+cmake --build build -j$(nproc)
+cmake --install build || ( cd build && make install ) || true
 
 # 1. strip 调试符号（GCC 构建产物默认带大量 debug info）
 find "$PREFIX" -type f \( -name '*.a' -o -name '*.so*' -o -executable \) \

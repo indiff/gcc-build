@@ -108,6 +108,8 @@ jobs:
   create_release:
     needs: build-gcc
     runs-on: ubuntu-latest
+    permissions:
+      contents: write   # 🔴必须开启，否则403
 
     steps:
       - name: Checkout code
