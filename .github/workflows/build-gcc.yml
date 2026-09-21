@@ -207,7 +207,6 @@ jobs:
             create
             "${TAG_NAME}"
             --title "GCC ${GCC_VERSION} (${TAG_NAME})"
-            --clobber
             -F hello.md
             "${gcc_pkgpath}"
           )
