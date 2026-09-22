@@ -211,7 +211,7 @@ CC="$PREFIX/bin/gcc" CXX="$PREFIX/bin/g++" \
 cargo build --release
 
 # 使用官方install‑mold.sh安装到目标PREFIX_DIR
-PREFIX="$PREFIX_DIR" ./install‑mold.sh
+PREFIX="$PREFIX" ./install‑mold.sh
 
 # 可选：简单校验安装结果
 "$PREFIX_DIR/bin/mold" --version
