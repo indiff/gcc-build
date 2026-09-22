@@ -210,11 +210,11 @@ cd "$MOLD_SRC"
 CC="$PREFIX/bin/gcc" CXX="$PREFIX/bin/g++" \
 cargo build --release
 
-# 使用官方install‑mold.sh安装到目标PREFIX_DIR
-PREFIX="$PREFIX" ./install‑mold.sh
+# 使用官方install-mold.sh安装到目标PREFIX_DIR
+PREFIX="$PREFIX" ./install-mold.sh .
 
 # 可选：简单校验安装结果
-"$PREFIX_DIR/bin/mold" --version
+"$PREFIX/bin/mold" --version
 
 
 # 1. strip 调试符号（GCC 构建产物默认带大量 debug info）
