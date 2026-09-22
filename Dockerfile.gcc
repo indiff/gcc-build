@@ -32,8 +32,12 @@ RUN set -eux; \
     if command -v apt-get >/dev/null 2>&1; then \
       apt-get update; \
       apt-get install -y --no-install-recommends \
+        systemd language-pack-zh-hans language-pack-zh-hans-base tzdata locales  \
         autoconf automake bison build-essential bzip2 ca-certificates curl file flex cmake \
         gawk git gzip libtool make patch perl pkg-config texinfo unzip wget xz-utils libssl-dev zlib1g-dev; \
+      # Ubuntu生成中文locale
+      locale-gen zh_CN.UTF-8; \
+      update-locale LANG=zh_CN.UTF-8 LC_ALL=zh_CN.UTF-8; \  
       # 安装rustup for Ubuntu
       curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y; \  
       rm -rf /var/lib/apt/lists/*; \
@@ -53,9 +57,9 @@ RUN set -eux; \
           ;; \
       esac; \
       dnf install -y \
-        autoconf automake bison bzip2 ca-certificates curl file flex gcc gcc-c++ gawk \
-        cmake openssl-devel \
-        git gzip libtool make patch perl pkgconf-pkg-config tar texinfo unzip wget xz zlib-devel; \
+            autoconf automake bison bzip2 ca-certificates curl file flex gcc gcc-c++ gawk \
+            cmake openssl-devel glibc-langpack-zh \
+            git gzip libtool make patch perl pkgconf-pkg-config tar texinfo unzip wget xz zlib-devel; \
         # 安装rustup for OracleLinux
       curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y; \
       dnf clean all; \
@@ -67,9 +71,11 @@ RUN set -eux; \
         yum install -y devtoolset-11 || true; \
       fi; \
       yum groupinstall -y 'Development Tools' || yum groupinstall -y 'Development tools' || true; \
+      # OL7中文语言包
       yum install -y \
-        autoconf automake bison bzip2 ca-certificates curl file flex gcc gcc-c++ gawk \
-        git gzip libtool make patch perl pkgconfig tar texinfo unzip wget xz zlib-devel; \
+          autoconf automake bison bzip2 ca-certificates curl file flex gcc gcc-c++ gawk \
+          git gzip libtool make patch perl pkgconfig tar texinfo unzip wget xz zlib-devel \
+          glibc-langpack-zh; \
       # Oracle Linux7 同样安装rustup
       curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y; \  
       yum clean all; \
@@ -77,7 +83,9 @@ RUN set -eux; \
       echo 'Unsupported base image: no apt-get, dnf, or yum found' >&2; exit 1; \
     fi; \
     # 校验cargo可用
-    /root/.cargo/bin/cargo --version
+    /root/.cargo/bin/cargo --version \
+    # 校验locale是否正常生成
+    locale -a
 
 WORKDIR /workspace
 COPY build-gcc.sh /usr/local/bin/build-gcc.sh
