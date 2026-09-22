@@ -212,7 +212,7 @@ jobs:
           done
 
           # ========== 5. 创建 Release（传入所有文件）==========
-          release_args=(create "${TAG_NAME}" --title "GCC ${GCC_VERSION} (${TAG_NAME})" -F hello.md)
+          release_args=( "${TAG_NAME}" --title "GCC ${GCC_VERSION} (${TAG_NAME})" -F hello.md )
           release_args+=("${gcc_packages[@]}")
           release_args+=("${lld_packages[@]}")
 
