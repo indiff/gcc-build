@@ -42,7 +42,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
-           - { os: ubuntu,       image: ubuntu:24.04, arch: x86,  docker_arch: amd64 }
+           - { os: ubuntu,       image: ubuntu:26.04, arch: x86,  docker_arch: amd64 }
            # - { os: ubuntu,       image: ubuntu:24.04, arch: arm,  docker_arch: arm64 }
            #- { os: oraclelinux7, image: oraclelinux:7, arch: x86,  docker_arch: amd64 }
            #- { os: oraclelinux7, image: oraclelinux:7, arch: arm,  docker_arch: arm64 }
@@ -150,74 +150,74 @@ jobs:
           echo "TAG_NAME=${TAG_NAME}" >> "$GITHUB_ENV"
           echo "tag_name=${TAG_NAME}" >> "$GITHUB_OUTPUT"
 
-          # ========== 3. 在正确的 artifacts 目录中查找产物 ==========
+          # ========== 3. 在正确的 artifacts 目录中查找所有产物 ==========
           ARTIFACT_DIR="./artifacts"
-          gcc_pkgpath=""
-          gcc_pkgpath="$(find "${ARTIFACT_DIR}" -type f -name 'gcc-*.tar.xz' ! -name 'lld-*' | head -n 1)" || true
-          if [[ -z "${gcc_pkgpath}" ]]; then
-            gcc_pkgpath="$(find "${ARTIFACT_DIR}" -type f -name 'gcc-*.zip' ! -name 'lld-*' | head -n 1)" || true
-          fi
-          if [[ -z "${gcc_pkgpath}" ]]; then
+
+          # 收集所有 GCC 包（排除 lld）
+          mapfile -t gcc_packages < <(find "${ARTIFACT_DIR}" -type f \( -name 'gcc-*.tar.xz' -o -name 'gcc-*.zip' \) ! -name 'lld-*' | sort)
+
+          if [[ ${#gcc_packages[@]} -eq 0 ]]; then
             echo '::error::未找到任何 GCC 打包文件 (gcc-*.tar.xz / gcc-*.zip)' >&2
             ls -laR "${ARTIFACT_DIR}" >&2 || true
             exit 1
           fi
-          gcc_bname="$(basename "${gcc_pkgpath}")"
-          echo "Found GCC package: ${gcc_bname}"
 
-          lld_pkgpath=""
-          lld_bname=""
-          lld_pkgpath="$(find "${ARTIFACT_DIR}" -type f -name 'lld-*.tar.xz' | head -n 1)" || true
-          if [[ -z "${lld_pkgpath}" ]]; then
-            lld_pkgpath="$(find "${ARTIFACT_DIR}" -type f -name 'lld-*.zip' | head -n 1)" || true
-          fi
-          if [[ -n "${lld_pkgpath}" ]]; then
-            lld_bname="$(basename "${lld_pkgpath}")"
-            echo "Found LLD package: ${lld_bname}"
+          echo "Found ${#gcc_packages[@]} GCC package(s):"
+          printf '  - %s\n' "${gcc_packages[@]}"
+
+          # 收集所有 LLD 包
+          mapfile -t lld_packages < <(find "${ARTIFACT_DIR}" -type f \( -name 'lld-*.tar.xz' -o -name 'lld-*.zip' \) | sort)
+
+          if [[ ${#lld_packages[@]} -gt 0 ]]; then
+            echo "Found ${#lld_packages[@]} LLD package(s):"
+            printf '  - %s\n' "${lld_packages[@]}"
           fi
 
-          # ========== 4. 生成 Release Notes ==========
+          # ========== 4. 生成 Release Notes（遍历所有包）==========
           cat > hello.md <<EOF
           ## GCC ${GCC_VERSION} Build ($(date -u +%Y-%m-%d))
           > **Latest upstream commit:** ${commit_info}
-          ### GCC Package (\`${gcc_bname}\`)
+          EOF
+
+          for pkg in "${gcc_packages[@]}"; do
+            bname="$(basename "$pkg")"
+            cat >> hello.md <<EOF
+
+          ### GCC Package (\`${bname}\`)
           Proxy download:
           \`\`\`bash
-          curl -#Lo gcc-indiff.tar.xz "https://ghfast.top/https://github.com/${GITHUB_REPOSITORY}/releases/download/${TAG_NAME}/${gcc_bname}"
+          curl -#Lo ${bname} "https://ghfast.top/https://github.com/${GITHUB_REPOSITORY}/releases/download/${TAG_NAME}/${bname}"
           \`\`\`
           Direct download:
           \`\`\`bash
-          curl -#Lo gcc-indiff.tar.xz "https://github.com/${GITHUB_REPOSITORY}/releases/download/${TAG_NAME}/${gcc_bname}"
+          curl -#Lo ${bname} "https://github.com/${GITHUB_REPOSITORY}/releases/download/${TAG_NAME}/${bname}"
           \`\`\`
           EOF
-                    if [[ -n "${lld_bname}" ]]; then
-                      cat >> hello.md <<EOF
-          ### LLD Package (\`${lld_bname}\`)
+          done
+
+          for pkg in "${lld_packages[@]}"; do
+            bname="$(basename "$pkg")"
+            cat >> hello.md <<EOF
+
+          ### LLD Package (\`${bname}\`)
           Proxy download:
           \`\`\`bash
-          curl -#Lo lld-indiff.tar.xz "https://ghfast.top/https://github.com/${GITHUB_REPOSITORY}/releases/download/${TAG_NAME}/${lld_bname}"
+          curl -#Lo ${bname} "https://ghfast.top/https://github.com/${GITHUB_REPOSITORY}/releases/download/${TAG_NAME}/${bname}"
           \`\`\`
           Direct download:
           \`\`\`bash
-          curl -#Lo lld-indiff.tar.xz "https://github.com/${GITHUB_REPOSITORY}/releases/download/${TAG_NAME}/${lld_bname}"
+          curl -#Lo ${bname} "https://github.com/${GITHUB_REPOSITORY}/releases/download/${TAG_NAME}/${bname}"
           \`\`\`
           EOF
-          fi
+          done
 
-          # ========== 5. 创建 Release ==========
-          release_args=(
-            create
-            "${TAG_NAME}"
-            --title "GCC ${GCC_VERSION} (${TAG_NAME})"
-            -F hello.md
-            "${gcc_pkgpath}"
-          )
-          if [[ -n "${lld_pkgpath}" ]]; then
-            release_args+=("${lld_pkgpath}")
-          fi
-          gh release "${release_args[@]}"
+          # ========== 5. 创建 Release（传入所有文件）==========
+          release_args=(create "${TAG_NAME}" --title "GCC ${GCC_VERSION} (${TAG_NAME})" -F hello.md)
+          release_args+=("${gcc_packages[@]}")
+          release_args+=("${lld_packages[@]}")
 
-          # 清理临时文件
+          gh release create "${release_args[@]}"
+
           rm -f ver hello.md
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
