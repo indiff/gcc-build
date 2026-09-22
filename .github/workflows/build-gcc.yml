@@ -146,7 +146,7 @@ jobs:
           echo "Commit Info: ${commit_info}"
 
           # ========== 2. 生成 Release Tag ==========
-          TAG_NAME="gcc-${GCC_VERSION}-$(date -u +%Y%m%d)"
+          TAG_NAME="gcc-${GCC_VERSION}-$(date -u +%Y%m%d%H%M)"
           echo "TAG_NAME=${TAG_NAME}" >> "$GITHUB_ENV"
           echo "tag_name=${TAG_NAME}" >> "$GITHUB_OUTPUT"
 
