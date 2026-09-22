@@ -3,12 +3,27 @@ ARG BASE_IMAGE=ubuntu:24.04
 FROM ${BASE_IMAGE}
 
 ARG TARGETARCH
-ENV DEBIAN_FRONTEND=noninteractive \
-    LANG=C.UTF-8 \
-    LC_ALL=C.UTF-8 \
-    TZ=UTC \
+ENV DEBIAN_FRONTEND=noninteractive
+
+# 设置语言环境变量
+ENV LANG=zh_CN.UTF-8 \
+    LANGUAGE=zh_CN:zh \
+    TZ=Asia/Shanghai \
+    LC_ALL=zh_CN.UTF-8 \
+    LC_CTYPE=zh_CN.UTF-8 \
+    LC_NUMERIC=zh_CN.UTF-8 \
+    LC_TIME=zh_CN.UTF-8 \
+    LC_COLLATE=zh_CN.UTF-8 \
+    LC_MONETARY=zh_CN.UTF-8 \
+    LC_MESSAGES=zh_CN.UTF-8 \
+    LC_PAPER=zh_CN.UTF-8 \
+    LC_NAME=zh_CN.UTF-8 \
+    LC_ADDRESS=zh_CN.UTF-8 \
+    LC_TELEPHONE=zh_CN.UTF-8 \
+    LC_MEASUREMENT=zh_CN.UTF-8 \
+    LC_IDENTIFICATION=zh_CN.UTF-8 \
     JOBS= \
-    PATH=/opt/gcc/bin:${PATH}
+    PATH=/opt/gcc-indiff/bin:/root/.cargo/bin:${PATH}
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
@@ -19,6 +34,8 @@ RUN set -eux; \
       apt-get install -y --no-install-recommends \
         autoconf automake bison build-essential bzip2 ca-certificates curl file flex cmake \
         gawk git gzip libtool make patch perl pkg-config texinfo unzip wget xz-utils libssl-dev zlib1g-dev; \
+      # 安装rustup for Ubuntu
+      curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y; \  
       rm -rf /var/lib/apt/lists/*; \
     elif command -v dnf >/dev/null 2>&1; then \
       . /etc/os-release; \
@@ -39,6 +56,8 @@ RUN set -eux; \
         autoconf automake bison bzip2 ca-certificates curl file flex gcc gcc-c++ gawk \
         cmake openssl-devel \
         git gzip libtool make patch perl pkgconf-pkg-config tar texinfo unzip wget xz zlib-devel; \
+        # 安装rustup for OracleLinux
+      curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y; \
       dnf clean all; \
     elif command -v yum >/dev/null 2>&1; then \
       yum install -y oracle-epel-release-el7 || true; \
@@ -51,10 +70,14 @@ RUN set -eux; \
       yum install -y \
         autoconf automake bison bzip2 ca-certificates curl file flex gcc gcc-c++ gawk \
         git gzip libtool make patch perl pkgconfig tar texinfo unzip wget xz zlib-devel; \
+      # Oracle Linux7 同样安装rustup
+      curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y; \  
       yum clean all; \
     else \
       echo 'Unsupported base image: no apt-get, dnf, or yum found' >&2; exit 1; \
-    fi
+    fi; \
+    # 校验cargo可用
+    /root/.cargo/bin/cargo --version
 
 WORKDIR /workspace
 COPY build-gcc.sh /usr/local/bin/build-gcc.sh

@@ -191,25 +191,30 @@ build_date_utc=$(date -u +%FT%TZ)
 EOF
 
 MOLD_SRC=/opt/mold
-MOLD_BUILD=/opt/mold-build
-rm -rf "$MOLD_SRC" "$MOLD_BUILD"
+rm -rf "$MOLD_SRC"
 git clone --depth 1 https://github.com/rui314/mold.git "$MOLD_SRC"
 
-test -f "$MOLD_SRC/CMakeLists.txt" || {
-  echo "::error::mold checkout is missing CMakeLists.txt"
+# 校验源码检出
+test -f "$MOLD_SRC/Cargo.toml" || {
+  echo "::error::mold checkout missing Cargo.toml"
   find "$MOLD_SRC" -maxdepth 2 -type f | sort
   exit 1
 }
 
-chmod +x $PREFIX/bin/gcc
-chmod +x $PREFIX/bin/g++
+# 确保自定义gcc/g++可执行
+chmod +x "$PREFIX/bin/gcc"
+chmod +x "$PREFIX/bin/g++"
 
-cmake  -S "$MOLD_SRC" \
-  -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER="$PREFIX/bin/gcc" -DCMAKE_CXX_COMPILER="$PREFIX/bin/g++" \
-  -DCMAKE_INSTALL_PREFIX="$PREFIX_DIR" \
-  -B "$MOLD_BUILD"
-cmake --build "$MOLD_BUILD" -j$(nproc)
-cmake --install "$MOLD_BUILD" || ( cd "$MOLD_BUILD" && make install ) || true
+cd "$MOLD_SRC"
+# 指定自定义GCC工具链编译mold本身
+CC="$PREFIX/bin/gcc" CXX="$PREFIX/bin/g++" \
+cargo build --release
+
+# 使用官方install‑mold.sh安装到目标PREFIX_DIR
+PREFIX="$PREFIX_DIR" ./install‑mold.sh
+
+# 可选：简单校验安装结果
+"$PREFIX_DIR/bin/mold" --version
 
 
 # 1. strip 调试符号（GCC 构建产物默认带大量 debug info）
