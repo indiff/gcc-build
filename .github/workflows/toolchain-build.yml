@@ -670,6 +670,7 @@ jobs:
           cd /opt/thetools
           curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y;
           # git clone --branch stable https://github.com/rui314/mold.git
+          . "$HOME/.cargo/env"
           git clone --depth 1 https://github.com/rui314/mold.git
           cd mold
           # 指定自定义GCC工具链编译mold本身
