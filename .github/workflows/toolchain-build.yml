@@ -668,14 +668,15 @@ jobs:
           mkdir -p /opt/thetools
 
           cd /opt/thetools
+          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y;
           # git clone --branch stable https://github.com/rui314/mold.git
           git clone --depth 1 https://github.com/rui314/mold.git
           cd mold
-          cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_C_COMPILER="/opt/gcc-indiff/bin/gcc" -DCMAKE_CXX_COMPILER="/opt/gcc-indiff/bin/g++" \
-          -DCMAKE_INSTALL_PREFIX="$PREFIX_DIR" \
-          -B build
-          cmake --build build -j$(nproc)
-          cmake --install build || ( cd build && make install ) || true
+          # 指定自定义GCC工具链编译mold本身
+          CC="/opt/mygcc/bin/gcc" CXX="/opt/mygcc/bin/g++" \
+          cargo build --release
+          PREFIX="/opt/gcc-indiff" ./install-mold.sh .
+          "/opt/gcc-indiff/bin/mold" --version
           
           # cd /opt/thetools
           # wget_gnu autoconf/autoconf-2.71.tar.gz
