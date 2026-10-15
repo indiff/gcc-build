@@ -35,7 +35,7 @@ env:
 
 jobs:
   build-gcc:
-    name: ${{ matrix.os }} / ${{ matrix.arch }}
+    name: ${{ matrix.os }}-${{ matrix.image }}-${{ matrix.arch }}
     runs-on: ubuntu-latest
     timeout-minutes: 720
     strategy:
