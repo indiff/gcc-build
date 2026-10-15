@@ -36,12 +36,13 @@ env:
 jobs:
   build-gcc:
     name: ${{ matrix.os }} / ${{ matrix.arch }}
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     timeout-minutes: 720
     strategy:
       fail-fast: false
       matrix:
         include:
+           - { os: ubuntu,       image: ubuntu:26.10, arch: x86,  docker_arch: amd64 }
            - { os: ubuntu,       image: ubuntu:26.04, arch: x86,  docker_arch: amd64 }
            # - { os: ubuntu,       image: ubuntu:24.04, arch: arm,  docker_arch: arm64 }
            #- { os: oraclelinux7, image: oraclelinux:7, arch: x86,  docker_arch: amd64 }
