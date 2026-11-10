@@ -222,3 +222,47 @@ jobs:
           rm -f ver hello.md
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+
+      - name: Prune old releases
+        run: |
+          set -xe
+          git fetch --tags
+          TAGS=( $(git tag -l "*2025*" | sort -r) )
+
+          KEEP_LATEST=50
+          KEEP_MONTHLY=12
+
+          LATEST_TAGS=()
+          MONTHLY_TAGS=()
+
+          CUR_MONTH="-1"
+
+          # echo "tags: $TAGS"
+          for TAG in ${TAGS[@]}; do
+              if [[ ${#LATEST_TAGS[@]} -lt ${KEEP_LATEST} ]]; then
+                  # echo "tag: $TAG"
+                  LATEST_TAGS+=( "$TAG" )
+              fi
+
+              if [[ ${#MONTHLY_TAGS[@]} -lt ${KEEP_MONTHLY} ]]; then
+                  TAG_MONTH="$(echo $TAG | cut -d- -f2)"
+              echo "TAG_MONTH: ${TAG_MONTH} ${CUR_MONTH}"
+                  if [[ ${TAG_MONTH} != ${CUR_MONTH} ]]; then
+                      CUR_MONTH="${TAG_MONTH}"
+                      MONTHLY_TAGS+=( "$TAG" )
+                  fi
+              fi
+          done
+
+          for TAG in ${LATEST_TAGS[@]} ${MONTHLY_TAGS[@]}; do
+              TAGS=( "${TAGS[@]/$TAG}" )
+          done
+
+          for TAG in ${TAGS[@]}; do
+              echo "Deleting ${TAG}"
+              gh release delete --cleanup-tag --yes "${TAG}"
+          done
+          git push --tags --prune
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
