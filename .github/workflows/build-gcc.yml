@@ -228,7 +228,7 @@ jobs:
         run: |
           set -xe
           git fetch --tags
-          TAGS=( $(git tag -l "*2025*" | sort -r) )
+          TAGS=( $(git tag -l "*2026*" | sort -r) )
 
           KEEP_LATEST=50
           KEEP_MONTHLY=12
